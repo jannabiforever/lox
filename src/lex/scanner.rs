@@ -68,6 +68,7 @@ impl<'a> Scanner<'a> {
                 token_type: TokenType::String,
             }
         } else if let Some(_) = self.stream.pop_match(&UNTERMINATED_STRING_REGEX) {
+            // Unterminated string.
             return Err(LexError::UnterminatedString);
         } else if let Some(source) = self.stream.pop_match(&WORD_REGEX) {
             // Get reserved word or identifier token.
@@ -142,6 +143,7 @@ impl<'a> Scanner<'a> {
                 },
             }
         } else {
+            // else current token is a single or double character token.
             if let Some(ch) = self.stream.advance() {
                 match ch {
                     '(' => Token {
@@ -257,6 +259,13 @@ impl<'a> Scanner<'a> {
     }
 }
 
+impl ErrorReporter<LexError> for Scanner<'_> {
+    fn line(&self) -> usize {
+        self.stream.line
+    }
+}
+
+/// The stream that is responsible for character handling.
 struct CharStream<'a> {
     source: &'a str,
     /// The index of next character to be read.
@@ -279,6 +288,8 @@ impl<'a> CharStream<'a> {
         &self.source[self.pos..]
     }
 
+    /// Pop the matched string from the remaining source.
+    /// Each regex should start with `^` to match the start of the string.
     fn pop_match(&mut self, regex: &Regex) -> Option<&'a str> {
         regex.find(self.remainee()).map(|mat| {
             let matched = mat.as_str();
@@ -291,6 +302,7 @@ impl<'a> CharStream<'a> {
         })
     }
 
+    /// Advance the position by one character.
     fn advance(&mut self) -> Option<char> {
         let next_char = self.remainee().chars().next();
         if let Some(&next_char) = next_char.as_ref() {
@@ -304,13 +316,8 @@ impl<'a> CharStream<'a> {
         }
     }
 
+    /// Peek the next character.
     fn peek(&self) -> Option<char> {
         self.remainee().chars().next()
-    }
-}
-
-impl ErrorReporter<LexError> for Scanner<'_> {
-    fn line(&self) -> usize {
-        self.stream.line
     }
 }
