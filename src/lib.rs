@@ -1,4 +1,6 @@
 pub mod ast;
-pub mod error;
 pub mod exe;
 pub mod lex;
+pub mod value;
+
+mod error;
