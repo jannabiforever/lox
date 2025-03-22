@@ -51,7 +51,16 @@ fn main() -> ExitCode {
             }
         }
         Command::Evaluate { file_path } => {
-            todo!("Implement evaluation.")
+            let file_contents = file_contents(file_path);
+            let value = lox::exe::evaluate_single_expr_ast(&file_contents).into();
+
+            match value {
+                Ok(value) => println!("{}", value),
+                Err(error) => {
+                    exit_code = error.as_ref().exit_code();
+                    eprintln!("{}", error)
+                }
+            }
         }
         Command::Run { file_path } => {
             todo!("Implement running.")
