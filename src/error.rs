@@ -105,6 +105,20 @@ impl<T> From<WithLine<T>> for (usize, T) {
     }
 }
 
+impl<T> From<WithLine<Result<T, LoxError>>> for Result<T, WithLine<LoxError>> {
+    fn from(value: WithLine<Result<T, LoxError>>) -> Self {
+        match value {
+            WithLine {
+                inner: Ok(value), ..
+            } => Ok(value),
+            WithLine {
+                line,
+                inner: Err(value),
+            } => Err(WithLine { line, inner: value }),
+        }
+    }
+}
+
 impl<T, E> From<Result<WithLine<T>, WithLine<E>>> for WithLine<Result<T, E>> {
     fn from(value: Result<WithLine<T>, WithLine<E>>) -> Self {
         match value {
@@ -120,7 +134,13 @@ impl<T, E> From<Result<WithLine<T>, WithLine<E>>> for WithLine<Result<T, E>> {
     }
 }
 
-pub(crate) trait ErrorReporter<E> {
+impl std::fmt::Display for WithLine<LoxError> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[line {}] {}", self.line, self.inner)
+    }
+}
+
+pub(crate) trait ErrorReporter<E: Into<LoxError>> {
     fn line(&self) -> usize;
 
     fn wrap<T>(&self, value: T) -> WithLine<T> {
@@ -130,11 +150,11 @@ pub(crate) trait ErrorReporter<E> {
         }
     }
 
-    fn get_ok<T>(&self, value: T) -> WithLine<Result<T, E>> {
+    fn get_lox_ok<T>(&self, value: T) -> WithLine<Result<T, LoxError>> {
         self.wrap(Ok(value))
     }
 
-    fn get_err<T>(&self, error: E) -> WithLine<Result<T, E>> {
-        self.wrap(Err(error))
+    fn get_lox_err<T>(&self, error: E) -> WithLine<Result<T, LoxError>> {
+        self.wrap(Err(error.into()))
     }
 }

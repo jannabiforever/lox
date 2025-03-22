@@ -14,7 +14,7 @@ pub enum Command {
 }
 
 fn file_contents(file_path: PathBuf) -> String {
-    std::fs::read_to_string(file_path).unwrap_or(String::new())
+    std::fs::read_to_string(file_path).unwrap_or_default()
 }
 
 fn main() -> ExitCode {
@@ -29,18 +29,26 @@ fn main() -> ExitCode {
             let tokens = lox::lex::scan(&file_contents);
 
             for token in tokens {
-                let (line, inner) = token.into();
-                match inner {
+                match token.into() {
                     Ok(token) => println!("{}", token),
                     Err(error) => {
-                        exit_code = error.exit_code();
-                        eprintln!("{}: {}", line, error)
+                        exit_code = error.as_ref().exit_code();
+                        eprintln!("{}", error)
                     }
                 }
             }
         }
         Command::Parse { file_path } => {
-            todo!("Implement parsing.")
+            let file_contents = file_contents(file_path);
+            let ast_result = lox::expr_ast::generate_expr_ast(&file_contents).into();
+
+            match ast_result {
+                Ok(ast) => println!("{}", ast),
+                Err(error) => {
+                    exit_code = error.as_ref().exit_code();
+                    eprintln!("{}", error)
+                }
+            }
         }
         Command::Evaluate { file_path } => {
             todo!("Implement evaluation.")

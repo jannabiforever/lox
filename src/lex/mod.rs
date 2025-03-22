@@ -1,7 +1,11 @@
-mod regex;
-mod scanner;
+//! Define the tokens and lexes the source code into tokens.
 
-pub use scanner::scan;
+pub(crate) mod lexer;
+pub(crate) mod mac;
+mod regex;
+
+pub(crate) use self::mac::tt;
+pub use lexer::scan;
 
 use crate::value::Number;
 use std::fmt;
@@ -14,8 +18,8 @@ pub struct Token<'a> {
     pub token_type: TokenType,
 }
 
-impl<'a> Token<'a> {
-    pub fn eof() -> Self {
+impl Token<'_> {
+    pub const fn eof() -> Self {
         Self {
             source: "",
             token_type: TokenType::Eof,
@@ -43,7 +47,7 @@ impl fmt::Display for Token<'_> {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Copy)]
 pub enum TokenType {
     LeftParen,
     RightParen,

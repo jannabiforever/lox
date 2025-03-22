@@ -1,27 +1,31 @@
-use super::regex::{
-    COMMENT_REGEX, NUMBER_REGEX, RAW_STRING_REGEX, UNTERMINATED_STRING_REGEX, WHITESPACE_REGEX,
-    WORD_REGEX,
+use super::{
+    regex::{
+        COMMENT_REGEX, NUMBER_REGEX, RAW_STRING_REGEX, UNTERMINATED_STRING_REGEX, WHITESPACE_REGEX,
+        WORD_REGEX,
+    },
+    tt,
 };
 use crate::{
-    error::{ErrorReporter, LexError, WithLine},
+    error::{ErrorReporter, LexError, LoxError, WithLine},
     lex::{Token, TokenType},
 };
 use regex::Regex;
 
 type TokenResult<'a> = Result<Token<'a>, LexError>;
-type TokenResultWithLine<'a> = WithLine<Result<Token<'a>, LexError>>;
+type TokenResultWithLine<'a> = WithLine<Result<Token<'a>, LoxError>>;
 
-pub fn scan<'a>(source: &'a str) -> Vec<TokenResultWithLine<'a>> {
-    let mut scanner = Scanner::new(source);
-    scanner.scan_tokens()
+pub fn scan(source: &str) -> Vec<TokenResultWithLine> {
+    let mut lexer = Lexer::new(source);
+    lexer.scan_tokens()
 }
 
-pub struct Scanner<'a> {
+#[derive(Clone)]
+pub(crate) struct Lexer<'a> {
     stream: CharStream<'a>,
 }
 
-impl<'a> Scanner<'a> {
-    fn new(source: &'a str) -> Self {
+impl<'a> Lexer<'a> {
+    pub(crate) fn new(source: &'a str) -> Self {
         Self {
             stream: CharStream::new(source),
         }
@@ -34,25 +38,25 @@ impl<'a> Scanner<'a> {
             match token {
                 Ok(token) => {
                     let is_eof = token.token_type == TokenType::Eof;
-                    tokens.push(self.get_ok(token));
+                    tokens.push(self.get_lox_ok(token));
 
                     if is_eof {
                         break;
                     }
                 }
                 Err(err) => {
-                    tokens.push(self.get_err(err));
+                    tokens.push(self.get_lox_err(err));
                 }
             }
         }
         tokens
     }
 
-    fn scan_token(&mut self) -> TokenResult<'a> {
-        let token: Token<'a> = if let Some(_) = self.stream.pop_match(&WHITESPACE_REGEX) {
+    pub(crate) fn scan_token(&mut self) -> TokenResult<'a> {
+        let token: Token<'a> = if self.stream.pop_match(&WHITESPACE_REGEX).is_some() {
             // Skip whitespace.
             return self.scan_token();
-        } else if let Some(_) = self.stream.pop_match(&COMMENT_REGEX) {
+        } else if self.stream.pop_match(&COMMENT_REGEX).is_some() {
             // Skip this line.
             return self.scan_token();
         } else if let Some(source) = self.stream.pop_match(&NUMBER_REGEX) {
@@ -67,7 +71,7 @@ impl<'a> Scanner<'a> {
                 source,
                 token_type: TokenType::String,
             }
-        } else if let Some(_) = self.stream.pop_match(&UNTERMINATED_STRING_REGEX) {
+        } else if self.stream.pop_match(&UNTERMINATED_STRING_REGEX).is_some() {
             // Unterminated string.
             return Err(LexError::UnterminatedString);
         } else if let Some(source) = self.stream.pop_match(&WORD_REGEX) {
@@ -75,71 +79,71 @@ impl<'a> Scanner<'a> {
             match source {
                 "and" => Token {
                     source,
-                    token_type: TokenType::And,
+                    token_type: tt!("and"),
                 },
                 "class" => Token {
                     source,
-                    token_type: TokenType::Class,
+                    token_type: tt!("class"),
                 },
                 "else" => Token {
                     source,
-                    token_type: TokenType::Else,
+                    token_type: tt!("else"),
                 },
                 "false" => Token {
                     source,
-                    token_type: TokenType::False,
+                    token_type: tt!("false"),
                 },
                 "fun" => Token {
                     source,
-                    token_type: TokenType::Fun,
+                    token_type: tt!("fun"),
                 },
                 "for" => Token {
                     source,
-                    token_type: TokenType::For,
+                    token_type: tt!("for"),
                 },
                 "if" => Token {
                     source,
-                    token_type: TokenType::If,
+                    token_type: tt!("if"),
                 },
                 "nil" => Token {
                     source,
-                    token_type: TokenType::Nil,
+                    token_type: tt!("nil"),
                 },
                 "or" => Token {
                     source,
-                    token_type: TokenType::Or,
+                    token_type: tt!("or"),
                 },
                 "print" => Token {
                     source,
-                    token_type: TokenType::Print,
+                    token_type: tt!("print"),
                 },
                 "return" => Token {
                     source,
-                    token_type: TokenType::Return,
+                    token_type: tt!("return"),
                 },
                 "super" => Token {
                     source,
-                    token_type: TokenType::Super,
+                    token_type: tt!("super"),
                 },
                 "this" => Token {
                     source,
-                    token_type: TokenType::This,
+                    token_type: tt!("this"),
                 },
                 "true" => Token {
                     source,
-                    token_type: TokenType::True,
+                    token_type: tt!("true"),
                 },
                 "var" => Token {
                     source,
-                    token_type: TokenType::Var,
+                    token_type: tt!("var"),
                 },
                 "while" => Token {
                     source,
-                    token_type: TokenType::While,
+                    token_type: tt!("while"),
                 },
                 _ => Token {
                     source,
-                    token_type: TokenType::Identifier,
+                    token_type: tt!("identifier"),
                 },
             }
         } else {
@@ -148,55 +152,55 @@ impl<'a> Scanner<'a> {
                 match ch {
                     '(' => Token {
                         source: "(",
-                        token_type: TokenType::LeftParen,
+                        token_type: tt!("("),
                     },
                     ')' => Token {
                         source: ")",
-                        token_type: TokenType::RightParen,
+                        token_type: tt!(")"),
                     },
                     '{' => Token {
                         source: "{",
-                        token_type: TokenType::LeftBrace,
+                        token_type: tt!("{"),
                     },
                     '}' => Token {
                         source: "}",
-                        token_type: TokenType::RightBrace,
+                        token_type: tt!("}"),
                     },
                     ',' => Token {
                         source: ",",
-                        token_type: TokenType::Comma,
+                        token_type: tt!(","),
                     },
                     '.' => Token {
                         source: ".",
-                        token_type: TokenType::Dot,
+                        token_type: tt!("."),
                     },
                     '-' => Token {
                         source: "-",
-                        token_type: TokenType::Minus,
+                        token_type: tt!("-"),
                     },
                     '+' => Token {
                         source: "+",
-                        token_type: TokenType::Plus,
+                        token_type: tt!("+"),
                     },
                     ';' => Token {
                         source: ";",
-                        token_type: TokenType::Semicolon,
+                        token_type: tt!(";"),
                     },
                     '*' => Token {
                         source: "*",
-                        token_type: TokenType::Star,
+                        token_type: tt!("*"),
                     },
                     '!' => {
                         if self.stream.peek() == Some('=') {
                             self.stream.advance();
                             Token {
                                 source: "!=",
-                                token_type: TokenType::BangEqual,
+                                token_type: tt!("!="),
                             }
                         } else {
                             Token {
                                 source: "!",
-                                token_type: TokenType::Bang,
+                                token_type: tt!("!"),
                             }
                         }
                     }
@@ -205,12 +209,12 @@ impl<'a> Scanner<'a> {
                             self.stream.advance();
                             Token {
                                 source: "==",
-                                token_type: TokenType::EqualEqual,
+                                token_type: tt!("=="),
                             }
                         } else {
                             Token {
                                 source: "=",
-                                token_type: TokenType::Equal,
+                                token_type: tt!("="),
                             }
                         }
                     }
@@ -219,12 +223,12 @@ impl<'a> Scanner<'a> {
                             self.stream.advance();
                             Token {
                                 source: ">=",
-                                token_type: TokenType::GreaterEqual,
+                                token_type: tt!(">="),
                             }
                         } else {
                             Token {
                                 source: ">",
-                                token_type: TokenType::Greater,
+                                token_type: tt!(">"),
                             }
                         }
                     }
@@ -233,18 +237,18 @@ impl<'a> Scanner<'a> {
                             self.stream.advance();
                             Token {
                                 source: "<=",
-                                token_type: TokenType::LessEqual,
+                                token_type: tt!("<="),
                             }
                         } else {
                             Token {
                                 source: "<",
-                                token_type: TokenType::Less,
+                                token_type: tt!("<"),
                             }
                         }
                     }
                     '/' => Token {
                         source: "/",
-                        token_type: TokenType::Slash,
+                        token_type: tt!("/"),
                     },
                     _ => {
                         return Err(LexError::UnexpectedChar(ch));
@@ -259,13 +263,14 @@ impl<'a> Scanner<'a> {
     }
 }
 
-impl ErrorReporter<LexError> for Scanner<'_> {
+impl ErrorReporter<LexError> for Lexer<'_> {
     fn line(&self) -> usize {
         self.stream.line
     }
 }
 
 /// The stream that is responsible for character handling.
+#[derive(Clone)]
 struct CharStream<'a> {
     source: &'a str,
     /// The index of next character to be read.
