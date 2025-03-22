@@ -1,7 +1,7 @@
 //! Parses the AST from tokens.
 mod unit;
 
-use self::unit::{Binary, BinaryOp, Expr, Grouping, Unary, UnaryOp};
+pub use self::unit::{Binary, BinaryOp, Expr, Grouping, Unary, UnaryOp};
 use crate::{
     error::{ASTError, ErrorReporter, LoxError, WithLine},
     lex::{Token, TokenType, lexer::Lexer, tt},
@@ -9,38 +9,50 @@ use crate::{
 };
 
 pub fn generate_expr_ast(source: &str) -> WithLine<Result<Expr, LoxError>> {
-    let lexer = Lexer::new(source);
-    let mut generator = ExprASTParser::new(lexer);
+    let mut lexer = Lexer::new(source);
+    let mut generator = ExprASTParser::new(&mut lexer);
     generator.parse_expr_with_line()
 }
 
-struct ExprASTParser<'a> {
-    lexer: Lexer<'a>,
+pub(crate) struct ExprASTParser<'a, 'b> {
+    lexer: &'b mut Lexer<'a>,
 }
 
-impl<'a> ExprASTParser<'a> {
-    pub fn next(&mut self) -> Result<Token<'a>, LoxError> {
+impl<'a, 'b> ExprASTParser<'a, 'b> {
+    pub(crate) fn new(lexer: &'b mut Lexer<'a>) -> Self {
+        Self { lexer }
+    }
+}
+
+impl<'a> ExprASTParser<'a, '_> {
+    fn next(&mut self) -> Result<Token<'a>, LoxError> {
         let token = self.lexer.scan_token()?;
         Ok(token)
     }
 
-    pub fn peek(&self) -> Result<Token<'a>, LoxError> {
+    fn peek(&self) -> Result<Token<'a>, LoxError> {
         let token = self.lexer.clone().scan_token()?;
         Ok(token)
     }
+
+    /// Consumes the next token and checks if it is the expected token.
+    fn expect_next_token_to_be(&mut self, expected: TokenType) -> Result<Token, LoxError> {
+        let next_token = self.lexer.scan_token()?;
+        if next_token.token_type == expected {
+            Ok(next_token)
+        } else {
+            todo!("Error handling.")
+        }
+    }
 }
 
-impl<'a> ExprASTParser<'a> {
-    pub fn new(lexer: Lexer<'a>) -> Self {
-        Self { lexer }
-    }
-
-    pub fn parse_expr_with_line(&mut self) -> WithLine<Result<Expr, LoxError>> {
+impl<'a> ExprASTParser<'a, '_> {
+    pub(crate) fn parse_expr_with_line(&mut self) -> WithLine<Result<Expr, LoxError>> {
         let result = self.parse_expr();
         self.wrap(result)
     }
 
-    pub fn parse_expr(&mut self) -> Result<Expr, LoxError> {
+    pub(crate) fn parse_expr(&mut self) -> Result<Expr, LoxError> {
         let mut lhs = self.parse_expr_unit()?;
 
         loop {
@@ -128,19 +140,9 @@ impl<'a> ExprASTParser<'a> {
             _ => todo!("Error handling."),
         }
     }
-
-    /// Consumes the next token and checks if it is the expected token.
-    fn expect_next_token_to_be(&mut self, expected: TokenType) -> Result<Token, LoxError> {
-        let next_token = self.lexer.scan_token()?;
-        if next_token.token_type == expected {
-            Ok(next_token)
-        } else {
-            todo!("Error handling.")
-        }
-    }
 }
 
-impl ErrorReporter<ASTError> for ExprASTParser<'_> {
+impl ErrorReporter<ASTError> for ExprASTParser<'_, '_> {
     fn line(&self) -> usize {
         self.lexer.line()
     }
