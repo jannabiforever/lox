@@ -40,7 +40,7 @@ fn main() -> ExitCode {
         }
         Command::Parse { file_path } => {
             let file_contents = file_contents(file_path);
-            let ast_result = lox::expr_ast::generate_expr_ast(&file_contents).into();
+            let ast_result = lox::expr_ast::parse_expr_ast(&file_contents).into();
 
             match ast_result {
                 Ok(ast) => println!("{}", ast),

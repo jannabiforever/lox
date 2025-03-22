@@ -5,13 +5,13 @@ pub use self::unit::{Binary, BinaryOp, Expr, Grouping, Unary, UnaryOp};
 use crate::{
     error::{ASTError, ErrorReporter, LoxError, WithLine},
     lex::{Token, TokenType, lexer::Lexer, tt},
-    value::Literal,
+    literal::Literal,
 };
 
-pub fn generate_expr_ast(source: &str) -> WithLine<Result<Expr, LoxError>> {
+pub fn parse_expr_ast(source: &str) -> WithLine<Result<Expr, LoxError>> {
     let mut lexer = Lexer::new(source);
-    let mut generator = ExprASTParser::new(&mut lexer);
-    generator.parse_expr_with_line()
+    let mut parser = ExprASTParser::new(&mut lexer);
+    parser.parse_expr_with_line()
 }
 
 pub(crate) struct ExprASTParser<'a, 'b> {
@@ -72,7 +72,9 @@ impl<'a> ExprASTParser<'a, '_> {
                 | tt!(">")
                 | tt!(">=")
                 | tt!("<")
-                | tt!("<=") => {
+                | tt!("<=")
+                | tt!("and")
+                | tt!("or") => {
                     self.parse_binary(&mut lhs)?;
                 }
                 _ => {

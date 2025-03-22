@@ -64,9 +64,9 @@ impl<'a> StmtASTParser<'a> {
         Self { lexer }
     }
 
-    fn parse_stmt(&mut self) -> Result<Stmt<'a>, LoxError> {
+    fn parse_stmt(&mut self) -> Result<Stmt, LoxError> {
         let peeked_token = self.peek()?;
-        let stmt: Stmt<'a> = match &peeked_token.token_type {
+        let stmt = match &peeked_token.token_type {
             tt!("print") => self.parse_print_stmt()?.into(),
             tt!("var") => self.parse_var_decl_stmt()?.into(),
             tt!("{") => self.parse_block_stmt()?.into(),
@@ -93,7 +93,7 @@ impl<'a> StmtASTParser<'a> {
         Ok(expr.into())
     }
 
-    fn parse_var_decl_stmt(&mut self) -> Result<VarDeclStmt<'a>, LoxError> {
+    fn parse_var_decl_stmt(&mut self) -> Result<VarDeclStmt, LoxError> {
         self.expect(tt!("var"))?;
         let name = self.expect(tt!("identifier"))?;
 
@@ -105,10 +105,10 @@ impl<'a> StmtASTParser<'a> {
 
         self.expect(tt!(";"))?;
 
-        Ok((name.source, initializer).into())
+        Ok((name.source.to_string(), initializer).into())
     }
 
-    fn parse_block_stmt(&mut self) -> Result<BlockStmt<'a>, LoxError> {
+    fn parse_block_stmt(&mut self) -> Result<BlockStmt, LoxError> {
         self.expect(tt!("{"))?;
         let mut stmts = Vec::new();
         while !self.eat(tt!("}")) {
@@ -117,7 +117,7 @@ impl<'a> StmtASTParser<'a> {
         Ok(stmts.into())
     }
 
-    fn parse_if_stmt(&mut self) -> Result<IfStmt<'a>, LoxError> {
+    fn parse_if_stmt(&mut self) -> Result<IfStmt, LoxError> {
         self.expect(tt!("if"))?;
         self.expect(tt!("("))?;
         let condition = self.parse_expr()?;
@@ -133,7 +133,7 @@ impl<'a> StmtASTParser<'a> {
         Ok((condition, *then_branch, else_branch).into())
     }
 
-    fn parse_while_stmt(&mut self) -> Result<WhileStmt<'a>, LoxError> {
+    fn parse_while_stmt(&mut self) -> Result<WhileStmt, LoxError> {
         self.expect(tt!("while"))?;
         self.expect(tt!("("))?;
         let condition = self.parse_expr()?;
@@ -144,7 +144,7 @@ impl<'a> StmtASTParser<'a> {
         Ok((condition, body).into())
     }
 
-    fn parse_func_decl_stmt(&mut self) -> Result<FuncDeclStmt<'a>, LoxError> {
+    fn parse_func_decl_stmt(&mut self) -> Result<FuncDeclStmt, LoxError> {
         self.expect(tt!("fun"))?;
         let name = self.expect(tt!("identifier"))?;
         self.expect(tt!("("))?;
@@ -153,7 +153,7 @@ impl<'a> StmtASTParser<'a> {
         if !self.eat(tt!(")")) {
             loop {
                 let param = self.expect(tt!("identifier"))?;
-                params.push(param.source);
+                params.push(param.source.to_string());
                 if !self.eat(tt!(",")) {
                     break;
                 }
@@ -163,7 +163,7 @@ impl<'a> StmtASTParser<'a> {
 
         let body = self.parse_block_stmt()?.stmts;
 
-        Ok((name.source, params, body).into())
+        Ok((name.source.to_string(), params, body).into())
     }
 
     fn parse_return_stmt(&mut self) -> Result<ReturnStmt, LoxError> {

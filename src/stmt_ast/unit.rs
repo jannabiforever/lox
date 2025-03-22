@@ -1,59 +1,59 @@
 use crate::expr_ast::Expr;
 
-pub enum Stmt<'a> {
+pub enum Stmt {
     PrintStmt(PrintStmt),
     ExprStmt(ExprStmt),
-    VarDeclStmt(VarDeclStmt<'a>),
-    BlockStmt(BlockStmt<'a>),
-    IfStmt(IfStmt<'a>),
-    WhileStmt(WhileStmt<'a>),
-    FuncDeclStmt(FuncDeclStmt<'a>),
+    VarDeclStmt(VarDeclStmt),
+    BlockStmt(BlockStmt),
+    IfStmt(IfStmt),
+    WhileStmt(WhileStmt),
+    FuncDeclStmt(FuncDeclStmt),
     ReturnStmt(ReturnStmt),
 }
 
-impl From<PrintStmt> for Stmt<'_> {
+impl From<PrintStmt> for Stmt {
     fn from(value: PrintStmt) -> Self {
         Self::PrintStmt(value)
     }
 }
 
-impl From<ExprStmt> for Stmt<'_> {
+impl From<ExprStmt> for Stmt {
     fn from(value: ExprStmt) -> Self {
         Self::ExprStmt(value)
     }
 }
 
-impl<'a> From<VarDeclStmt<'a>> for Stmt<'a> {
-    fn from(value: VarDeclStmt<'a>) -> Self {
+impl From<VarDeclStmt> for Stmt {
+    fn from(value: VarDeclStmt) -> Self {
         Self::VarDeclStmt(value)
     }
 }
 
-impl<'a> From<BlockStmt<'a>> for Stmt<'a> {
-    fn from(value: BlockStmt<'a>) -> Self {
+impl From<BlockStmt> for Stmt {
+    fn from(value: BlockStmt) -> Self {
         Self::BlockStmt(value)
     }
 }
 
-impl<'a> From<IfStmt<'a>> for Stmt<'a> {
-    fn from(value: IfStmt<'a>) -> Self {
+impl From<IfStmt> for Stmt {
+    fn from(value: IfStmt) -> Self {
         Self::IfStmt(value)
     }
 }
 
-impl<'a> From<WhileStmt<'a>> for Stmt<'a> {
-    fn from(value: WhileStmt<'a>) -> Self {
+impl From<WhileStmt> for Stmt {
+    fn from(value: WhileStmt) -> Self {
         Self::WhileStmt(value)
     }
 }
 
-impl<'a> From<FuncDeclStmt<'a>> for Stmt<'a> {
-    fn from(value: FuncDeclStmt<'a>) -> Self {
+impl From<FuncDeclStmt> for Stmt {
+    fn from(value: FuncDeclStmt) -> Self {
         Self::FuncDeclStmt(value)
     }
 }
 
-impl From<ReturnStmt> for Stmt<'_> {
+impl From<ReturnStmt> for Stmt {
     fn from(value: ReturnStmt) -> Self {
         Self::ReturnStmt(value)
     }
@@ -79,13 +79,13 @@ impl From<Expr> for ExprStmt {
     }
 }
 
-pub struct VarDeclStmt<'a> {
-    pub name: &'a str,
+pub struct VarDeclStmt {
+    pub name: String,
     pub initializer: Option<Expr>,
 }
 
-impl<'a> From<(&'a str, Option<Expr>)> for VarDeclStmt<'a> {
-    fn from(value: (&'a str, Option<Expr>)) -> Self {
+impl From<(String, Option<Expr>)> for VarDeclStmt {
+    fn from(value: (String, Option<Expr>)) -> Self {
         Self {
             name: value.0,
             initializer: value.1,
@@ -93,24 +93,24 @@ impl<'a> From<(&'a str, Option<Expr>)> for VarDeclStmt<'a> {
     }
 }
 
-pub struct BlockStmt<'a> {
-    pub stmts: Vec<Stmt<'a>>,
+pub struct BlockStmt {
+    pub stmts: Vec<Stmt>,
 }
 
-impl<'a> From<Vec<Stmt<'a>>> for BlockStmt<'a> {
-    fn from(value: Vec<Stmt<'a>>) -> Self {
+impl From<Vec<Stmt>> for BlockStmt {
+    fn from(value: Vec<Stmt>) -> Self {
         Self { stmts: value }
     }
 }
 
-pub struct IfStmt<'a> {
+pub struct IfStmt {
     pub condition: Expr,
-    pub then_branch: Box<Stmt<'a>>,
-    pub else_branch: Option<Box<Stmt<'a>>>,
+    pub then_branch: Box<Stmt>,
+    pub else_branch: Option<Box<Stmt>>,
 }
 
-impl<'a> From<(Expr, Stmt<'a>, Option<Stmt<'a>>)> for IfStmt<'a> {
-    fn from(value: (Expr, Stmt<'a>, Option<Stmt<'a>>)) -> Self {
+impl From<(Expr, Stmt, Option<Stmt>)> for IfStmt {
+    fn from(value: (Expr, Stmt, Option<Stmt>)) -> Self {
         Self {
             condition: value.0,
             then_branch: Box::new(value.1),
@@ -119,13 +119,13 @@ impl<'a> From<(Expr, Stmt<'a>, Option<Stmt<'a>>)> for IfStmt<'a> {
     }
 }
 
-pub struct WhileStmt<'a> {
+pub struct WhileStmt {
     pub condition: Expr,
-    pub body: Box<Stmt<'a>>,
+    pub body: Box<Stmt>,
 }
 
-impl<'a> From<(Expr, Stmt<'a>)> for WhileStmt<'a> {
-    fn from(value: (Expr, Stmt<'a>)) -> Self {
+impl From<(Expr, Stmt)> for WhileStmt {
+    fn from(value: (Expr, Stmt)) -> Self {
         Self {
             condition: value.0,
             body: Box::new(value.1),
@@ -133,14 +133,14 @@ impl<'a> From<(Expr, Stmt<'a>)> for WhileStmt<'a> {
     }
 }
 
-pub struct FuncDeclStmt<'a> {
-    pub name: &'a str,
-    pub params: Vec<&'a str>,
-    pub body: Vec<Stmt<'a>>,
+pub struct FuncDeclStmt {
+    pub name: String,
+    pub params: Vec<String>,
+    pub body: Vec<Stmt>,
 }
 
-impl<'a> From<(&'a str, Vec<&'a str>, Vec<Stmt<'a>>)> for FuncDeclStmt<'a> {
-    fn from(value: (&'a str, Vec<&'a str>, Vec<Stmt<'a>>)) -> Self {
+impl From<(String, Vec<String>, Vec<Stmt>)> for FuncDeclStmt {
+    fn from(value: (String, Vec<String>, Vec<Stmt>)) -> Self {
         Self {
             name: value.0,
             params: value.1,

@@ -2,7 +2,7 @@ use std::fmt;
 
 use crate::{
     lex::{Token, tt},
-    value::Literal,
+    literal::Literal,
 };
 
 #[non_exhaustive]
@@ -101,6 +101,8 @@ pub enum BinaryOp {
     GreaterEqual,
     Less,
     LessEqual,
+    And,
+    Or,
 }
 
 impl BinaryOp {
@@ -116,20 +118,24 @@ impl BinaryOp {
             tt!(">=") => Some(Self::GreaterEqual),
             tt!("<") => Some(Self::Less),
             tt!("<=") => Some(Self::LessEqual),
+            tt!("and") => Some(Self::And),
+            tt!("or") => Some(Self::Or),
             _ => None,
         }
     }
 
     pub fn priority(&self) -> u8 {
         match self {
-            Self::Plus | Self::Minus => 1,
-            Self::Star | Self::Slash => 2,
+            Self::Plus | Self::Minus => 3,
+            Self::Star | Self::Slash => 4,
             Self::EqualEqual
             | Self::BangEqual
             | Self::Greater
             | Self::GreaterEqual
             | Self::Less
-            | Self::LessEqual => 3,
+            | Self::LessEqual => 2,
+            Self::And => 1,
+            Self::Or => 0,
         }
     }
 }
@@ -147,6 +153,8 @@ impl fmt::Display for BinaryOp {
             Self::GreaterEqual => ">=",
             Self::Less => "<",
             Self::LessEqual => "<=",
+            Self::And => "and",
+            Self::Or => "or",
         };
         write!(f, "{}", s)
     }
@@ -175,20 +183,10 @@ impl fmt::Display for Unary {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum UnaryOp {
     Bang,
     Minus,
-}
-
-impl fmt::Display for UnaryOp {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let s = match self {
-            Self::Bang => "!",
-            Self::Minus => "-",
-        };
-        write!(f, "{}", s)
-    }
 }
 
 impl UnaryOp {
@@ -198,5 +196,15 @@ impl UnaryOp {
             tt!("-") => Some(Self::Minus),
             _ => None,
         }
+    }
+}
+
+impl fmt::Display for UnaryOp {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            Self::Bang => "!",
+            Self::Minus => "-",
+        };
+        write!(f, "{}", s)
     }
 }

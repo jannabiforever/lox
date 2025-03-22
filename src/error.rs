@@ -75,7 +75,13 @@ impl ASTError {
 }
 
 #[derive(Debug, thiserror::Error)]
-pub enum RuntimeError {}
+pub enum RuntimeError {
+    #[error("Error: Operand must be {0}")]
+    UnaryOperandType(&'static str),
+
+    #[error("Error: Operands must be {0}.")]
+    BinaryOperandType(&'static str),
+}
 
 impl RuntimeError {
     #[allow(dead_code)]
@@ -85,11 +91,15 @@ impl RuntimeError {
 }
 
 pub struct WithLine<T> {
-    line: usize,
+    pub line: usize,
     inner: T,
 }
 
 impl<T> WithLine<T> {
+    pub fn new(line: usize, inner: T) -> Self {
+        Self { line, inner }
+    }
+
     pub fn into_inner(self) -> T {
         self.inner
     }

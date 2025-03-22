@@ -7,7 +7,7 @@ mod regex;
 pub(crate) use self::mac::tt;
 pub use lexer::scan;
 
-use crate::value::Number;
+use crate::literal::Number;
 use std::fmt;
 
 pub struct Token<'a> {
