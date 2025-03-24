@@ -70,7 +70,7 @@ pub enum ASTError {
     ExpectedBinaryOperator,
 
     #[error("Error at end: Expect '{0}'.")]
-    ExpectClosingDelimiter(char),
+    ExpectedClosingDelimiter(char),
 
     /// Inner value is the expected token.
     #[error("Error: Expect '{0}'.")]

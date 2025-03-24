@@ -38,8 +38,8 @@ impl<'a> StmtASTParser<'a> {
             Ok(next_token)
         } else {
             Err(match &expected {
-                tt!(")") => ExpectClosingDelimiter(')'),
-                tt!("}") => ExpectClosingDelimiter('}'),
+                tt!(")") => ExpectedClosingDelimiter(')'),
+                tt!("}") => ExpectedClosingDelimiter('}'),
                 _ => ExpectedToken(format!("{:?}", expected)),
             }
             .into())
@@ -128,6 +128,9 @@ impl<'a> StmtASTParser<'a> {
         self.expect(tt!("{"))?;
         let mut stmts = Vec::new();
         while !self.eat(tt!("}")) {
+            if let Ok(tt!("")) = self.peek().map(|t| t.token_type) {
+                return Err(ExpectedClosingDelimiter('}').into());
+            }
             stmts.push(self.parse_stmt()?);
         }
         Ok(stmts.into())

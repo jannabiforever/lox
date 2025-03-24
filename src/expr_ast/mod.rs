@@ -48,8 +48,8 @@ impl<'a> ExprASTParser<'a, '_> {
             Ok(next_token)
         } else {
             Err(match &expected {
-                tt!(")") => ExpectClosingDelimiter(')'),
-                tt!("}") => ExpectClosingDelimiter('}'),
+                tt!(")") => ExpectedClosingDelimiter(')'),
+                tt!("}") => ExpectedClosingDelimiter('}'),
                 _ => ExpectedToken(format!("{:?}", expected)),
             }
             .into())
@@ -159,10 +159,7 @@ impl ExprASTParser<'_, '_> {
 
                 Ok(unary_expr.into())
             }
-            _ => {
-                println!("Unexpected token: {}", cur_token);
-                Err(ExpectedExpression.into())
-            }
+            _ => Err(ExpectedExpression.into()),
         }
     }
 
