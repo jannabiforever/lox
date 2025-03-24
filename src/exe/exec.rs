@@ -26,28 +26,28 @@ pub fn execute_stmt_ast(source: &str) -> Result<(), WithLine<LoxError>> {
 
 fn exec_stmt(stmt: &Stmt, env: Rc<RefCell<Env>>) -> Result<(), RuntimeError> {
     match stmt {
-        Stmt::PrintStmt(stmt) => {
+        Stmt::Print(stmt) => {
             let value = eval_expr(&stmt.expr, env)?;
             println!("{}", value);
         }
-        Stmt::ExprStmt(stmt) => {
+        Stmt::Expr(stmt) => {
             eval_expr(&stmt.expr, env)?;
         }
-        Stmt::WhileStmt(stmt) => {
+        Stmt::While(stmt) => {
             while eval_expr(&stmt.condition, env.clone())?.is_truthy() {
                 exec_stmt(&stmt.body, env.clone())?;
             }
         }
-        Stmt::IfStmt(stmt) => {
+        Stmt::If(stmt) => {
             if eval_expr(&stmt.condition, env.clone())?.is_truthy() {
                 exec_stmt(&stmt.then_branch, env.clone())?;
             } else if let Some(else_branch) = &stmt.else_branch {
                 exec_stmt(else_branch, env.clone())?;
             }
         }
-        Stmt::ForStmt(stmt) => {
+        Stmt::For(stmt) => {
             if let Some(initializer) = &stmt.initializer {
-                exec_stmt(&initializer, env.clone())?;
+                exec_stmt(initializer, env.clone())?;
             }
 
             while stmt
@@ -65,21 +65,21 @@ fn exec_stmt(stmt: &Stmt, env: Rc<RefCell<Env>>) -> Result<(), RuntimeError> {
                 }
             }
         }
-        Stmt::FuncDeclStmt(stmt) => {
+        Stmt::FuncDecl(stmt) => {
             env.borrow_mut()
                 .local_callable_insert(&stmt.name, stmt.clone().into());
         }
-        Stmt::ReturnStmt(_) => {
+        Stmt::Return(_) => {
             // Every return statement should be inside a function definition.
             return Err(RuntimeError::ReturnFromTopLevel);
         }
-        Stmt::BlockStmt(stmt) => {
+        Stmt::Block(stmt) => {
             let new_env = rc_rc!(Env::new_with_parent(env));
             for stmt in &stmt.stmts {
                 exec_stmt(stmt, new_env.clone())?;
             }
         }
-        Stmt::VarDeclStmt(stmt) => {
+        Stmt::VarDecl(stmt) => {
             let value = if let Some(initializer) = &stmt.initializer {
                 // e.g. var x = 1;
                 eval_expr(initializer, env.clone())?

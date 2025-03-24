@@ -40,7 +40,7 @@ pub(super) fn eval_expr(expr: &Expr, env: Rc<RefCell<Env>>) -> Result<Literal, R
             let func = unary_function(*op);
             let right = eval_expr(right, env)?;
 
-            func(right).map_err(|e| e.into())
+            func(right)
         }
         Expr::Variable(v) => env
             .borrow()

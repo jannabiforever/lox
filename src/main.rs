@@ -52,7 +52,7 @@ fn main() -> ExitCode {
         }
         Command::Evaluate { file_path } => {
             let file_contents = file_contents(file_path);
-            let value = lox::exe::evaluate_single_expr_ast(&file_contents).into();
+            let value = lox::exe::evaluate_single_expr_ast(&file_contents);
 
             match value {
                 Ok(value) => println!("{}", value),

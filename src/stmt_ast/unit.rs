@@ -2,70 +2,70 @@ use crate::expr_ast::Expr;
 
 #[derive(Debug, Clone)]
 pub enum Stmt {
-    BlockStmt(BlockStmt),
-    ExprStmt(ExprStmt),
-    ForStmt(ForStmt),
-    FuncDeclStmt(FuncDeclStmt),
-    IfStmt(IfStmt),
-    PrintStmt(PrintStmt),
+    Block(BlockStmt),
+    Expr(ExprStmt),
+    For(ForStmt),
+    FuncDecl(FuncDeclStmt),
+    If(IfStmt),
+    Print(PrintStmt),
     #[allow(dead_code)]
-    ReturnStmt(ReturnStmt),
-    VarDeclStmt(VarDeclStmt),
-    WhileStmt(WhileStmt),
+    Return(ReturnStmt),
+    VarDecl(VarDeclStmt),
+    While(WhileStmt),
 }
 
 // From implementations for Stmt
 impl From<BlockStmt> for Stmt {
     fn from(value: BlockStmt) -> Self {
-        Self::BlockStmt(value)
+        Self::Block(value)
     }
 }
 
 impl From<ExprStmt> for Stmt {
     fn from(value: ExprStmt) -> Self {
-        Self::ExprStmt(value)
+        Self::Expr(value)
     }
 }
 
 impl From<ForStmt> for Stmt {
     fn from(value: ForStmt) -> Self {
-        Self::ForStmt(value)
+        Self::For(value)
     }
 }
 
 impl From<FuncDeclStmt> for Stmt {
     fn from(value: FuncDeclStmt) -> Self {
-        Self::FuncDeclStmt(value)
+        Self::FuncDecl(value)
     }
 }
 
 impl From<IfStmt> for Stmt {
     fn from(value: IfStmt) -> Self {
-        Self::IfStmt(value)
+        Self::If(value)
     }
 }
 
 impl From<PrintStmt> for Stmt {
     fn from(value: PrintStmt) -> Self {
-        Self::PrintStmt(value)
+        Self::Print(value)
     }
 }
 
 impl From<VarDeclStmt> for Stmt {
     fn from(value: VarDeclStmt) -> Self {
-        Self::VarDeclStmt(value)
+        Self::VarDecl(value)
     }
 }
 
 impl From<WhileStmt> for Stmt {
     fn from(value: WhileStmt) -> Self {
-        Self::WhileStmt(value)
+        Self::While(value)
     }
 }
 
 impl From<ReturnStmt> for Stmt {
     fn from(value: ReturnStmt) -> Self {
-        Self::ReturnStmt(value)
+        Self::Return(value)
     }
 }
 
@@ -134,7 +134,7 @@ impl From<(Expr, Stmt, Option<Stmt>)> for IfStmt {
         Self {
             condition: value.0,
             then_branch: Box::new(value.1),
-            else_branch: value.2.map(|s| Box::new(s)),
+            else_branch: value.2.map(Box::new),
         }
     }
 }
@@ -199,7 +199,7 @@ pub struct ForStmt {
 impl From<(Option<Stmt>, Option<Expr>, Option<Expr>, Stmt)> for ForStmt {
     fn from(value: (Option<Stmt>, Option<Expr>, Option<Expr>, Stmt)) -> Self {
         Self {
-            initializer: value.0.map(|s| Box::new(s)),
+            initializer: value.0.map(Box::new),
             condition: value.1,
             increment: value.2,
             body: Box::new(value.3),

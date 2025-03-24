@@ -16,11 +16,7 @@ type TokenResultWithLine<'a> = WithLine<Result<Token<'a>, LoxError>>;
 
 pub fn scan(source: &str) -> Vec<WithLine<Result<Token, LoxError>>> {
     let mut lexer = Lexer::new(source);
-    lexer
-        .scan_tokens()
-        .into_iter()
-        .map(|token_rwl| token_rwl)
-        .collect()
+    lexer.scan_tokens().into_iter().collect()
 }
 
 #[derive(Clone)]

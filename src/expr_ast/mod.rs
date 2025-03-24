@@ -49,7 +49,7 @@ impl<'a> ExprASTParser<'a, '_> {
     }
 }
 
-impl<'a> ExprASTParser<'a, '_> {
+impl ExprASTParser<'_, '_> {
     pub(crate) fn parse_expr_with_line(&mut self) -> WithLine<Result<Expr, LoxError>> {
         let result = self.parse_expr();
         self.wrap(result)
@@ -99,7 +99,8 @@ impl<'a> ExprASTParser<'a, '_> {
     fn parse_binary(&mut self, lhs: &mut Expr) -> Result<(), LoxError> {
         let new_op = BinaryOp::from_token(&self.next()?).unwrap();
         let rhs = self.parse_expr_unit()?;
-        Ok(if let Expr::Binary(binary) = lhs {
+
+        if let Expr::Binary(binary) = lhs {
             // Compare the precedence of the current operator with the operator in the binary expression.
             binary.bind(new_op, rhs);
         } else {
@@ -109,7 +110,9 @@ impl<'a> ExprASTParser<'a, '_> {
                 right: Box::new(rhs),
             }
             .into();
-        })
+        }
+
+        Ok(())
     }
 
     /// Consumes the first ahead expression unit.
@@ -159,11 +162,13 @@ impl<'a> ExprASTParser<'a, '_> {
         let rhs = self.parse_expr()?;
 
         if let Expr::Variable(variable) = lhs {
-            Ok(*lhs = Assign {
+            *lhs = Assign {
                 variable: variable.name.clone(),
                 value: Box::new(rhs),
             }
-            .into())
+            .into();
+
+            Ok(())
         } else {
             todo!("Error handling.")
         }
