@@ -1,19 +1,22 @@
 use crate::expr_ast::Expr;
 
+#[derive(Debug, Clone)]
 pub enum Stmt {
-    PrintStmt(PrintStmt),
-    ExprStmt(ExprStmt),
-    VarDeclStmt(VarDeclStmt),
     BlockStmt(BlockStmt),
-    IfStmt(IfStmt),
-    WhileStmt(WhileStmt),
+    ExprStmt(ExprStmt),
+    ForStmt(ForStmt),
     FuncDeclStmt(FuncDeclStmt),
+    IfStmt(IfStmt),
+    PrintStmt(PrintStmt),
     ReturnStmt(ReturnStmt),
+    VarDeclStmt(VarDeclStmt),
+    WhileStmt(WhileStmt),
 }
 
-impl From<PrintStmt> for Stmt {
-    fn from(value: PrintStmt) -> Self {
-        Self::PrintStmt(value)
+// From implementations for Stmt
+impl From<BlockStmt> for Stmt {
+    fn from(value: BlockStmt) -> Self {
+        Self::BlockStmt(value)
     }
 }
 
@@ -23,27 +26,9 @@ impl From<ExprStmt> for Stmt {
     }
 }
 
-impl From<VarDeclStmt> for Stmt {
-    fn from(value: VarDeclStmt) -> Self {
-        Self::VarDeclStmt(value)
-    }
-}
-
-impl From<BlockStmt> for Stmt {
-    fn from(value: BlockStmt) -> Self {
-        Self::BlockStmt(value)
-    }
-}
-
-impl From<IfStmt> for Stmt {
-    fn from(value: IfStmt) -> Self {
-        Self::IfStmt(value)
-    }
-}
-
-impl From<WhileStmt> for Stmt {
-    fn from(value: WhileStmt) -> Self {
-        Self::WhileStmt(value)
+impl From<ForStmt> for Stmt {
+    fn from(value: ForStmt) -> Self {
+        Self::ForStmt(value)
     }
 }
 
@@ -53,12 +38,38 @@ impl From<FuncDeclStmt> for Stmt {
     }
 }
 
+impl From<IfStmt> for Stmt {
+    fn from(value: IfStmt) -> Self {
+        Self::IfStmt(value)
+    }
+}
+
+impl From<PrintStmt> for Stmt {
+    fn from(value: PrintStmt) -> Self {
+        Self::PrintStmt(value)
+    }
+}
+
+impl From<VarDeclStmt> for Stmt {
+    fn from(value: VarDeclStmt) -> Self {
+        Self::VarDeclStmt(value)
+    }
+}
+
+impl From<WhileStmt> for Stmt {
+    fn from(value: WhileStmt) -> Self {
+        Self::WhileStmt(value)
+    }
+}
+
 impl From<ReturnStmt> for Stmt {
     fn from(value: ReturnStmt) -> Self {
         Self::ReturnStmt(value)
     }
 }
 
+// PrintStmt and its implementation
+#[derive(Debug, Clone)]
 pub struct PrintStmt {
     pub expr: Expr,
 }
@@ -69,6 +80,8 @@ impl From<Expr> for PrintStmt {
     }
 }
 
+// ExprStmt and its implementation
+#[derive(Debug, Clone)]
 pub struct ExprStmt {
     pub expr: Expr,
 }
@@ -79,6 +92,8 @@ impl From<Expr> for ExprStmt {
     }
 }
 
+// VarDeclStmt and its implementation
+#[derive(Debug, Clone)]
 pub struct VarDeclStmt {
     pub name: String,
     pub initializer: Option<Expr>,
@@ -93,6 +108,8 @@ impl From<(String, Option<Expr>)> for VarDeclStmt {
     }
 }
 
+// BlockStmt and its implementation
+#[derive(Debug, Clone)]
 pub struct BlockStmt {
     pub stmts: Vec<Stmt>,
 }
@@ -103,6 +120,8 @@ impl From<Vec<Stmt>> for BlockStmt {
     }
 }
 
+// IfStmt and its implementation
+#[derive(Debug, Clone)]
 pub struct IfStmt {
     pub condition: Expr,
     pub then_branch: Box<Stmt>,
@@ -119,6 +138,8 @@ impl From<(Expr, Stmt, Option<Stmt>)> for IfStmt {
     }
 }
 
+// WhileStmt and its implementation
+#[derive(Debug, Clone)]
 pub struct WhileStmt {
     pub condition: Expr,
     pub body: Box<Stmt>,
@@ -133,6 +154,8 @@ impl From<(Expr, Stmt)> for WhileStmt {
     }
 }
 
+// FuncDeclStmt and its implementation
+#[derive(Debug, Clone)]
 pub struct FuncDeclStmt {
     pub name: String,
     pub params: Vec<String>,
@@ -149,6 +172,8 @@ impl From<(String, Vec<String>, Vec<Stmt>)> for FuncDeclStmt {
     }
 }
 
+// ReturnStmt and its implementation
+#[derive(Debug, Clone)]
 pub struct ReturnStmt {
     pub value: Option<Expr>,
 }
@@ -156,5 +181,25 @@ pub struct ReturnStmt {
 impl From<Option<Expr>> for ReturnStmt {
     fn from(value: Option<Expr>) -> Self {
         Self { value }
+    }
+}
+
+// ForStmt and its implementation
+#[derive(Debug, Clone)]
+pub struct ForStmt {
+    pub initializer: Option<Box<Stmt>>,
+    pub condition: Option<Expr>,
+    pub increment: Option<Expr>,
+    pub body: Box<Stmt>,
+}
+
+impl From<(Option<Stmt>, Option<Expr>, Option<Expr>, Stmt)> for ForStmt {
+    fn from(value: (Option<Stmt>, Option<Expr>, Option<Expr>, Stmt)) -> Self {
+        Self {
+            initializer: value.0.map(|s| Box::new(s)),
+            condition: value.1,
+            increment: value.2,
+            body: Box::new(value.3),
+        }
     }
 }

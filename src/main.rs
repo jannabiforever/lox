@@ -29,24 +29,24 @@ fn main() -> ExitCode {
             let tokens = lox::lex::scan(&file_contents);
 
             for token in tokens {
-                match token.into() {
+                match token.cast_down() {
                     Ok(token) => println!("{}", token),
                     Err(error) => {
-                        exit_code = error.as_ref().exit_code();
-                        eprintln!("{}", error)
+                        eprintln!("{}", error);
+                        exit_code = error.into_inner().exit_code();
                     }
                 }
             }
         }
         Command::Parse { file_path } => {
             let file_contents = file_contents(file_path);
-            let ast_result = lox::expr_ast::parse_expr_ast(&file_contents).into();
+            let ast_result = lox::expr_ast::parse_expr_ast(&file_contents).cast_down();
 
             match ast_result {
                 Ok(ast) => println!("{}", ast),
                 Err(error) => {
-                    exit_code = error.as_ref().exit_code();
-                    eprintln!("{}", error)
+                    eprintln!("{}", error);
+                    exit_code = error.into_inner().exit_code();
                 }
             }
         }
@@ -57,13 +57,18 @@ fn main() -> ExitCode {
             match value {
                 Ok(value) => println!("{}", value),
                 Err(error) => {
-                    exit_code = error.as_ref().exit_code();
-                    eprintln!("{}", error)
+                    eprintln!("{}", error);
+                    exit_code = error.into_inner().exit_code();
                 }
             }
         }
         Command::Run { file_path } => {
-            todo!("Implement running.")
+            let file_contents = file_contents(file_path);
+            let result = lox::exe::execute_stmt_ast(&file_contents);
+            if let Err(e) = result {
+                eprintln!("{}", e);
+                exit_code = e.into_inner().exit_code();
+            }
         }
     }
 

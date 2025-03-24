@@ -104,23 +104,48 @@ impl<T> WithLine<T> {
         self.inner
     }
 
-    pub fn as_ref(&self) -> &T {
-        &self.inner
+    pub fn as_ref(&self) -> WithLine<&T> {
+        WithLine {
+            line: self.line,
+            inner: &self.inner,
+        }
+    }
+
+    pub fn map<F: FnOnce(T) -> U, U>(self, f: F) -> WithLine<U> {
+        WithLine {
+            line: self.line,
+            inner: f(self.inner),
+        }
+    }
+
+    pub fn split(self) -> (usize, T) {
+        (self.line, self.inner)
     }
 }
 
-impl<T> From<WithLine<T>> for (usize, T) {
-    fn from(value: WithLine<T>) -> Self {
-        (value.line, value.inner)
-    }
-}
-
-impl<T> From<WithLine<Result<T, LoxError>>> for Result<T, WithLine<LoxError>> {
-    fn from(value: WithLine<Result<T, LoxError>>) -> Self {
-        match value {
+impl<T> WithLine<Result<T, LoxError>> {
+    /// Lox tracks the current line number only for error reporting.
+    /// So when it comes to the real usage, it should be casted to Result<T, WithLine<LoxError>>.
+    pub fn cast_down(self) -> Result<T, WithLine<LoxError>> {
+        match self {
             WithLine {
                 inner: Ok(value), ..
             } => Ok(value),
+            WithLine {
+                line,
+                inner: Err(value),
+            } => Err(WithLine { line, inner: value }),
+        }
+    }
+}
+
+impl<T> From<WithLine<Result<T, LoxError>>> for Result<WithLine<T>, WithLine<LoxError>> {
+    fn from(value: WithLine<Result<T, LoxError>>) -> Self {
+        match value {
+            WithLine {
+                line,
+                inner: Ok(value),
+            } => Ok(WithLine { line, inner: value }),
             WithLine {
                 line,
                 inner: Err(value),

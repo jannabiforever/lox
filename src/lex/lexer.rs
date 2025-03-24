@@ -14,9 +14,13 @@ use regex::Regex;
 type TokenResult<'a> = Result<Token<'a>, LexError>;
 type TokenResultWithLine<'a> = WithLine<Result<Token<'a>, LoxError>>;
 
-pub fn scan(source: &str) -> Vec<TokenResultWithLine> {
+pub fn scan(source: &str) -> Vec<WithLine<Result<Token, LoxError>>> {
     let mut lexer = Lexer::new(source);
-    lexer.scan_tokens()
+    lexer
+        .scan_tokens()
+        .into_iter()
+        .map(|token_rwl| token_rwl)
+        .collect()
 }
 
 #[derive(Clone)]

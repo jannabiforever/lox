@@ -1,21 +1,19 @@
 mod unit;
 
-pub use unit::{
+use unit::ForStmt;
+pub(crate) use unit::{
     BlockStmt, ExprStmt, FuncDeclStmt, IfStmt, PrintStmt, ReturnStmt, Stmt, VarDeclStmt, WhileStmt,
 };
 
 use crate::{
-    error::LoxError,
+    error::{ErrorReporter, LoxError, WithLine},
     expr_ast::{Expr, ExprASTParser},
     lex::{Token, TokenType, lexer::Lexer, tt},
 };
 
-pub fn generate_expr_ast(source: &str) -> Result<Expr, LoxError> {
+pub(crate) fn parse_stmt_ast(source: &str) -> Vec<WithLine<Result<Stmt, LoxError>>> {
     let mut parser = StmtASTParser::new(Lexer::new(source));
-    parser.parse_stmt().map(|stmt| match stmt {
-        Stmt::ExprStmt(expr_stmt) => expr_stmt.expr,
-        _ => todo!("Error handling."),
-    })
+    parser.parse_stmts()
 }
 
 struct StmtASTParser<'a> {
@@ -64,6 +62,18 @@ impl<'a> StmtASTParser<'a> {
         Self { lexer }
     }
 
+    fn parse_stmts(&mut self) -> Vec<WithLine<Result<Stmt, LoxError>>> {
+        let mut stmts = Vec::new();
+        while !self.peek().is_ok_and(|t| t.token_type == tt!("")) {
+            let stmt = match self.parse_stmt() {
+                Ok(stmt) => self.get_lox_ok(stmt),
+                Err(err) => self.get_lox_err(err),
+            };
+            stmts.push(stmt);
+        }
+        stmts
+    }
+
     fn parse_stmt(&mut self) -> Result<Stmt, LoxError> {
         let peeked_token = self.peek()?;
         let stmt = match &peeked_token.token_type {
@@ -74,6 +84,7 @@ impl<'a> StmtASTParser<'a> {
             tt!("while") => self.parse_while_stmt()?.into(),
             tt!("fun") => self.parse_func_decl_stmt()?.into(),
             tt!("return") => self.parse_return_stmt()?.into(),
+            tt!("for") => self.parse_for_stmt()?.into(),
             _ => self.parse_expr_stmt()?.into(),
         };
 
@@ -182,5 +193,45 @@ impl<'a> StmtASTParser<'a> {
         self.expect(tt!(";"))?;
 
         Ok(expr.into())
+    }
+
+    fn parse_for_stmt(&mut self) -> Result<ForStmt, LoxError> {
+        self.expect(tt!("for"))?;
+        self.expect(tt!("("))?;
+
+        let initializer: Option<Stmt> = match self.peek()?.token_type {
+            tt!("var") => Some(self.parse_var_decl_stmt()?.into()),
+            tt!(";") => {
+                self.expect(tt!(";"))?;
+                None
+            }
+            _ => Some(self.parse_expr_stmt()?.into()),
+        };
+
+        let condition = if !self.eat(tt!(";")) {
+            let condition = Some(self.parse_expr()?);
+            self.expect(tt!(";"))?;
+            condition
+        } else {
+            None
+        };
+
+        let increment = if !self.eat(tt!(")")) {
+            let increment = Some(self.parse_expr()?);
+            self.expect(tt!(")"))?;
+            increment
+        } else {
+            None
+        };
+
+        let body = self.parse_stmt()?;
+
+        Ok((initializer, condition, increment, body).into())
+    }
+}
+
+impl ErrorReporter<LoxError> for StmtASTParser<'_> {
+    fn line(&self) -> usize {
+        self.lexer.line()
     }
 }
