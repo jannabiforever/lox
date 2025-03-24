@@ -7,7 +7,7 @@ use super::{
 };
 use crate::{
     error::{ErrorReporter, LexError, LoxError, WithLine},
-    lex::{Token, TokenType},
+    lex::Token,
 };
 use regex::Regex;
 
