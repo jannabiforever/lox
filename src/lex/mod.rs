@@ -7,7 +7,7 @@ mod regex;
 pub(crate) use self::mac::tt;
 pub use lexer::scan;
 
-use crate::literal::Number;
+use crate::{expr_ast::owned_token::OwnedToken, literal::Number};
 use std::fmt;
 
 pub struct Token<'a> {
@@ -23,6 +23,13 @@ impl Token<'_> {
         Self {
             source: "",
             token_type: TokenType::Eof,
+        }
+    }
+
+    pub(crate) fn to_owned(&self) -> OwnedToken {
+        OwnedToken {
+            source: self.source.to_string(),
+            token_type: self.token_type,
         }
     }
 }

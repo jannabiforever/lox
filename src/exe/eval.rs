@@ -6,7 +6,7 @@ use super::{
 };
 use crate::{
     error::{LoxError, RuntimeError, WithLine},
-    expr_ast::{Binary, Expr, Grouping, Unary},
+    expr_ast::{Assign, Binary, Expr, Grouping, Unary},
     literal::Literal,
 };
 
@@ -21,6 +21,12 @@ pub fn evaluate_single_expr_ast(source: &str) -> Result<Literal, WithLine<LoxErr
 
 pub(super) fn eval_expr(expr: &Expr, env: Rc<RefCell<Env>>) -> Result<Literal, RuntimeError> {
     match expr {
+        Expr::Assign(Assign { variable, value }) => {
+            let value = eval_expr(value, env.clone())?;
+            env.borrow_mut()
+                .global_literal_insert(&variable.source, value.clone());
+            Ok(value)
+        }
         Expr::Binary(Binary { left, op, right }) => {
             let func = binary_function(*op);
             let left = eval_expr(left, env.clone())?;
@@ -28,6 +34,7 @@ pub(super) fn eval_expr(expr: &Expr, env: Rc<RefCell<Env>>) -> Result<Literal, R
 
             func(left, right)
         }
+        Expr::Grouping(Grouping { inner }) => eval_expr(inner, env),
         Expr::Literal(v) => Ok(v.clone()),
         Expr::Unary(Unary { op, right }) => {
             let func = unary_function(*op);
@@ -35,6 +42,9 @@ pub(super) fn eval_expr(expr: &Expr, env: Rc<RefCell<Env>>) -> Result<Literal, R
 
             func(right).map_err(|e| e.into())
         }
-        Expr::Grouping(Grouping { inner }) => eval_expr(inner, env),
+        Expr::Variable(v) => env
+            .borrow()
+            .get_literal(&v.name.source)
+            .ok_or_else(|| RuntimeError::UndefinedVar(v.name.source.clone())),
     }
 }

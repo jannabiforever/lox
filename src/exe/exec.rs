@@ -7,7 +7,7 @@ use super::{
 use crate::{
     error::{LoxError, RuntimeError, WithLine},
     literal::Literal,
-    stmt_ast::{BlockStmt, ReturnStmt, Stmt, parse_stmt_ast},
+    stmt_ast::{Stmt, parse_stmt_ast},
 };
 
 pub fn execute_stmt_ast(source: &str) -> Result<(), WithLine<LoxError>> {
@@ -69,8 +69,9 @@ fn exec_stmt(stmt: &Stmt, env: Rc<RefCell<Env>>) -> Result<(), RuntimeError> {
             env.borrow_mut()
                 .local_callable_insert(&stmt.name, stmt.clone().into());
         }
-        Stmt::ReturnStmt(stmt) => {
-            todo!("Error handling.");
+        Stmt::ReturnStmt(_) => {
+            // Every return statement should be inside a function definition.
+            return Err(RuntimeError::ReturnFromTopLevel);
         }
         Stmt::BlockStmt(stmt) => {
             let new_env = rc_rc!(Env::new_with_parent(env));
@@ -88,7 +89,6 @@ fn exec_stmt(stmt: &Stmt, env: Rc<RefCell<Env>>) -> Result<(), RuntimeError> {
 
             env.borrow_mut().local_literal_insert(&stmt.name, value);
         }
-        _ => todo!(),
     }
 
     Ok(())

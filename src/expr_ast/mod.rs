@@ -1,7 +1,8 @@
 //! Parses the AST from tokens.
+pub(crate) mod owned_token;
 mod unit;
 
-pub use self::unit::{Binary, BinaryOp, Expr, Grouping, Unary, UnaryOp};
+pub use self::unit::{Assign, Binary, BinaryOp, Expr, Grouping, Unary, UnaryOp};
 use crate::{
     error::{ASTError, ErrorReporter, LoxError, WithLine},
     lex::{Token, TokenType, lexer::Lexer, tt},
@@ -36,7 +37,7 @@ impl<'a> ExprASTParser<'a, '_> {
     }
 
     /// Consumes the next token and checks if it is the expected token.
-    fn expect_next_token_to_be(&mut self, expected: TokenType) -> Result<Token, LoxError> {
+    fn expect(&mut self, expected: TokenType) -> Result<Token, LoxError> {
         let next_token = self.lexer.scan_token()?;
         if next_token.token_type == expected {
             Ok(next_token)
@@ -60,6 +61,11 @@ impl<'a> ExprASTParser<'a, '_> {
             match &peeked_token.token_type {
                 // End of expression, so don't consume the token.
                 tt!("") | tt!(";") | tt!(")") | tt!("}") | tt!(",") => {
+                    break;
+                }
+                // Assignment
+                tt!("=") => {
+                    self.parse_assignment(&mut lhs)?;
                     break;
                 }
                 // Binary operator.
@@ -119,7 +125,7 @@ impl<'a> ExprASTParser<'a, '_> {
             // Grouping expression.
             TokenType::LeftParen => {
                 let inner_expr = self.parse_expr()?;
-                self.expect_next_token_to_be(TokenType::RightParen)?;
+                self.expect(TokenType::RightParen)?;
 
                 let grouping_expr = Grouping {
                     inner: Box::new(inner_expr),
@@ -140,6 +146,21 @@ impl<'a> ExprASTParser<'a, '_> {
                 Ok(unary_expr.into())
             }
             _ => todo!("Error handling."),
+        }
+    }
+
+    fn parse_assignment(&mut self, lhs: &mut Expr) -> Result<(), LoxError> {
+        self.expect(tt!("="))?;
+        let rhs = self.parse_expr()?;
+
+        if let Expr::Variable(variable) = lhs {
+            Ok(*lhs = Assign {
+                variable: variable.name.clone(),
+                value: Box::new(rhs),
+            }
+            .into())
+        } else {
+            todo!("Error handling.")
         }
     }
 }

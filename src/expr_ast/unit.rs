@@ -1,17 +1,25 @@
-use std::fmt;
-
+use super::owned_token::OwnedToken;
 use crate::{
     lex::{Token, tt},
     literal::Literal,
 };
+use std::fmt;
 
 #[non_exhaustive]
 #[derive(Debug, Clone)]
 pub enum Expr {
+    Assign(Assign),
     Binary(Binary),
     Grouping(Grouping),
     Literal(Literal),
     Unary(Unary),
+    Variable(Variable),
+}
+
+impl From<Assign> for Expr {
+    fn from(assign: Assign) -> Self {
+        Self::Assign(assign)
+    }
 }
 
 impl From<Binary> for Expr {
@@ -41,10 +49,12 @@ impl From<Unary> for Expr {
 impl fmt::Display for Expr {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Self::Assign(v) => write!(f, "{}", v),
             Self::Binary(v) => write!(f, "{}", v),
             Self::Grouping(v) => write!(f, "{}", v),
             Self::Literal(v) => write!(f, "{}", v),
             Self::Unary(v) => write!(f, "{}", v),
+            Self::Variable(v) => write!(f, "{}", v),
         }
     }
 }
@@ -86,6 +96,27 @@ impl Binary {
 impl fmt::Display for Binary {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "({} {} {})", self.op, self.left, self.right)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Assign {
+    pub(crate) variable: OwnedToken,
+    pub(crate) value: Box<Expr>,
+}
+
+impl From<(Token<'_>, Expr)> for Assign {
+    fn from((variable, value): (Token<'_>, Expr)) -> Self {
+        Self {
+            variable: variable.to_owned(),
+            value: Box::new(value),
+        }
+    }
+}
+
+impl fmt::Display for Assign {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "(= {} {})", self.variable, self.value)
     }
 }
 
@@ -206,5 +237,24 @@ impl fmt::Display for UnaryOp {
             Self::Minus => "-",
         };
         write!(f, "{}", s)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Variable {
+    pub(crate) name: OwnedToken,
+}
+
+impl From<Token<'_>> for Variable {
+    fn from(token: Token<'_>) -> Self {
+        Self {
+            name: token.to_owned(),
+        }
+    }
+}
+
+impl fmt::Display for Variable {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.name)
     }
 }

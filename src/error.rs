@@ -76,15 +76,23 @@ impl ASTError {
 
 #[derive(Debug, thiserror::Error)]
 pub enum RuntimeError {
+    /// Inner value is the operand type.
     #[error("Error: Operand must be {0}")]
     UnaryOperandType(&'static str),
 
+    /// Inner value is the operand type.
     #[error("Error: Operands must be {0}.")]
     BinaryOperandType(&'static str),
+
+    #[error("Error at 'return': Can't return from top-level code.")]
+    ReturnFromTopLevel,
+
+    /// Inner value is the variable name.
+    #[error("Undefined variable '{0}'.")]
+    UndefinedVar(String),
 }
 
 impl RuntimeError {
-    #[allow(dead_code)]
     pub fn exit_code(&self) -> ExitCode {
         ExitCode::from(70)
     }
