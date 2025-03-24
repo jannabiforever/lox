@@ -42,6 +42,7 @@ impl Env {
         }
     }
 
+    #[allow(dead_code)]
     pub fn get_callable(&self, key: &str) -> Option<Stmt> {
         // find locally first.
         if let Some(val) = self.local_callable_map.borrow().get(key) {
@@ -79,6 +80,7 @@ impl Env {
         }
     }
 
+    #[allow(dead_code)]
     /// This might fail if not declared before.
     /// Returns false if failed.
     pub fn global_callable_insert(&self, key: &str, val: Stmt) -> bool {

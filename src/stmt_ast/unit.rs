@@ -8,6 +8,7 @@ pub enum Stmt {
     FuncDeclStmt(FuncDeclStmt),
     IfStmt(IfStmt),
     PrintStmt(PrintStmt),
+    #[allow(dead_code)]
     ReturnStmt(ReturnStmt),
     VarDeclStmt(VarDeclStmt),
     WhileStmt(WhileStmt),
@@ -154,7 +155,8 @@ impl From<(Expr, Stmt)> for WhileStmt {
     }
 }
 
-// FuncDeclStmt and its implementation
+#[allow(dead_code)]
+/// FuncDeclStmt and its implementation
 #[derive(Debug, Clone)]
 pub struct FuncDeclStmt {
     pub name: String,
@@ -172,6 +174,7 @@ impl From<(String, Vec<String>, Vec<Stmt>)> for FuncDeclStmt {
     }
 }
 
+#[allow(dead_code)]
 // ReturnStmt and its implementation
 #[derive(Debug, Clone)]
 pub struct ReturnStmt {
