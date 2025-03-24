@@ -6,7 +6,10 @@ use unit::Variable;
 
 pub use self::unit::{Assign, Binary, BinaryOp, Expr, Grouping, Unary, UnaryOp};
 use crate::{
-    error::{ASTError, ErrorReporter, LoxError, WithLine},
+    error::{
+        ASTError::{self, *},
+        ErrorReporter, LoxError, WithLine,
+    },
     lex::{Token, TokenType, lexer::Lexer, tt},
     literal::Literal,
 };
@@ -44,7 +47,12 @@ impl<'a> ExprASTParser<'a, '_> {
         if next_token.token_type == expected {
             Ok(next_token)
         } else {
-            todo!("Error handling.")
+            Err(match &expected {
+                tt!(")") => ExpectClosingDelimiter(')'),
+                tt!("}") => ExpectClosingDelimiter('}'),
+                _ => ExpectedToken(format!("{:?}", expected)),
+            }
+            .into())
         }
     }
 }
@@ -85,9 +93,7 @@ impl ExprASTParser<'_, '_> {
                 | tt!("or") => {
                     self.parse_binary(&mut lhs)?;
                 }
-                _ => {
-                    todo!("Error handling.");
-                }
+                _ => return Err(ExpectedBinaryOperator.into()),
             }
         }
 
@@ -130,7 +136,7 @@ impl ExprASTParser<'_, '_> {
             // Grouping expression.
             tt!("(") => {
                 let inner_expr = self.parse_expr()?;
-                self.expect(TokenType::RightParen)?;
+                self.expect(tt!(")"))?;
 
                 let grouping_expr = Grouping {
                     inner: Box::new(inner_expr),
@@ -153,7 +159,10 @@ impl ExprASTParser<'_, '_> {
 
                 Ok(unary_expr.into())
             }
-            _ => todo!("Error handling."),
+            _ => {
+                println!("Unexpected token: {}", cur_token);
+                Err(ExpectedExpression.into())
+            }
         }
     }
 
@@ -170,7 +179,7 @@ impl ExprASTParser<'_, '_> {
 
             Ok(())
         } else {
-            todo!("Error handling.")
+            Err(InvalidAssignmentTarget.into())
         }
     }
 }

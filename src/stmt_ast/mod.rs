@@ -6,7 +6,7 @@ pub(crate) use unit::{
 };
 
 use crate::{
-    error::{ErrorReporter, LoxError, WithLine},
+    error::{ASTError::*, ErrorReporter, LoxError, WithLine},
     expr_ast::{Expr, ExprASTParser},
     lex::{Token, TokenType, lexer::Lexer, tt},
 };
@@ -37,7 +37,12 @@ impl<'a> StmtASTParser<'a> {
         if next_token.token_type == expected {
             Ok(next_token)
         } else {
-            todo!("Error handling.")
+            Err(match &expected {
+                tt!(")") => ExpectClosingDelimiter(')'),
+                tt!("}") => ExpectClosingDelimiter('}'),
+                _ => ExpectedToken(format!("{:?}", expected)),
+            }
+            .into())
         }
     }
 

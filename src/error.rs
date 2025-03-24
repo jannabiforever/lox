@@ -65,7 +65,23 @@ impl LexError {
 }
 
 #[derive(Debug, thiserror::Error)]
-pub enum ASTError {}
+pub enum ASTError {
+    #[error("Error: Expect binary operator.")]
+    ExpectedBinaryOperator,
+
+    #[error("Error at end: Expect '{0}'.")]
+    ExpectClosingDelimiter(char),
+
+    /// Inner value is the expected token.
+    #[error("Error: Expect '{0}'.")]
+    ExpectedToken(String),
+
+    #[error("Error: Expect expression.")]
+    ExpectedExpression,
+
+    #[error("Error: Invalid assignment target.")]
+    InvalidAssignmentTarget,
+}
 
 impl ASTError {
     #[allow(dead_code)]

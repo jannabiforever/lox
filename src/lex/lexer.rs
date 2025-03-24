@@ -37,7 +37,7 @@ impl<'a> Lexer<'a> {
             let token = self.scan_token();
             match token {
                 Ok(token) => {
-                    let is_eof = token.token_type == TokenType::Eof;
+                    let is_eof = token.token_type == tt!("");
                     tokens.push(self.get_lox_ok(token));
 
                     if is_eof {
@@ -63,13 +63,13 @@ impl<'a> Lexer<'a> {
             // Get Number token.
             Token {
                 source,
-                token_type: TokenType::Number,
+                token_type: tt!("number"),
             }
         } else if let Some(source) = self.stream.pop_match(&RAW_STRING_REGEX) {
             // Get String token.
             Token {
                 source,
-                token_type: TokenType::String,
+                token_type: tt!("string"),
             }
         } else if self.stream.pop_match(&UNTERMINATED_STRING_REGEX).is_some() {
             // Unterminated string.
