@@ -2,6 +2,8 @@
 pub(crate) mod owned_token;
 mod unit;
 
+use unit::Variable;
+
 pub use self::unit::{Assign, Binary, BinaryOp, Expr, Grouping, Unary, UnaryOp};
 use crate::{
     error::{ASTError, ErrorReporter, LoxError, WithLine},
@@ -117,13 +119,13 @@ impl<'a> ExprASTParser<'a, '_> {
         let source = cur_token.source;
         match &cur_token.token_type {
             // Literal expression.
-            TokenType::Number => Ok(Literal::number_from_source(source.to_string()).into()),
-            TokenType::String => Ok(Literal::string_from_source(source.to_string()).into()),
-            TokenType::True => Ok(Literal::Boolean(true).into()),
-            TokenType::False => Ok(Literal::Boolean(false).into()),
-            TokenType::Nil => Ok(Literal::Nil.into()),
+            tt!("number") => Ok(Literal::number_from_source(source.to_string()).into()),
+            tt!("string") => Ok(Literal::string_from_source(source.to_string()).into()),
+            tt!("true") => Ok(Literal::Boolean(true).into()),
+            tt!("false") => Ok(Literal::Boolean(false).into()),
+            tt!("nil") => Ok(Literal::Nil.into()),
             // Grouping expression.
-            TokenType::LeftParen => {
+            tt!("(") => {
                 let inner_expr = self.parse_expr()?;
                 self.expect(TokenType::RightParen)?;
 
@@ -133,6 +135,9 @@ impl<'a> ExprASTParser<'a, '_> {
 
                 Ok(grouping_expr.into())
             }
+            tt!("identifier") => Ok(Expr::Variable(Variable {
+                name: cur_token.to_owned(),
+            })),
             // Unary expression.
             tt!("-") | tt!("!") => {
                 let op = UnaryOp::from_token(&cur_token).unwrap();
