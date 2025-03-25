@@ -8,7 +8,7 @@
 
 use std::process::ExitCode;
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Clone, Debug, thiserror::Error)]
 pub enum LoxError {
     #[error("{0}")]
     Lex(LexError),
@@ -49,7 +49,7 @@ impl From<RuntimeError> for LoxError {
     }
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Clone, Debug, thiserror::Error)]
 pub enum LexError {
     #[error("Error: Unexpected character: {0}")]
     UnexpectedChar(char),
@@ -64,7 +64,7 @@ impl LexError {
     }
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Clone, Debug, thiserror::Error)]
 pub enum ASTError {
     #[error("Error: Expect binary operator.")]
     ExpectedBinaryOperator,
@@ -90,7 +90,7 @@ impl ASTError {
     }
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Clone, Debug, thiserror::Error)]
 pub enum RuntimeError {
     /// Inner value is the operand type.
     #[error("Error: Operand must be {0}")]
