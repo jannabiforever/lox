@@ -33,7 +33,6 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    ///
     fn scan_tokens(&mut self) -> Vec<TokenResultWithLine<'a>> {
         let mut tokens = Vec::new();
         loop {
