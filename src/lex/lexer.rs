@@ -12,8 +12,10 @@ use crate::{
 use regex::Regex;
 
 type TokenResult<'a> = Result<Token<'a>, LexError>;
+/// Wrapped token result with line number, which is only used for public call from main.rs.
 type TokenResultWithLine<'a> = WithLine<Result<Token<'a>, LoxError>>;
 
+/// Public function to tokenize the source code.
 pub fn scan(source: &str) -> Vec<WithLine<Result<Token, LoxError>>> {
     let mut lexer = Lexer::new(source);
     lexer.scan_tokens().into_iter().collect()
@@ -31,6 +33,7 @@ impl<'a> Lexer<'a> {
         }
     }
 
+    ///
     fn scan_tokens(&mut self) -> Vec<TokenResultWithLine<'a>> {
         let mut tokens = Vec::new();
         loop {

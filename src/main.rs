@@ -19,10 +19,8 @@ fn file_contents(file_path: PathBuf) -> String {
 
 fn main() -> ExitCode {
     let command = Command::parse();
-
     let mut exit_code = ExitCode::SUCCESS;
 
-    #[allow(unused_variables)]
     match command {
         Command::Tokenize { file_path } => {
             let file_contents = file_contents(file_path);
