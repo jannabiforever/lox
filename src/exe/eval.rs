@@ -1,4 +1,7 @@
-use std::{cell::RefCell, rc::Rc};
+use std::{
+    cell::{LazyCell, RefCell},
+    rc::Rc,
+};
 
 use super::{
     env::{Env, rc_rc},
@@ -28,9 +31,11 @@ pub(super) fn eval_expr(expr: &Expr, env: Rc<RefCell<Env>>) -> Result<Literal, R
             Ok(value)
         }
         Expr::Binary(Binary { left, op, right }) => {
-            let func = binary_function(*op);
             let left = eval_expr(left, env.clone())?;
-            let right = eval_expr(right, env)?;
+            let func = binary_function(*op);
+
+            // NOTE: Right side term is lazily evaluated to handle logical AND and OR.
+            let right = LazyCell::new(|| eval_expr(right, env));
 
             func(left, right)
         }
