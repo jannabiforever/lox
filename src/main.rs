@@ -1,37 +1,28 @@
-use std::env;
-use std::fs;
-use std::io::{self, Write};
+use clap::Parser;
+use codecrafters_interpreter::lox_tokenize;
+use std::{fs, path::PathBuf, process::ExitCode};
 
-fn main() {
-    let args: Vec<String> = env::args().collect();
-    if args.len() < 3 {
-        writeln!(io::stderr(), "Usage: {} tokenize <filename>", args[0]).unwrap();
-        return;
-    }
+#[non_exhaustive]
+#[derive(Debug, Parser)]
+enum Cli {
+    Tokenize { file_name: PathBuf },
+}
 
-    let command = &args[1];
-    let filename = &args[2];
+fn read(file_name: PathBuf) -> String {
+    fs::read_to_string(file_name).unwrap_or_default()
+}
 
-    match command.as_str() {
-        "tokenize" => {
-            // You can use print statements as follows for debugging, they'll be visible when running tests.
-            writeln!(io::stderr(), "Logs from your program will appear here!").unwrap();
+fn main() -> ExitCode {
+    let arg = Cli::parse();
+    #[allow(unused_mut)]
+    let mut exit_code = ExitCode::SUCCESS;
 
-            let file_contents = fs::read_to_string(filename).unwrap_or_else(|_| {
-                writeln!(io::stderr(), "Failed to read file {}", filename).unwrap();
-                String::new()
-            });
-
-            // Uncomment this block to pass the first stage
-            // if !file_contents.is_empty() {
-            //     panic!("Scanner not implemented");
-            // } else {
-            //     println!("EOF  null"); // Placeholder, remove this line when implementing the scanner
-            // }
-        }
-        _ => {
-            writeln!(io::stderr(), "Unknown command: {}", command).unwrap();
-            return;
+    match arg {
+        Cli::Tokenize { file_name } => {
+            let src = read(file_name);
+            lox_tokenize(&src);
         }
     }
+
+    exit_code
 }
