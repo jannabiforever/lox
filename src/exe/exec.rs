@@ -24,6 +24,8 @@ pub fn execute_stmt_ast(source: &str) -> Result<(), WithLine<LoxError>> {
     Ok(())
 }
 
+/// Execute a single statement from the top level.
+/// You should be careful with this function, since it doesn't handle return statements.
 fn exec_stmt(stmt: &Stmt, env: Rc<RefCell<Env>>) -> Result<(), RuntimeError> {
     match stmt {
         Stmt::Print(stmt) => {
