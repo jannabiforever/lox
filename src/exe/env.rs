@@ -10,7 +10,7 @@ macro_rules! rc_rc {
 pub(super) struct Env {
     global: Option<Rc<RefCell<Env>>>,
     local_literal_map: RefCell<HashMap<String, Literal>>,
-    local_callable_map: RefCell<HashMap<String, Stmt>>,
+    local_callable_map: RefCell<HashMap<String, Vec<Stmt>>>,
 }
 
 impl Env {
@@ -43,7 +43,7 @@ impl Env {
     }
 
     #[allow(dead_code)]
-    pub fn get_callable(&self, key: &str) -> Option<Stmt> {
+    pub fn get_callable(&self, key: &str) -> Option<Vec<Stmt>> {
         // find locally first.
         if let Some(val) = self.local_callable_map.borrow().get(key) {
             return Some(val.clone());
@@ -59,7 +59,7 @@ impl Env {
         self.local_literal_map.borrow_mut().insert(key.into(), val);
     }
 
-    pub fn local_callable_insert(&mut self, key: &str, val: Stmt) {
+    pub fn local_callable_insert(&mut self, key: &str, val: Vec<Stmt>) {
         self.local_callable_map.borrow_mut().insert(key.into(), val);
     }
 
@@ -83,7 +83,7 @@ impl Env {
     #[allow(dead_code)]
     /// This might fail if not declared before.
     /// Returns false if failed.
-    pub fn global_callable_insert(&self, key: &str, val: Stmt) -> bool {
+    pub fn global_callable_insert(&self, key: &str, val: Vec<Stmt>) -> bool {
         {
             let mut local_map = self.local_callable_map.borrow_mut();
             if local_map.contains_key(key) {

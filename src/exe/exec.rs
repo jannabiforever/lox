@@ -68,8 +68,8 @@ fn exec_stmt(stmt: &Stmt, env: Rc<RefCell<Env>>) -> Result<(), RuntimeError> {
             }
         }
         Stmt::FuncDecl(stmt) => {
-            env.borrow_mut()
-                .local_callable_insert(&stmt.name, stmt.clone().into());
+            let body = stmt.body.clone();
+            env.borrow_mut().local_callable_insert(&stmt.name, body);
         }
         Stmt::Return(_) => {
             // Every return statement should be inside a function definition.
