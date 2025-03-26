@@ -576,3 +576,54 @@ STRING "other_string" other_string
 EOF  null"#
     );
 }
+
+/// Scanning: Number literals
+/// https://app.codecrafters.io/courses/interpreter/stages/kj0
+#[test]
+fn kj0() {
+    // #KJ0 test-1
+    tokenize_test!(
+        "22",
+        stdout = "NUMBER 22 22.0
+EOF  null"
+    );
+
+    // #KJ0 test-2
+    tokenize_test!(
+        "9030.5924",
+        stdout = "NUMBER 9030.5924 9030.5924
+EOF  null"
+    );
+
+    // #KJ0 test-3
+    tokenize_test!(
+        "15.0000",
+        stdout = "NUMBER 15.0000 15.0
+EOF  null"
+    );
+
+    // #KJ0 test-4
+    tokenize_test!(
+        r#"(65+54) > 29 != ("Success" != "Failure") != (76 >= 41)"#,
+        stdout = r#"LEFT_PAREN ( null
+NUMBER 65 65.0
+PLUS + null
+NUMBER 54 54.0
+RIGHT_PAREN ) null
+GREATER > null
+NUMBER 29 29.0
+BANG_EQUAL != null
+LEFT_PAREN ( null
+STRING "Success" Success
+BANG_EQUAL != null
+STRING "Failure" Failure
+RIGHT_PAREN ) null
+BANG_EQUAL != null
+LEFT_PAREN ( null
+NUMBER 76 76.0
+GREATER_EQUAL >= null
+NUMBER 41 41.0
+RIGHT_PAREN ) null
+EOF  null"#
+    );
+}
