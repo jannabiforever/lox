@@ -60,6 +60,11 @@ impl<'a> Tokenizer<'a> {
             }
         } else if let Some(_) = self.consume_match(&*UNTERMINATED_STRING_REGEX) {
             return Err(UnterminatedString);
+        } else if let Some(src) = self.consume_match(&*NUMBER_REGEX) {
+            Token {
+                src,
+                token_type: tt!("number"),
+            }
         } else if let Some(ch) = self.advance() {
             match ch {
                 '(' => Token {
