@@ -75,3 +75,47 @@ RIGHT_PAREN ) null
 EOF  null"
     );
 }
+
+#[test]
+fn braces() {
+    // #OE8 test-1
+    tokenize_test!(
+        "}",
+        stdout = "RIGHT_BRACE } null
+EOF  null"
+    );
+
+    // #OE8 test-2
+    tokenize_test!(
+        "{{}}",
+        stdout = "LEFT_BRACE { null
+LEFT_BRACE { null
+RIGHT_BRACE } null
+RIGHT_BRACE } null
+EOF  null"
+    );
+
+    // #OE8 test-3
+    tokenize_test!(
+        "{{}{}",
+        stdout = "LEFT_BRACE { null
+LEFT_BRACE { null
+RIGHT_BRACE } null
+LEFT_BRACE { null
+RIGHT_BRACE } null
+EOF  null"
+    );
+
+    // #OE8 test-4
+    tokenize_test!(
+        "{)}{()}",
+        stdout = "LEFT_BRACE { null
+RIGHT_PAREN ) null
+RIGHT_BRACE } null
+LEFT_BRACE { null
+LEFT_PAREN ( null
+RIGHT_PAREN ) null
+RIGHT_BRACE } null
+EOF  null"
+    );
+}
