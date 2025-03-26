@@ -11,7 +11,7 @@ pub(super) static UNTERMINATED_STRING_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r#"^"[^"]*"#).unwrap());
 
 pub(super) static WORD_REGEX: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^[_a-zA-Z]+").unwrap());
+    LazyLock::new(|| Regex::new(r"^[_a-zA-Z][_a-zA-Z0-9]*").unwrap());
 
 pub(super) static COMMENT_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new("^//[^\n]*\n?").unwrap());

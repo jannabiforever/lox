@@ -627,3 +627,8 @@ RIGHT_PAREN ) null
 EOF  null"#
     );
 }
+
+/// Scanning: Identifiers
+/// https://app.codecrafters.io/courses/interpreter/stages/ey7
+#[test]
+fn ey7() {}
