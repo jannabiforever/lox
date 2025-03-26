@@ -542,8 +542,37 @@ EOF  null",
 fn ue7() {
     // #UE7 test-1
     tokenize_test!(
-        "\"hello\"",
-        stdout = "remote: [your_program] STRING \"hello\" hello
-    remote: [your_program] EOF  null"
+        r#""hello""#,
+        stdout = r#"STRING "hello" hello
+EOF  null"#
+    );
+
+    // #UE7 test-2
+    tokenize_test!(
+        r#""foo" "unterminated"#,
+        exit_code = 65,
+        stdout = r#"STRING "foo" foo
+EOF  null"#,
+        stderr = "[line 1] Error: Unterminated string."
+    );
+
+    // #UE7 test-3
+    tokenize_test!(
+        r#""foo     bar 123 // hello world!""#,
+        stdout = r#"STRING "foo     bar 123 // hello world!" foo     bar 123 // hello world!
+EOF  null"#
+    );
+
+    // #UE7 test-4
+    tokenize_test!(
+        r#"("world"+"hello") != "other_string""#,
+        stdout = r#"LEFT_PAREN ( null
+STRING "world" world
+PLUS + null
+STRING "hello" hello
+RIGHT_PAREN ) null
+BANG_EQUAL != null
+STRING "other_string" other_string
+EOF  null"#
     );
 }
