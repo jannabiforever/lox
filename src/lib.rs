@@ -1,3 +1,4 @@
+mod error;
 mod literal;
 mod tokenize;
 

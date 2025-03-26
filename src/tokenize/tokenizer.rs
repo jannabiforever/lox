@@ -4,6 +4,7 @@ use super::{
     regex::{NUMBER_REGEX, RAW_STRING_REGEX, WHITESPACE_REGEX, WORD_REGEX},
     token::Token,
     tt,
+    TokenizeError::{self, *},
 };
 
 pub(crate) struct Tokenizer<'a> {
@@ -16,7 +17,7 @@ impl<'a> Tokenizer<'a> {
         Self { src, pos: 0 }
     }
 
-    pub fn tokenize(&mut self) -> Vec<Result<Token<'a>, String>> {
+    pub fn tokenize(&mut self) -> Vec<Result<Token<'a>, TokenizeError>> {
         let mut tokens = Vec::new();
 
         loop {
@@ -33,7 +34,7 @@ impl<'a> Tokenizer<'a> {
         tokens
     }
 
-    fn next_token(&mut self) -> Result<Token<'a>, String> {
+    fn next_token(&mut self) -> Result<Token<'a>, TokenizeError> {
         let token = if let Some(ch) = self.advance() {
             match ch {
                 '(' => Token {
@@ -76,7 +77,7 @@ impl<'a> Tokenizer<'a> {
                     src: "*",
                     token_type: tt!("*"),
                 },
-                ch => return Err(format!("[line 1] Error: Unexpected character: {ch}")),
+                ch => return Err(UnexpectedCharacter(ch)),
             }
         } else {
             Token::eof()
