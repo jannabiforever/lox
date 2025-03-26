@@ -16,12 +16,14 @@ impl<'a> Tokenizer<'a> {
         Self { src, pos: 0 }
     }
 
-    pub fn tokenize(&mut self) -> Vec<Token<'a>> {
+    pub fn tokenize(&mut self) -> Vec<Result<Token<'a>, String>> {
         let mut tokens = Vec::new();
 
         loop {
             let token = self.next_token();
-            let is_eof = token.token_type == tt!("");
+            let is_eof = token
+                .as_ref()
+                .is_ok_and(|token| token.token_type == tt!(""));
             tokens.push(token);
             if is_eof {
                 break;
@@ -31,8 +33,8 @@ impl<'a> Tokenizer<'a> {
         tokens
     }
 
-    fn next_token(&mut self) -> Token<'a> {
-        if let Some(ch) = self.advance() {
+    fn next_token(&mut self) -> Result<Token<'a>, String> {
+        let token = if let Some(ch) = self.advance() {
             match ch {
                 '(' => Token {
                     src: "(",
@@ -74,11 +76,13 @@ impl<'a> Tokenizer<'a> {
                     src: "*",
                     token_type: tt!("*"),
                 },
-                _ => todo!("Implement the rest of the tokens."),
+                ch => return Err(format!("[line 1] Error: Unexpected character: {ch}")),
             }
         } else {
             Token::eof()
-        }
+        };
+
+        Ok(token)
     }
 
     /// Try match the regex from the current position in the src,

@@ -22,8 +22,10 @@ macro_rules! tokenize_test {
     };
 }
 
+/// Scanning: Empty file
+/// https://app.codecrafters.io/courses/interpreter/stages/ry8
 #[test]
-fn empty() {
+fn ry8() {
     // #RY8 test-1
     tokenize_test! {
         "",
@@ -31,8 +33,10 @@ fn empty() {
     };
 }
 
+/// Scanning: Parentheses
+/// https://app.codecrafters.io/courses/interpreter/stages/ol4
 #[test]
-fn parentheses() {
+fn ol4() {
     // #OL4 test-1
     tokenize_test! {
         "(",
@@ -76,8 +80,10 @@ EOF  null"
     );
 }
 
+/// Scanning: Braces
+/// https://app.codecrafters.io/courses/interpreter/stages/oe8
 #[test]
-fn braces() {
+fn oe8() {
     // #OE8 test-1
     tokenize_test!(
         "}",
@@ -116,6 +122,65 @@ LEFT_BRACE { null
 LEFT_PAREN ( null
 RIGHT_PAREN ) null
 RIGHT_BRACE } null
+EOF  null"
+    );
+}
+
+/// Scanning: Other single-character tokens
+/// https://app.codecrafters.io/courses/interpreter/stages/xc5
+#[test]
+fn xc5() {
+    // #XC5 test-1
+    tokenize_test!(
+        "+-",
+        stdout = "PLUS + null
+MINUS - null
+EOF  null"
+    );
+
+    // #XC5 test-2
+    tokenize_test!(
+        "++--**..,,;;",
+        stdout = "PLUS + null
+PLUS + null
+MINUS - null
+MINUS - null
+STAR * null
+STAR * null
+DOT . null
+DOT . null
+COMMA , null
+COMMA , null
+SEMICOLON ; null
+SEMICOLON ; null
+EOF  null"
+    );
+
+    // #XC5 test-3
+    tokenize_test!(
+        ".+,-;*.",
+        stdout = "DOT . null
+PLUS + null
+COMMA , null
+MINUS - null
+SEMICOLON ; null
+STAR * null
+DOT . null
+EOF  null"
+    );
+
+    // #XC5 test-4
+    tokenize_test!(
+        "({+;-.,})",
+        stdout = "LEFT_PAREN ( null
+LEFT_BRACE { null
+PLUS + null
+SEMICOLON ; null
+MINUS - null
+DOT . null
+COMMA , null
+RIGHT_BRACE } null
+RIGHT_PAREN ) null
 EOF  null"
     );
 }
