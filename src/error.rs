@@ -23,6 +23,8 @@ impl From<ParseError> for LoxError {
     }
 }
 
+/// A wrapper for a value that also contains the line number where the value was found.
+/// This is used for error reporting.
 pub struct WithLine<T> {
     pub line: usize,
     pub value: T,
@@ -41,6 +43,8 @@ impl<T> WithLine<T> {
     }
 }
 
+/// A wrapper for a [`Result`] that also contains the line number where the value was found.
+/// This is used for error reporting.
 pub type ResultWithLine<T, E> = WithLine<std::result::Result<T, E>>;
 
 impl<T, E> ResultWithLine<T, E> {
@@ -56,6 +60,8 @@ impl fmt::Display for WithLine<LoxError> {
     }
 }
 
+/// A trait for reporting errors.
+/// Every parser-like struct should implement this trait.
 pub trait ErrorReporter<E: Into<LoxError>> {
     /// Current line number.
     /// Used for checking where the error occurred.

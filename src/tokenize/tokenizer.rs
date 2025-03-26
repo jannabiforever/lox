@@ -27,6 +27,8 @@ impl<'a> Tokenizer<'a> {
         }
     }
 
+    /// Wrap the result of `next_token` with the current line number,
+    /// and collect them until eof is returned.
     pub fn tokenize(&mut self) -> Vec<ResultWithLine<Token<'a>, LoxError>> {
         let mut tokens = Vec::new();
 
@@ -49,6 +51,7 @@ impl<'a> Tokenizer<'a> {
             // If we find a comment, we skip it and continue to the next token.
             self.next_token()?
         } else if let Some(_) = self.consume_match(&*WHITESPACE_REGEX) {
+            // If we find a whitespace, we skip it and continue to the next token.
             self.next_token()?
         } else if let Some(src) = self.consume_match(&*RAW_STRING_REGEX) {
             Token {
@@ -238,6 +241,7 @@ impl<'a> Tokenizer<'a> {
                 ch => return Err(UnexpectedCharacter(ch)),
             }
         } else {
+            // None of the above, so we must be at the end of the file.
             Token::eof()
         };
 
@@ -253,11 +257,8 @@ impl<'a> Tokenizer<'a> {
         Some(found)
     }
 
+    /// Consume a character from the src and return it.
     fn advance(&mut self) -> Option<char> {
-        if self.is_at_end() {
-            return None;
-        }
-
         let c = self.src[self.pos..].chars().next()?;
         self.pos += c.len_utf8();
         if c == '\n' {
@@ -268,10 +269,6 @@ impl<'a> Tokenizer<'a> {
 
     fn remain(&self) -> &'a str {
         &self.src[self.pos..]
-    }
-
-    fn is_at_end(&self) -> bool {
-        self.pos >= self.src.len()
     }
 }
 

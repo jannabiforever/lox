@@ -3,7 +3,7 @@ use std::fmt;
 
 pub(crate) struct Token<'a> {
     /// The reference to the actual source.
-    /// Be careful with token_type String, because it contains the quotes.
+    /// Be careful with [`TokenType::String`], because it contains the quotes.
     /// e.g) \"Hello, World!\"
     /// It is used for translating literal tokens to its own value.
     pub src: &'a str,
@@ -31,7 +31,7 @@ impl fmt::Display for Token<'_> {
                 TokenType::Number => self
                     .src
                     .parse::<Number>()
-                    .expect("Malformed number.")
+                    .expect("Malformed number.") // Should be unreachable.
                     .to_string(),
                 _ => "null".to_string(),
             }
