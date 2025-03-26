@@ -35,6 +35,21 @@ impl<T> WithLine<T> {
         Self { line, value }
     }
 
+    pub fn split(self) -> (usize, T) {
+        (self.line, self.value)
+    }
+
+    pub fn as_ref(&self) -> WithLine<&T> {
+        WithLine {
+            line: self.line,
+            value: &self.value,
+        }
+    }
+
+    pub fn into_inner(self) -> T {
+        self.value
+    }
+
     pub fn map<U, F: FnOnce(T) -> U>(self, f: F) -> WithLine<U> {
         WithLine {
             line: self.line,
@@ -51,6 +66,14 @@ impl<T, E> ResultWithLine<T, E> {
     /// As demanded by main.rs, we need to cast [`ResultWithLine<T, E>`] to [`Result<T, WithLine<E>>`].
     pub fn exposure(self) -> Result<T, WithLine<E>> {
         self.value.map_err(|err| WithLine::new(self.line, err))
+    }
+
+    pub fn cast_down(self) -> Result<WithLine<T>, WithLine<E>> {
+        let (line, value) = self.split();
+        match value {
+            Ok(value) => Ok(WithLine::new(line, value)),
+            Err(err) => Err(WithLine::new(line, err)),
+        }
     }
 }
 

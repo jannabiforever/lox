@@ -5,6 +5,8 @@ mod tokenize;
 
 use std::{io::Write, process::ExitCode};
 
+use self::error::{LoxError, WithLine};
+
 /// Entry point for 'tokenize' command.
 pub fn lox_tokenize<W1, W2>(src: &str, ok_buf: &mut W1, err_buf: &mut W2) -> ExitCode
 where
@@ -26,10 +28,35 @@ where
 }
 
 /// Entry point for 'parse' command.
-pub fn lox_parse<W1, W2>(_src: &str, _ok_buf: &mut W1, _err_buf: &mut W2) -> ExitCode
+pub fn lox_parse<W1, W2>(src: &str, ok_buf: &mut W1, err_buf: &mut W2) -> ExitCode
 where
     W1: Write,
     W2: Write,
 {
-    unimplemented!()
+    // Try tokenizing. If fails, don't parse.
+    let tokens = match tokenize::Tokenizer::new(src)
+        .tokenize()
+        .into_iter()
+        .map(|t_res| t_res.cast_down())
+        .collect::<Result<Vec<_>, WithLine<LoxError>>>()
+    {
+        Ok(tokens) => tokens,
+        Err(err) => {
+            writeln!(err_buf, "{}", err).unwrap();
+            return ExitCode::from(65);
+        }
+    };
+
+    let parsed = parse::ExprParser::new(&tokens).parse();
+    match parsed.exposure() {
+        Ok(ast) => {
+            writeln!(ok_buf, "{}", ast).unwrap();
+            ExitCode::SUCCESS
+        }
+        Err(err) => {
+            let err = err.map(|err| err.into());
+            writeln!(err_buf, "{}", err).unwrap();
+            ExitCode::from(65)
+        }
+    }
 }

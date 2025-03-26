@@ -1,120 +1,120 @@
 macro_rules! tt {
     ("") => {
-        $crate::tokenize::token::TokenType::Eof
+        $crate::tokenize::TokenType::Eof
     };
     ("(") => {
-        $crate::tokenize::token::TokenType::LeftParen
+        $crate::tokenize::TokenType::LeftParen
     };
     (")") => {
-        $crate::tokenize::token::TokenType::RightParen
+        $crate::tokenize::TokenType::RightParen
     };
     ("{") => {
-        $crate::tokenize::token::TokenType::LeftBrace
+        $crate::tokenize::TokenType::LeftBrace
     };
     ("}") => {
-        $crate::tokenize::token::TokenType::RightBrace
+        $crate::tokenize::TokenType::RightBrace
     };
     (",") => {
-        $crate::tokenize::token::TokenType::Comma
+        $crate::tokenize::TokenType::Comma
     };
     (".") => {
-        $crate::tokenize::token::TokenType::Dot
+        $crate::tokenize::TokenType::Dot
     };
     ("-") => {
-        $crate::tokenize::token::TokenType::Minus
+        $crate::tokenize::TokenType::Minus
     };
     ("+") => {
-        $crate::tokenize::token::TokenType::Plus
+        $crate::tokenize::TokenType::Plus
     };
     (";") => {
-        $crate::tokenize::token::TokenType::Semicolon
+        $crate::tokenize::TokenType::Semicolon
     };
     ("/") => {
-        $crate::tokenize::token::TokenType::Slash
+        $crate::tokenize::TokenType::Slash
     };
     ("*") => {
-        $crate::tokenize::token::TokenType::Star
+        $crate::tokenize::TokenType::Star
     };
     ("!") => {
-        $crate::tokenize::token::TokenType::Bang
+        $crate::tokenize::TokenType::Bang
     };
     ("!=") => {
-        $crate::tokenize::token::TokenType::BangEqual
+        $crate::tokenize::TokenType::BangEqual
     };
     ("=") => {
-        $crate::tokenize::token::TokenType::Equal
+        $crate::tokenize::TokenType::Equal
     };
     ("==") => {
-        $crate::tokenize::token::TokenType::EqualEqual
+        $crate::tokenize::TokenType::EqualEqual
     };
     ("<") => {
-        $crate::tokenize::token::TokenType::Less
+        $crate::tokenize::TokenType::Less
     };
     ("<=") => {
-        $crate::tokenize::token::TokenType::LessEqual
+        $crate::tokenize::TokenType::LessEqual
     };
     (">") => {
-        $crate::tokenize::token::TokenType::Greater
+        $crate::tokenize::TokenType::Greater
     };
     (">=") => {
-        $crate::tokenize::token::TokenType::GreaterEqual
+        $crate::tokenize::TokenType::GreaterEqual
     };
     ("identifier") => {
-        $crate::tokenize::token::TokenType::Identifier
+        $crate::tokenize::TokenType::Identifier
     };
     ("string") => {
-        $crate::tokenize::token::TokenType::String
+        $crate::tokenize::TokenType::String
     };
     ("number") => {
-        $crate::tokenize::token::TokenType::Number
+        $crate::tokenize::TokenType::Number
     };
     ("and") => {
-        $crate::tokenize::token::TokenType::And
+        $crate::tokenize::TokenType::And
     };
     ("class") => {
-        $crate::tokenize::token::TokenType::Class
+        $crate::tokenize::TokenType::Class
     };
     ("else") => {
-        $crate::tokenize::token::TokenType::Else
+        $crate::tokenize::TokenType::Else
     };
     ("false") => {
-        $crate::tokenize::token::TokenType::False
+        $crate::tokenize::TokenType::False
     };
     ("for") => {
-        $crate::tokenize::token::TokenType::For
+        $crate::tokenize::TokenType::For
     };
     ("fun") => {
-        $crate::tokenize::token::TokenType::Fun
+        $crate::tokenize::TokenType::Fun
     };
     ("if") => {
-        $crate::tokenize::token::TokenType::If
+        $crate::tokenize::TokenType::If
     };
     ("nil") => {
-        $crate::tokenize::token::TokenType::Nil
+        $crate::tokenize::TokenType::Nil
     };
     ("or") => {
-        $crate::tokenize::token::TokenType::Or
+        $crate::tokenize::TokenType::Or
     };
     ("print") => {
-        $crate::tokenize::token::TokenType::Print
+        $crate::tokenize::TokenType::Print
     };
     ("return") => {
-        $crate::tokenize::token::TokenType::Return
+        $crate::tokenize::TokenType::Return
     };
     ("super") => {
-        $crate::tokenize::token::TokenType::Super
+        $crate::tokenize::TokenType::Super
     };
     ("this") => {
-        $crate::tokenize::token::TokenType::This
+        $crate::tokenize::TokenType::This
     };
     ("true") => {
-        $crate::tokenize::token::TokenType::True
+        $crate::tokenize::TokenType::True
     };
     ("var") => {
-        $crate::tokenize::token::TokenType::Var
+        $crate::tokenize::TokenType::Var
     };
     ("while") => {
-        $crate::tokenize::token::TokenType::While
+        $crate::tokenize::TokenType::While
     };
 }
 

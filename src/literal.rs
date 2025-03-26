@@ -1,5 +1,42 @@
 use std::{cmp, fmt, ops};
 
+#[derive(Debug, Clone, PartialEq)]
+pub enum Literal {
+    Boolean(bool),
+    Nil,
+    Number(Number),
+    String(String),
+}
+
+impl From<Number> for Literal {
+    fn from(n: Number) -> Self {
+        Literal::Number(n)
+    }
+}
+
+impl From<String> for Literal {
+    fn from(s: String) -> Self {
+        Literal::String(s)
+    }
+}
+
+impl From<bool> for Literal {
+    fn from(b: bool) -> Self {
+        Literal::Boolean(b)
+    }
+}
+
+impl fmt::Display for Literal {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Literal::Number(n) => write!(f, "{}", n),
+            Literal::String(s) => write!(f, "{}", s),
+            Literal::Boolean(b) => write!(f, "{}", b),
+            Literal::Nil => write!(f, "nil"),
+        }
+    }
+}
+
 /// In Lox, a number is always a 64-bit floating point number.
 /// This is a wrapper around f64 to implement the Display trait as needed.
 #[derive(Debug, Clone, Copy, PartialEq)]
