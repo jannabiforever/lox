@@ -66,9 +66,75 @@ impl<'a> Tokenizer<'a> {
                 token_type: tt!("number"),
             }
         } else if let Some(src) = self.consume_match(&*WORD_REGEX) {
-            Token {
-                src,
-                token_type: tt!("identifier"),
+            match src {
+                "and" => Token {
+                    src,
+                    token_type: tt!("and"),
+                },
+                "class" => Token {
+                    src,
+                    token_type: tt!("class"),
+                },
+                "else" => Token {
+                    src,
+                    token_type: tt!("else"),
+                },
+                "false" => Token {
+                    src,
+                    token_type: tt!("false"),
+                },
+                "fun" => Token {
+                    src,
+                    token_type: tt!("fun"),
+                },
+                "for" => Token {
+                    src,
+                    token_type: tt!("for"),
+                },
+                "if" => Token {
+                    src,
+                    token_type: tt!("if"),
+                },
+                "nil" => Token {
+                    src,
+                    token_type: tt!("nil"),
+                },
+                "or" => Token {
+                    src,
+                    token_type: tt!("or"),
+                },
+                "print" => Token {
+                    src,
+                    token_type: tt!("print"),
+                },
+                "return" => Token {
+                    src,
+                    token_type: tt!("return"),
+                },
+                "super" => Token {
+                    src,
+                    token_type: tt!("super"),
+                },
+                "this" => Token {
+                    src,
+                    token_type: tt!("this"),
+                },
+                "true" => Token {
+                    src,
+                    token_type: tt!("true"),
+                },
+                "var" => Token {
+                    src,
+                    token_type: tt!("var"),
+                },
+                "while" => Token {
+                    src,
+                    token_type: tt!("while"),
+                },
+                _ => Token {
+                    src,
+                    token_type: tt!("identifier"),
+                },
             }
         } else if let Some(ch) = self.advance() {
             match ch {

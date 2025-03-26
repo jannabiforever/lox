@@ -631,4 +631,80 @@ EOF  null"#
 /// Scanning: Identifiers
 /// https://app.codecrafters.io/courses/interpreter/stages/ey7
 #[test]
-fn ey7() {}
+fn ey7() {
+    // #EY7 test-1
+    tokenize_test!(
+        "bar baz",
+        stdout = "IDENTIFIER bar null
+IDENTIFIER baz null
+EOF  null"
+    );
+
+    // #EY7 test-2
+    tokenize_test!(
+        "_1236az f00 foo bar baz",
+        stdout = "IDENTIFIER _1236az null
+IDENTIFIER f00 null
+IDENTIFIER foo null
+IDENTIFIER bar null
+IDENTIFIER baz null
+EOF  null"
+    );
+
+    // #EY7 test-3
+    tokenize_test!(
+        r#"message = "Hello, World!"
+number = 123"#,
+        stdout = r#"IDENTIFIER message null
+EQUAL = null
+STRING "Hello, World!" Hello, World!
+IDENTIFIER number null
+EQUAL = null
+NUMBER 123 123.0
+EOF  null"#
+    );
+
+    // #EY7 test-4
+    tokenize_test!(
+        r#"{
+// This is a complex test case
+str1 = "Test"
+str2 = "Case"
+num1 = 100
+num2 = 200.00
+result = (str1 == str2) != ((num1 + num2) >= 300)
+}"#,
+        stdout = r#"LEFT_BRACE { null
+IDENTIFIER str1 null
+EQUAL = null
+STRING "Test" Test
+IDENTIFIER str2 null
+EQUAL = null
+STRING "Case" Case
+IDENTIFIER num1 null
+EQUAL = null
+NUMBER 100 100.0
+IDENTIFIER num2 null
+EQUAL = null
+NUMBER 200.00 200.0
+IDENTIFIER result null
+EQUAL = null
+LEFT_PAREN ( null
+IDENTIFIER str1 null
+EQUAL_EQUAL == null
+IDENTIFIER str2 null
+RIGHT_PAREN ) null
+BANG_EQUAL != null
+LEFT_PAREN ( null
+LEFT_PAREN ( null
+IDENTIFIER num1 null
+PLUS + null
+IDENTIFIER num2 null
+RIGHT_PAREN ) null
+GREATER_EQUAL >= null
+NUMBER 300 300.0
+RIGHT_PAREN ) null
+RIGHT_BRACE } null
+EOF  null"#
+    );
+}
