@@ -19,9 +19,13 @@ impl<'a> Tokenizer<'a> {
     pub fn tokenize(&mut self) -> Vec<Token<'a>> {
         let mut tokens = Vec::new();
 
-        while !self.is_at_end() {
+        loop {
             let token = self.next_token();
+            let is_eof = token.token_type == tt!("");
             tokens.push(token);
+            if is_eof {
+                break;
+            }
         }
 
         tokens
