@@ -388,3 +388,40 @@ RIGHT_BRACE } null
 EOF  null"
     );
 }
+
+/// Scanning: Division operator & comments
+/// https://app.codecrafters.io/courses/interpreter/stages/ml2
+#[test]
+fn ml2() {
+    // #ML2 test-1
+    tokenize_test!("//Comment", stdout = "EOF  null");
+
+    // #ML2 test-2
+    tokenize_test!(
+        "(///Unicode:£§᯽☺♣)",
+        stdout = "LEFT_PAREN ( null
+EOF  null"
+    );
+
+    // #ML2 test-3
+    tokenize_test!(
+        "/",
+        stdout = "SLASH / null
+EOF  null"
+    );
+
+    // #ML2 test-4
+    tokenize_test!(
+        "({(>==*)})//Comment",
+        stdout = "LEFT_PAREN ( null
+LEFT_BRACE { null
+LEFT_PAREN ( null
+GREATER_EQUAL >= null
+EQUAL = null
+STAR * null
+RIGHT_PAREN ) null
+RIGHT_BRACE } null
+RIGHT_PAREN ) null
+EOF  null"
+    );
+}
