@@ -247,7 +247,7 @@ fn mp7() {
     // #MP7 test-1
     tokenize_test!(
         "=",
-        stdout = "EQUAL_EQUAL == null
+        stdout = "EQUAL = null
 EOF  null"
     );
 
