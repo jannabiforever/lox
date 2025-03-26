@@ -65,6 +65,11 @@ impl<'a> Tokenizer<'a> {
                 src,
                 token_type: tt!("number"),
             }
+        } else if let Some(src) = self.consume_match(&*WORD_REGEX) {
+            Token {
+                src,
+                token_type: tt!("identifier"),
+            }
         } else if let Some(ch) = self.advance() {
             match ch {
                 '(' => Token {
