@@ -184,3 +184,58 @@ RIGHT_PAREN ) null
 EOF  null"
     );
 }
+
+/// Scanning: Lexical errors
+/// https://app.codecrafters.io/courses/interpreter/stages/ea6
+#[test]
+fn ea6() {
+    // #EA6 test-1
+    tokenize_test!(
+        "@",
+        exit_code = 65,
+        stdout = "EOF  null",
+        stderr = "[line 1] Error: Unexpected character: @"
+    );
+
+    // #EA6 test-2
+    tokenize_test!(
+        ",.$(#",
+        exit_code = 65,
+        stdout = "COMMA , null
+DOT . null
+LEFT_PAREN ( null
+EOF  null",
+        stderr = "[line 1] Error: Unexpected character: $
+[line 1] Error: Unexpected character: #"
+    );
+
+    // #EA6 test-3
+    tokenize_test!(
+        "#$$%#",
+        exit_code = 65,
+        stdout = "EOF  null",
+        stderr = "[line 1] Error: Unexpected character: #
+[line 1] Error: Unexpected character: $
+[line 1] Error: Unexpected character: $
+[line 1] Error: Unexpected character: %
+[line 1] Error: Unexpected character: #"
+    );
+
+    // #EA6 test-4
+    tokenize_test!(
+        "{(+@-#;.*)}",
+        exit_code = 65,
+        stdout = "LEFT_BRACE { null
+LEFT_PAREN ( null
+PLUS + null
+MINUS - null
+SEMICOLON ; null
+DOT . null
+STAR * null
+RIGHT_PAREN ) null
+RIGHT_BRACE } null
+EOF  null",
+        stderr = "[line 1] Error: Unexpected character: @
+[line 1] Error: Unexpected character: #"
+    );
+}
