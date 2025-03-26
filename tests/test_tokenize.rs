@@ -340,3 +340,51 @@ EOF  null",
 [line 1] Error: Unexpected character: %"
     );
 }
+
+/// Scanning: Relational operators
+/// https://app.codecrafters.io/courses/interpreter/stages/et2
+#[test]
+fn et2() {
+    // #ET2 test-1
+    tokenize_test!(
+        ">=",
+        stdout = "GREATER_EQUAL >= null
+EOF  null"
+    );
+
+    // #ET2 test-2
+    tokenize_test!(
+        "<<<=>>>=",
+        stdout = "LESS < null
+LESS < null
+LESS_EQUAL <= null
+GREATER > null
+GREATER > null
+GREATER_EQUAL >= null
+EOF  null"
+    );
+
+    // #ET2 test-3
+    tokenize_test!(
+        "><>=<<=",
+        stdout = "GREATER > null
+LESS < null
+GREATER_EQUAL >= null
+LESS < null
+LESS_EQUAL <= null
+EOF  null"
+    );
+
+    // #ET2 test-4
+    tokenize_test!(
+        "(){!>===}",
+        stdout = "LEFT_PAREN ( null
+RIGHT_PAREN ) null
+LEFT_BRACE { null
+BANG ! null
+GREATER_EQUAL >= null
+EQUAL_EQUAL == null
+RIGHT_BRACE } null
+EOF  null"
+    );
+}

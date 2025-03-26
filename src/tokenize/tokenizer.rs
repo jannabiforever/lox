@@ -3,7 +3,7 @@ use regex::Regex;
 use crate::error::LoxError;
 
 use super::{
-    regex::{NUMBER_REGEX, RAW_STRING_REGEX, WHITESPACE_REGEX, WORD_REGEX},
+    regex::{COMMENT_REGEX, NUMBER_REGEX, RAW_STRING_REGEX, WHITESPACE_REGEX, WORD_REGEX},
     token::Token,
     tt,
     TokenizeError::{self, *},
@@ -45,7 +45,10 @@ impl<'a> Tokenizer<'a> {
     }
 
     fn next_token(&mut self) -> Result<Token<'a>, TokenizeError> {
-        let token = if let Some(ch) = self.advance() {
+        let token = if let Some(_) = self.consume_match(&*COMMENT_REGEX) {
+            // If we find a comment, we skip it and continue to the next token.
+            self.next_token()?
+        } else if let Some(ch) = self.advance() {
             match ch {
                 '(' => Token {
                     src: "(",
@@ -143,6 +146,10 @@ impl<'a> Tokenizer<'a> {
                         }
                     }
                 }
+                '/' => Token {
+                    src: "/",
+                    token_type: tt!("/"),
+                },
                 ch => return Err(UnexpectedCharacter(ch)),
             }
         } else {
@@ -154,11 +161,11 @@ impl<'a> Tokenizer<'a> {
 
     /// Try match the regex from the current position in the src,
     /// and consume the match if it exists.
-    fn consume_match(&mut self, regex: &Regex) -> &'a str {
-        let found = regex.find(self.remain()).map(|m| m.as_str()).unwrap();
+    fn consume_match(&mut self, regex: &Regex) -> Option<&'a str> {
+        let found = regex.find(self.remain()).map(|m| m.as_str())?;
         self.pos += found.len();
         self.line += found.chars().filter(|&c| c == '\n').count();
-        found
+        Some(found)
     }
 
     fn advance(&mut self) -> Option<char> {
