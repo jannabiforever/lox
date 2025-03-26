@@ -1,6 +1,6 @@
 use clap::Parser;
 use codecrafters_interpreter::lox_tokenize;
-use std::{fs, path::PathBuf, process::ExitCode};
+use std::{fs, io, path::PathBuf, process::ExitCode};
 
 #[non_exhaustive]
 #[derive(Debug, Parser)]
@@ -14,15 +14,13 @@ fn read(file_name: PathBuf) -> String {
 
 fn main() -> ExitCode {
     let arg = Cli::parse();
-    #[allow(unused_mut)]
-    let mut exit_code = ExitCode::SUCCESS;
+    let mut stdout = io::stdout();
+    let mut stderr = io::stderr();
 
     match arg {
         Cli::Tokenize { file_name } => {
             let src = read(file_name);
-            lox_tokenize(&src);
+            lox_tokenize(&src, &mut stdout, &mut stderr)
         }
     }
-
-    exit_code
 }
