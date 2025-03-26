@@ -470,3 +470,68 @@ RIGHT_PAREN ) null
 EOF  null"
     );
 }
+
+/// Scanning: Multi-line errors
+/// https://app.codecrafters.io/courses/interpreter/stages/tz7
+#[test]
+fn tz7() {
+    // #TZ7 test-1
+    tokenize_test!(
+        "() \n@",
+        exit_code = 65,
+        stdout = "LEFT_PAREN ( null
+RIGHT_PAREN ) null
+EOF  null",
+        stderr = "[line 2] Error: Unexpected character: @"
+    );
+
+    // #TZ7 test-2
+    tokenize_test!(
+        "@ $%",
+        exit_code = 65,
+        stdout = "EOF  null",
+        stderr = "[line 1] Error: Unexpected character: @
+[line 1] Error: Unexpected character: $
+[line 1] Error: Unexpected character: %"
+    );
+
+    // #TZ7 test-3
+    tokenize_test!(
+        "()  #\t{}
+@
+$
++++
+// Let's Go!
++++
+#",
+        exit_code = 65,
+        stdout = "LEFT_PAREN ( null
+RIGHT_PAREN ) null
+LEFT_BRACE { null
+RIGHT_BRACE } null
+PLUS + null
+PLUS + null
+PLUS + null
+PLUS + null
+PLUS + null
+PLUS + null
+EOF  null",
+        stderr = "[line 1] Error: Unexpected character: #
+[line 2] Error: Unexpected character: @
+[line 3] Error: Unexpected character: $
+[line 7] Error: Unexpected character: #"
+    );
+
+    // #TZ7 test-4
+    tokenize_test!(
+        "({; @})",
+        exit_code = 65,
+        stdout = "LEFT_PAREN ( null
+LEFT_BRACE { null
+SEMICOLON ; null
+RIGHT_BRACE } null
+RIGHT_PAREN ) null
+EOF  null",
+        stderr = "[line 1] Error: Unexpected character: @"
+    );
+}
