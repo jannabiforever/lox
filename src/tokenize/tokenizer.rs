@@ -1,5 +1,7 @@
 use regex::Regex;
 
+use crate::error::LoxError;
+
 use super::{
     regex::{NUMBER_REGEX, RAW_STRING_REGEX, WHITESPACE_REGEX, WORD_REGEX},
     token::Token,
@@ -10,14 +12,19 @@ use super::{
 pub(crate) struct Tokenizer<'a> {
     src: &'a str,
     pos: usize,
+    line: usize,
 }
 
 impl<'a> Tokenizer<'a> {
     pub fn new(src: &'a str) -> Self {
-        Self { src, pos: 0 }
+        Self {
+            src,
+            pos: 0,
+            line: 1,
+        }
     }
 
-    pub fn tokenize(&mut self) -> Vec<Result<Token<'a>, TokenizeError>> {
+    pub fn tokenize(&mut self) -> Vec<Result<Token<'a>, LoxError>> {
         let mut tokens = Vec::new();
 
         loop {
@@ -25,7 +32,10 @@ impl<'a> Tokenizer<'a> {
             let is_eof = token
                 .as_ref()
                 .is_ok_and(|token| token.token_type == tt!(""));
-            tokens.push(token);
+            tokens.push(token.map_err(|err| LoxError {
+                line: self.line,
+                kind: err.into(),
+            }));
             if is_eof {
                 break;
             }
@@ -91,6 +101,7 @@ impl<'a> Tokenizer<'a> {
     fn consume_match(&mut self, regex: &Regex) -> &'a str {
         let found = regex.find(self.remain()).map(|m| m.as_str()).unwrap();
         self.pos += found.len();
+        self.line += found.chars().filter(|&c| c == '\n').count();
         found
     }
 
@@ -101,6 +112,9 @@ impl<'a> Tokenizer<'a> {
 
         let c = self.src[self.pos..].chars().next()?;
         self.pos += c.len_utf8();
+        if c == '\n' {
+            self.line += 1;
+        }
         Some(c)
     }
 
