@@ -50,6 +50,11 @@ impl<'a> Tokenizer<'a> {
             self.next_token()?
         } else if let Some(_) = self.consume_match(&*WHITESPACE_REGEX) {
             self.next_token()?
+        } else if let Some(src) = self.consume_match(&*RAW_STRING_REGEX) {
+            Token {
+                src,
+                token_type: tt!("string"),
+            }
         } else if let Some(ch) = self.advance() {
             match ch {
                 '(' => Token {
