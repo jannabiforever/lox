@@ -1,6 +1,6 @@
 use regex::Regex;
 
-use crate::error::LoxError;
+use crate::error::{ErrorReporter, LoxError, ResultWithLine};
 
 use super::{
     regex::{
@@ -27,18 +27,15 @@ impl<'a> Tokenizer<'a> {
         }
     }
 
-    pub fn tokenize(&mut self) -> Vec<Result<Token<'a>, LoxError>> {
+    pub fn tokenize(&mut self) -> Vec<ResultWithLine<Token<'a>, LoxError>> {
         let mut tokens = Vec::new();
 
         loop {
-            let token = self.next_token();
+            let token = self.next_token().map_err(|e| e.into());
             let is_eof = token
                 .as_ref()
                 .is_ok_and(|token| token.token_type == tt!(""));
-            tokens.push(token.map_err(|err| LoxError {
-                line: self.line,
-                kind: err.into(),
-            }));
+            tokens.push(self.wrap(token));
             if is_eof {
                 break;
             }
@@ -275,5 +272,11 @@ impl<'a> Tokenizer<'a> {
 
     fn is_at_end(&self) -> bool {
         self.pos >= self.src.len()
+    }
+}
+
+impl ErrorReporter<TokenizeError> for Tokenizer<'_> {
+    fn line(&self) -> usize {
+        self.line
     }
 }

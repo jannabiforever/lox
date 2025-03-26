@@ -14,7 +14,7 @@ where
     let tokens = tokenize::Tokenizer::new(src).tokenize();
     let mut exit_code = ExitCode::SUCCESS;
     for token in tokens {
-        match token {
+        match token.exposure() {
             Ok(token) => writeln!(ok_buf, "{}", token).unwrap(),
             Err(error_message) => {
                 writeln!(err_buf, "{}", error_message).unwrap();
