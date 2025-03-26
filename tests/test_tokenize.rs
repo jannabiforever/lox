@@ -288,3 +288,55 @@ EOF  null",
 [line 1] Error: Unexpected character: %"
     );
 }
+
+/// Scanning: Negation & inequality operators
+/// https://app.codecrafters.io/courses/interpreter/stages/bu3
+#[test]
+fn bu3() {
+    // #BU3 test-1
+    tokenize_test!(
+        "!=",
+        stdout = "BANG_EQUAL != null
+EOF  null"
+    );
+
+    // #BU3 test-2
+    tokenize_test!(
+        "!!===",
+        stdout = "BANG ! null
+BANG_EQUAL != null
+EQUAL_EQUAL == null
+EOF  null"
+    );
+
+    // #BU3 test-3
+    tokenize_test!(
+        "!{!}(!===)=",
+        stdout = "BANG ! null
+LEFT_BRACE { null
+BANG ! null
+RIGHT_BRACE } null
+LEFT_PAREN ( null
+BANG_EQUAL != null
+EQUAL_EQUAL == null
+RIGHT_PAREN ) null
+EQUAL = null
+EOF  null"
+    );
+
+    // #BU3 test-4
+    tokenize_test!(
+        "{(===$@%)}",
+        exit_code = 65,
+        stdout = "LEFT_BRACE { null
+LEFT_PAREN ( null
+EQUAL_EQUAL == null
+EQUAL = null
+RIGHT_PAREN ) null
+RIGHT_BRACE } null
+EOF  null",
+        stderr = "[line 1] Error: Unexpected character: $
+[line 1] Error: Unexpected character: @
+[line 1] Error: Unexpected character: %"
+    );
+}
