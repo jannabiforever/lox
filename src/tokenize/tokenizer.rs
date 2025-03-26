@@ -101,6 +101,20 @@ impl<'a> Tokenizer<'a> {
                         }
                     }
                 }
+                '!' => {
+                    if self.remain().starts_with('=') {
+                        self.advance();
+                        Token {
+                            src: "!=",
+                            token_type: tt!("!="),
+                        }
+                    } else {
+                        Token {
+                            src: "!",
+                            token_type: tt!("!"),
+                        }
+                    }
+                }
                 ch => return Err(UnexpectedCharacter(ch)),
             }
         } else {
