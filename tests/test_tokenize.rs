@@ -239,3 +239,52 @@ EOF  null",
 [line 1] Error: Unexpected character: #"
     );
 }
+
+/// Scanning: Assignment & equality Operators
+/// https://app.codecrafters.io/courses/interpreter/stages/mp7
+#[test]
+fn mp7() {
+    // #MP7 test-1
+    tokenize_test!(
+        "=",
+        stdout = "EQUAL_EQUAL == null
+EOF  null"
+    );
+
+    // #MP7 test-2
+    tokenize_test!(
+        "==",
+        stdout = "EQUAL_EQUAL == null
+EOF  null"
+    );
+
+    // #MP7 test-3
+    tokenize_test!(
+        "({=}){==}",
+        stdout = "LEFT_PAREN ( null
+LEFT_BRACE { null
+EQUAL = null
+RIGHT_BRACE } null
+RIGHT_PAREN ) null
+LEFT_BRACE { null
+EQUAL_EQUAL == null
+RIGHT_BRACE } null
+EOF  null"
+    );
+
+    // #MP7 test-4
+    tokenize_test!(
+        "(($#%===))",
+        exit_code = 65,
+        stdout = "LEFT_PAREN ( null
+LEFT_PAREN ( null
+EQUAL_EQUAL == null
+EQUAL = null
+RIGHT_PAREN ) null
+RIGHT_PAREN ) null
+EOF  null",
+        stderr = "[line 1] Error: Unexpected character: $
+[line 1] Error: Unexpected character: #
+[line 1] Error: Unexpected character: %"
+    );
+}
