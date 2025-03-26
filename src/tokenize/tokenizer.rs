@@ -48,6 +48,8 @@ impl<'a> Tokenizer<'a> {
         let token = if let Some(_) = self.consume_match(&*COMMENT_REGEX) {
             // If we find a comment, we skip it and continue to the next token.
             self.next_token()?
+        } else if let Some(_) = self.consume_match(&*WHITESPACE_REGEX) {
+            self.next_token()?
         } else if let Some(ch) = self.advance() {
             match ch {
                 '(' => Token {
