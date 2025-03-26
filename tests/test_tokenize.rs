@@ -708,3 +708,139 @@ RIGHT_BRACE } null
 EOF  null"#
     );
 }
+
+/// Scanning: Reserved words
+/// https://app.codecrafters.io/courses/interpreter/stages/pq5
+#[test]
+fn pq5() {
+    // #PQ5 test-1
+    tokenize_test!(
+        "return",
+        stdout = "RETURN return null
+EOF  null"
+    );
+
+    // #PQ5 test-2
+    tokenize_test!(
+        "FALSE AND FUN TRUE SUPER print PRINT for ELSE nil else VAR RETURN false if fun IF NIL while and true FOR return or CLASS OR THIS super this class var WHILE",
+        stdout = "IDENTIFIER FALSE null
+IDENTIFIER AND null
+IDENTIFIER FUN null
+IDENTIFIER TRUE null
+IDENTIFIER SUPER null
+PRINT print null
+IDENTIFIER PRINT null
+FOR for null
+IDENTIFIER ELSE null
+NIL nil null
+ELSE else null
+IDENTIFIER VAR null
+IDENTIFIER RETURN null
+FALSE false null
+IF if null
+FUN fun null
+IDENTIFIER IF null
+IDENTIFIER NIL null
+WHILE while null
+AND and null
+TRUE true null
+IDENTIFIER FOR null
+RETURN return null
+OR or null
+IDENTIFIER CLASS null
+IDENTIFIER OR null
+IDENTIFIER THIS null
+SUPER super null
+THIS this null
+CLASS class null
+VAR var null
+IDENTIFIER WHILE null
+EOF  null"
+    );
+
+    // #PQ5 test-3
+    tokenize_test!(
+        r#"var greeting = "Hello"
+if (greeting == "Hello") {
+    return true
+} else {
+    return false
+}"#,
+        stdout = r#"VAR var null
+IDENTIFIER greeting null
+EQUAL = null
+STRING "Hello" Hello
+IF if null
+LEFT_PAREN ( null
+IDENTIFIER greeting null
+EQUAL_EQUAL == null
+STRING "Hello" Hello
+RIGHT_PAREN ) null
+LEFT_BRACE { null
+RETURN return null
+TRUE true null
+RIGHT_BRACE } null
+ELSE else null
+LEFT_BRACE { null
+RETURN return null
+FALSE false null
+RIGHT_BRACE } null
+EOF  null"#
+    );
+
+    // #PQ5 test-4
+    tokenize_test!(
+        r#"var result = (a + b) > 7 or "Success" != "Failure" or x >= 5
+while (result) {
+    var counter = 0
+    counter = counter + 1
+    if (counter == 10) {
+        return nil
+    }
+}"#,
+        stdout = r#"VAR var null
+IDENTIFIER result null
+EQUAL = null
+LEFT_PAREN ( null
+IDENTIFIER a null
+PLUS + null
+IDENTIFIER b null
+RIGHT_PAREN ) null
+GREATER > null
+NUMBER 7 7.0
+OR or null
+STRING "Success" Success
+BANG_EQUAL != null
+STRING "Failure" Failure
+OR or null
+IDENTIFIER x null
+GREATER_EQUAL >= null
+NUMBER 5 5.0
+WHILE while null
+LEFT_PAREN ( null
+IDENTIFIER result null
+RIGHT_PAREN ) null
+LEFT_BRACE { null
+VAR var null
+IDENTIFIER counter null
+EQUAL = null
+NUMBER 0 0.0
+IDENTIFIER counter null
+EQUAL = null
+IDENTIFIER counter null
+PLUS + null
+NUMBER 1 1.0
+IF if null
+LEFT_PAREN ( null
+IDENTIFIER counter null
+EQUAL_EQUAL == null
+NUMBER 10 10.0
+RIGHT_PAREN ) null
+LEFT_BRACE { null
+RETURN return null
+NIL nil null
+RIGHT_BRACE } null
+RIGHT_BRACE } null
+EOF  null"#
+    );
+}
