@@ -1,5 +1,6 @@
 mod error;
 mod literal;
+mod parse;
 mod tokenize;
 
 use std::{io::Write, process::ExitCode};
