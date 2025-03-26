@@ -425,3 +425,48 @@ RIGHT_PAREN ) null
 EOF  null"
     );
 }
+
+/// Scanning: Whitespace
+/// https://app.codecrafters.io/courses/interpreter/stages/er2
+#[test]
+fn er2() {
+    // #ER2 test-1
+    tokenize_test!(" ", stdout = "EOF  null");
+
+    // #ER2 test-2
+    tokenize_test!("\t", stdout = "EOF  null");
+
+    // #ER2 test-3
+    tokenize_test!(
+        "{ }
+(( \t.,))",
+        stdout = "LEFT_BRACE { null
+RIGHT_BRACE } null
+LEFT_PAREN ( null
+LEFT_PAREN ( null
+DOT . null
+COMMA , null
+RIGHT_PAREN ) null
+RIGHT_PAREN ) null
+EOF  null"
+    );
+
+    // #ER2 test-4
+    tokenize_test!(
+        "{\t
+  }
+((+><.>=))",
+        stdout = "LEFT_BRACE { null
+RIGHT_BRACE } null
+LEFT_PAREN ( null
+LEFT_PAREN ( null
+PLUS + null
+GREATER > null
+LESS < null
+DOT . null
+GREATER_EQUAL >= null
+RIGHT_PAREN ) null
+RIGHT_PAREN ) null
+EOF  null"
+    );
+}
