@@ -3,7 +3,10 @@ use regex::Regex;
 use crate::error::LoxError;
 
 use super::{
-    regex::{COMMENT_REGEX, NUMBER_REGEX, RAW_STRING_REGEX, WHITESPACE_REGEX, WORD_REGEX},
+    regex::{
+        COMMENT_REGEX, NUMBER_REGEX, RAW_STRING_REGEX, UNTERMINATED_STRING_REGEX, WHITESPACE_REGEX,
+        WORD_REGEX,
+    },
     token::Token,
     tt,
     TokenizeError::{self, *},
@@ -55,6 +58,8 @@ impl<'a> Tokenizer<'a> {
                 src,
                 token_type: tt!("string"),
             }
+        } else if let Some(_) = self.consume_match(&*UNTERMINATED_STRING_REGEX) {
+            return Err(UnterminatedString);
         } else if let Some(ch) = self.advance() {
             match ch {
                 '(' => Token {

@@ -535,3 +535,15 @@ EOF  null",
         stderr = "[line 1] Error: Unexpected character: @"
     );
 }
+
+/// Scanning: String literals
+/// https://app.codecrafters.io/courses/interpreter/stages/ue7
+#[test]
+fn ue7() {
+    // #UE7 test-1
+    tokenize_test!(
+        "\"hello\"",
+        stdout = "remote: [your_program] STRING \"hello\" hello
+    remote: [your_program] EOF  null"
+    );
+}
