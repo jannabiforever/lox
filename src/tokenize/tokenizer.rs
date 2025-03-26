@@ -9,16 +9,11 @@ use super::{
 pub(crate) struct Tokenizer<'a> {
     source: &'a str,
     pos: usize,
-    line: usize,
 }
 
 impl<'a> Tokenizer<'a> {
     pub fn new(source: &'a str) -> Self {
-        Self {
-            source,
-            pos: 0,
-            line: 1,
-        }
+        Self { source, pos: 0 }
     }
 
     pub fn tokenize(&mut self) -> Vec<Token<'a>> {
@@ -62,11 +57,27 @@ impl<'a> Tokenizer<'a> {
                         token_type: tt!(")"),
                     });
                 }
+                Some('{') => {
+                    // Consume a left brace.
+                    self.pos += '{'.len_utf8();
+                    tokens.push(Token {
+                        src: "{",
+                        token_type: tt!("{"),
+                    });
+                }
+                Some('}') => {
+                    // Consume a right brace.
+                    self.pos += '}'.len_utf8();
+                    tokens.push(Token {
+                        src: "}",
+                        token_type: tt!("}"),
+                    });
+                }
                 None => {
                     tokens.push(Token::eof());
                     break;
                 }
-                _ => todo!("Implement the rest of the tokens."),
+                _ => todo!("implement more token types"),
             }
         }
 
@@ -78,7 +89,6 @@ impl<'a> Tokenizer<'a> {
     fn consume_match(&mut self, regex: &Regex) -> &'a str {
         let found = regex.find(self.remain()).map(|m| m.as_str()).unwrap();
         self.pos += found.len();
-        self.line += found.chars().filter(|&c| c == '\n').count();
         found
     }
 
