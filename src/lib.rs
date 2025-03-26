@@ -23,3 +23,12 @@ where
     }
     exit_code
 }
+
+/// Entry point for 'parse' command.
+pub fn lox_parse<W1, W2>(_src: &str, _ok_buf: &mut W1, _err_buf: &mut W2) -> ExitCode
+where
+    W1: Write,
+    W2: Write,
+{
+    unimplemented!()
+}

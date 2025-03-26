@@ -1,11 +1,12 @@
 use clap::Parser;
-use codecrafters_interpreter::lox_tokenize;
+use codecrafters_interpreter::{lox_parse, lox_tokenize};
 use std::{fs, io, path::PathBuf, process::ExitCode};
 
 #[non_exhaustive]
 #[derive(Debug, Parser)]
 enum Cli {
     Tokenize { file_name: PathBuf },
+    Parse { file_name: PathBuf },
 }
 
 fn read(file_name: PathBuf) -> String {
@@ -21,6 +22,10 @@ fn main() -> ExitCode {
         Cli::Tokenize { file_name } => {
             let src = read(file_name);
             lox_tokenize(&src, &mut stdout, &mut stderr)
+        }
+        Cli::Parse { file_name } => {
+            let src = read(file_name);
+            lox_parse(&src, &mut stdout, &mut stderr)
         }
     }
 }
