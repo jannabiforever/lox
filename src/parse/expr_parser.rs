@@ -5,7 +5,7 @@ use crate::{
 };
 
 use super::{
-    expr_ast::{ExprAst, Grouping},
+    expr_ast::{ExprAst, Grouping, Unary, UnaryOp},
     ParseError,
 };
 
@@ -59,6 +59,22 @@ impl<'a, 'b> ExprParser<'a, 'b> {
                 };
                 self.expect(tt!(")"))?;
                 Ok(grouping.into())
+            }
+            tt!("-") => {
+                self.next();
+                Ok(Unary {
+                    op: UnaryOp::Minus,
+                    right: Box::new(self.parse()?),
+                }
+                .into())
+            }
+            tt!("!") => {
+                self.next();
+                Ok(Unary {
+                    op: UnaryOp::Bang,
+                    right: Box::new(self.parse()?),
+                }
+                .into())
             }
             _ => todo!(),
         }
