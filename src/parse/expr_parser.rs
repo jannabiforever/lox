@@ -39,6 +39,11 @@ impl<'a, 'b> ExprParser<'a, 'b> {
                 let num = src.parse::<Number>().unwrap();
                 self.wrap(Ok(ExprAst::Literal(Literal::Number(num))))
             }
+            tt!("string") => {
+                self.next();
+                let src = src.trim_matches('"');
+                self.wrap(Ok(ExprAst::Literal(Literal::String(src.to_string()))))
+            }
             _ => todo!(),
         }
     }

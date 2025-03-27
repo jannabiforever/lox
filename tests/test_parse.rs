@@ -35,3 +35,17 @@ fn sc2() {
     // #SC2 test-3
     parse_test!("nil", stdout = "nil");
 }
+
+/// Number literals
+/// https://app.codecrafters.io/courses/interpreter/stages/ra8
+#[test]
+fn ra8() {
+    // #RA8 test-1
+    parse_test!("12", stdout = "12.0");
+
+    // #RA8 test-2
+    parse_test!("0.0", stdout = "0.0");
+
+    // #RA8 test-3
+    parse_test!("82.54", stdout = "82.54");
+}
