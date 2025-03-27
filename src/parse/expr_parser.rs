@@ -1,6 +1,6 @@
 use crate::{
     error::{ErrorReporter, ResultWithLine, WithLine},
-    literal::Literal,
+    literal::{Literal, Number},
     tokenize::{tt, Token},
 };
 
@@ -19,7 +19,9 @@ impl<'a, 'b> ExprParser<'a, 'b> {
     }
 
     pub(crate) fn parse(&mut self) -> ResultWithLine<ExprAst, ParseError> {
-        match self.peek().as_ref().into_inner().token_type {
+        let peeked = self.peek();
+        let src = peeked.src;
+        match peeked.token_type {
             tt!("nil") => {
                 self.next();
                 self.wrap(Ok(ExprAst::Literal(Literal::Nil)))
@@ -32,18 +34,25 @@ impl<'a, 'b> ExprParser<'a, 'b> {
                 self.next();
                 self.wrap(Ok(ExprAst::Literal(Literal::Boolean(false))))
             }
+            tt!("number") => {
+                self.next();
+                let num = src.parse::<Number>().unwrap();
+                self.wrap(Ok(ExprAst::Literal(Literal::Number(num))))
+            }
             _ => todo!(),
         }
     }
 
-    fn next(&mut self) -> &WithLine<Token<'a>> {
-        let token = self.tokens.get(self.current).unwrap();
+    /// Get the next token.
+    /// Note: No need to return line number, because it is hanlded by [`ErrorReporter`] trait.
+    fn next(&mut self) -> &Token<'a> {
+        let token = self.tokens.get(self.current).unwrap().as_ref().into_inner();
         self.current += 1;
         token
     }
 
-    fn peek(&self) -> &WithLine<Token<'a>> {
-        self.tokens.get(self.current).unwrap()
+    fn peek(&self) -> &Token<'a> {
+        self.tokens.get(self.current).unwrap().as_ref().into_inner()
     }
 }
 
