@@ -34,7 +34,7 @@ impl<'a> Tokenizer<'a> {
 
         loop {
             let token = self.next_token_with_line();
-            match token.as_ref().into_inner() {
+            match token.inner_ref() {
                 Ok(Token {
                     token_type: tt!(""),
                     ..

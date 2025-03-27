@@ -47,7 +47,7 @@ where
         }
     };
 
-    let parsed = parse::ExprParser::new(&tokens).parse();
+    let parsed = parse::ExprParser::new(&tokens).parse_with_line();
     match parsed.exposure() {
         Ok(ast) => {
             writeln!(ok_buf, "{}", ast).unwrap();

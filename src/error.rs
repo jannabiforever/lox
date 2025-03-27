@@ -50,6 +50,10 @@ impl<T> WithLine<T> {
         self.value
     }
 
+    pub fn inner_ref(&self) -> &T {
+        &self.value
+    }
+
     pub fn map<U, F: FnOnce(T) -> U>(self, f: F) -> WithLine<U> {
         WithLine {
             line: self.line,
