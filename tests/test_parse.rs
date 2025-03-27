@@ -66,3 +66,20 @@ fn th5() {
     // #TH5 test-4
     parse_test!(r#""51""#, stdout = "51");
 }
+
+/// Parentheses
+/// https://app.codecrafters.io/courses/interpreter/stages/xe6
+#[test]
+fn xe6() {
+    // #XE6 test-1
+    parse_test!(r#"("foo")"#, stdout = "(group foo)");
+
+    // #XE6 test-2
+    parse_test!("((true))", stdout = "(group (group true))");
+
+    // #XE6 test-3
+    parse_test!("(nil)", stdout = "(group nil)");
+
+    // #XE6 test-4
+    parse_test!("(77.76)", stdout = "(group 77.76)");
+}
