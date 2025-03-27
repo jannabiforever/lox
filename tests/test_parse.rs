@@ -83,3 +83,20 @@ fn xe6() {
     // #XE6 test-4
     parse_test!("(77.76)", stdout = "(group 77.76)");
 }
+
+/// Unary Operators
+/// https://app.codecrafters.io/courses/interpreter/stages/mq1
+#[test]
+fn mq1() {
+    // #MQ1 test-1
+    parse_test!("!false", stdout = "(! false)");
+
+    // #MQ1 test-2
+    parse_test!("-61", stdout = "(- 61.0)");
+
+    // #MQ1 test-3
+    parse_test!("!!true", stdout = "(! (! true))");
+
+    // #MQ1 test-4
+    parse_test!("(!!(true))", stdout = "(group (! (! (group true))))");
+}
