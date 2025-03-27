@@ -19,7 +19,7 @@ pub(crate) struct Tokenizer<'a> {
 }
 
 impl<'a> Tokenizer<'a> {
-    pub fn new(src: &'a str) -> Self {
+    pub(crate) fn new(src: &'a str) -> Self {
         Self {
             src,
             pos: 0,
@@ -29,113 +29,48 @@ impl<'a> Tokenizer<'a> {
 
     /// Wrap the result of `next_token` with the current line number,
     /// and collect them until eof is returned.
-    pub fn tokenize(&mut self) -> Vec<ResultWithLine<Token<'a>, LoxError>> {
+    pub(crate) fn tokenize(&mut self) -> Vec<ResultWithLine<Token<'a>, LoxError>> {
         let mut tokens = Vec::new();
 
         loop {
-            let token = self.next_token().map_err(|e| e.into());
-            let is_eof = token
-                .as_ref()
-                .is_ok_and(|token| token.token_type == tt!(""));
-            tokens.push(self.wrap(token));
-            if is_eof {
-                break;
+            let token = self.next_token_with_line();
+            match token.as_ref().into_inner() {
+                Ok(Token {
+                    token_type: tt!(""),
+                    ..
+                }) => {
+                    tokens.push(token);
+                    break;
+                }
+                _ => tokens.push(token),
             }
         }
 
         tokens
     }
 
+    fn next_token_with_line(&mut self) -> ResultWithLine<Token<'a>, LoxError> {
+        let token = self.next_token().map_err(|e| e.into());
+        self.wrap(token)
+    }
+
     fn next_token(&mut self) -> Result<Token<'a>, TokenizeError> {
-        let token = if let Some(_) = self.consume_match(&*COMMENT_REGEX) {
+        let token = if self.consume_match(&COMMENT_REGEX).is_some() {
             // If we find a comment, we skip it and continue to the next token.
             self.next_token()?
-        } else if let Some(_) = self.consume_match(&*WHITESPACE_REGEX) {
+        } else if self.consume_match(&WHITESPACE_REGEX).is_some() {
             // If we find a whitespace, we skip it and continue to the next token.
             self.next_token()?
-        } else if let Some(src) = self.consume_match(&*RAW_STRING_REGEX) {
-            Token {
-                src,
-                token_type: tt!("string"),
-            }
-        } else if let Some(_) = self.consume_match(&*UNTERMINATED_STRING_REGEX) {
+        } else if let Some(src) = self.consume_match(&RAW_STRING_REGEX) {
+            Token::string(src)
+        } else if self.consume_match(&UNTERMINATED_STRING_REGEX).is_some() {
+            // It is confirmed that the string doesn't have a closing quote,
+            // which is not determined by [`UNTERMINATED_STRING_REGEX`], but by [`RAW_STRING_REGEX`] above.
             return Err(UnterminatedString);
-        } else if let Some(src) = self.consume_match(&*NUMBER_REGEX) {
-            Token {
-                src,
-                token_type: tt!("number"),
-            }
-        } else if let Some(src) = self.consume_match(&*WORD_REGEX) {
-            match src {
-                "and" => Token {
-                    src,
-                    token_type: tt!("and"),
-                },
-                "class" => Token {
-                    src,
-                    token_type: tt!("class"),
-                },
-                "else" => Token {
-                    src,
-                    token_type: tt!("else"),
-                },
-                "false" => Token {
-                    src,
-                    token_type: tt!("false"),
-                },
-                "fun" => Token {
-                    src,
-                    token_type: tt!("fun"),
-                },
-                "for" => Token {
-                    src,
-                    token_type: tt!("for"),
-                },
-                "if" => Token {
-                    src,
-                    token_type: tt!("if"),
-                },
-                "nil" => Token {
-                    src,
-                    token_type: tt!("nil"),
-                },
-                "or" => Token {
-                    src,
-                    token_type: tt!("or"),
-                },
-                "print" => Token {
-                    src,
-                    token_type: tt!("print"),
-                },
-                "return" => Token {
-                    src,
-                    token_type: tt!("return"),
-                },
-                "super" => Token {
-                    src,
-                    token_type: tt!("super"),
-                },
-                "this" => Token {
-                    src,
-                    token_type: tt!("this"),
-                },
-                "true" => Token {
-                    src,
-                    token_type: tt!("true"),
-                },
-                "var" => Token {
-                    src,
-                    token_type: tt!("var"),
-                },
-                "while" => Token {
-                    src,
-                    token_type: tt!("while"),
-                },
-                _ => Token {
-                    src,
-                    token_type: tt!("identifier"),
-                },
-            }
+        } else if let Some(src) = self.consume_match(&NUMBER_REGEX) {
+            Token::number(src)
+        } else if let Some(src) = self.consume_match(&WORD_REGEX) {
+            Token::word(src)
         } else if let Some(ch) = self.advance() {
             match ch {
                 '(' => Token {

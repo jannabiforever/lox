@@ -49,3 +49,20 @@ fn ra8() {
     // #RA8 test-3
     parse_test!("82.54", stdout = "82.54");
 }
+
+/// String literals
+/// https://app.codecrafters.io/courses/interpreter/stages/th5
+#[test]
+fn th5() {
+    // #TH5 test-1
+    parse_test!(r#""foo hello""#, stdout = "foo hello");
+
+    // #TH5 test-2
+    parse_test!(r#""'baz'""#, stdout = "'baz'");
+
+    // #TH5 test-3
+    parse_test!(r#""// hello""#, stdout = "// hello");
+
+    // #TH5 test-4
+    parse_test!(r#""51""#, stdout = "51");
+}
