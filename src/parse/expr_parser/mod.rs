@@ -44,7 +44,7 @@ impl<'a, 'b> ExprParser<'a, 'b> {
             // so it is guaranteed that the loop will break.
             //
             // We need to break the loop and not consume the peeked token, so it can be consumed by the stmt parser later.
-            if dbg!(BindingPower::from_token_type(token_type)).0 <= bp {
+            if BindingPower::from_token_type(token_type).0 <= bp {
                 break;
             }
 
