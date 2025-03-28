@@ -2,7 +2,6 @@ mod binary;
 mod field_call;
 mod function_call;
 mod grouping;
-mod operator;
 mod unary;
 
 use std::fmt;
@@ -13,7 +12,6 @@ pub(crate) use self::binary::{Binary, BinaryOp};
 pub(crate) use self::field_call::FieldCall;
 pub(crate) use self::function_call::FunctionCall;
 pub(crate) use self::grouping::Grouping;
-pub(crate) use self::operator::{BindingPower, Operator};
 pub(crate) use self::unary::{Unary, UnaryOp};
 
 pub enum ExprAst {

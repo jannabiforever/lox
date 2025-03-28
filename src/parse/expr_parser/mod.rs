@@ -1,16 +1,16 @@
+mod binding_power;
 mod grouping;
 mod literal;
 mod unary;
 
+use self::binding_power::BindingPower;
+
 use crate::{
     error::{ErrorReporter, LoxError, ResultWithLine, WithLine},
-    tokenize::{tt, Token, TokenType},
+    tokenize::{Token, TokenType},
 };
 
-use super::{
-    expr_ast::{BindingPower, ExprAst},
-    ParseError,
-};
+use super::{expr_ast::ExprAst, ParseError};
 
 pub(crate) struct ExprParser<'a, 'b> {
     /// Note: For reporting errors, we need to know the line number.
@@ -34,22 +34,33 @@ impl<'a, 'b> ExprParser<'a, 'b> {
     }
 
     fn parse_within_binding_power(&mut self, bp: BindingPower) -> Result<ExprAst, ParseError> {
-        let mut left = self.parse_end_node()?;
+        let left = self.parse_start_of_expr_ast()?;
         loop {
             break;
         }
         Ok(left)
     }
 
-    fn parse_end_node(&mut self) -> Result<ExprAst, ParseError> {
-        if let Some(literal) = self.parse_literal() {
-            Ok(literal?.into())
-        } else if let Some(grouping) = self.parse_grouping() {
-            Ok(grouping?.into())
+    /// For the start of an expression, only literal, grouping, and unary are allowed.
+    /// e.g. `42`, `(42)`, `!42`, `-42`
+    fn parse_start_of_expr_ast(&mut self) -> Result<ExprAst, ParseError> {
+        if let Some(end_node) = self.parse_end_node() {
+            end_node
         } else if let Some(unary) = self.parse_unary() {
             Ok(unary?.into())
         } else {
             todo!("error handling for expected end nodes")
+        }
+    }
+
+    /// End node := Literal | Grouping
+    fn parse_end_node(&mut self) -> Option<Result<ExprAst, ParseError>> {
+        if let Some(literal) = self.parse_literal() {
+            Some(literal.map(Into::into))
+        } else if let Some(grouping) = self.parse_grouping() {
+            Some(grouping.map(Into::into))
+        } else {
+            None
         }
     }
 
@@ -68,6 +79,15 @@ impl<'a, 'b> ExprParser<'a, 'b> {
             Ok(token)
         } else {
             todo!("")
+        }
+    }
+
+    fn eat(&mut self, allowed_token_types: &[TokenType]) -> Option<&Token<'a>> {
+        let token = self.peek();
+        if allowed_token_types.contains(&token.token_type) {
+            Some(self.next())
+        } else {
+            None
         }
     }
 
@@ -90,6 +110,9 @@ impl ErrorReporter<ParseError> for ExprParser<'_, '_> {
 mod tests {
     //! This test module is for testing single expression parsing.
     //! So it doesn't really care much about the line number.
+    #![allow(unused)]
+    use crate::tokenize::tt;
+
     use super::*;
 
     /// This macro only takes the vector of token types.
@@ -123,8 +146,6 @@ mod tests {
 
     #[test]
     fn binary_binding() {
-        let token_types = vec![tt!("")];
-
-        test_expr_parse(token_types, "");
+        let _ = vec![tt!("")];
     }
 }

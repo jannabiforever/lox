@@ -4,6 +4,8 @@ use crate::{
 };
 
 impl super::ExprParser<'_, '_> {
+    /// Parse a grouping expression follwing only if exists.
+    /// And consume from '(' to ')'.
     pub(super) fn parse_grouping(&mut self) -> Option<Result<Grouping, ParseError>> {
         match self.peek().token_type {
             tt!("(") => {

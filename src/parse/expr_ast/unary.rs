@@ -1,6 +1,6 @@
 use std::fmt;
 
-use super::{BindingPower, ExprAst, Operator};
+use super::ExprAst;
 
 pub struct Unary {
     pub op: UnaryOp,
@@ -16,15 +16,6 @@ impl fmt::Display for Unary {
 pub enum UnaryOp {
     Bang,
     Minus,
-}
-
-impl Operator for UnaryOp {
-    fn binding_power(&self) -> BindingPower {
-        match self {
-            Self::Bang => BindingPower::Bang,
-            Self::Minus => BindingPower::UnaryMinus,
-        }
-    }
 }
 
 impl fmt::Display for UnaryOp {
