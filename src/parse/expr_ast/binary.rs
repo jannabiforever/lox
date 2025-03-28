@@ -1,5 +1,7 @@
 use std::fmt;
 
+use crate::tokenize::{tt, TokenType};
+
 use super::ExprAst;
 
 #[derive(Debug, Clone)]
@@ -23,6 +25,26 @@ pub enum BinaryOp {
     LessEqual,
     And,
     Or,
+}
+
+impl BinaryOp {
+    pub(crate) fn from_token_type(token_type: TokenType) -> Option<BinaryOp> {
+        match token_type {
+            tt!("+") => Some(Self::Plus),
+            tt!("-") => Some(Self::Minus),
+            tt!("*") => Some(Self::Star),
+            tt!("/") => Some(Self::Slash),
+            tt!("==") => Some(Self::EqualEqual),
+            tt!("!=") => Some(Self::BangEqual),
+            tt!("<") => Some(Self::Less),
+            tt!("<=") => Some(Self::LessEqual),
+            tt!(">") => Some(Self::Greater),
+            tt!(">=") => Some(Self::GreaterEqual),
+            tt!("and") => Some(Self::And),
+            tt!("or") => Some(Self::Or),
+            _ => None,
+        }
+    }
 }
 
 impl fmt::Display for BinaryOp {

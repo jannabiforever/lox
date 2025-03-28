@@ -1,5 +1,7 @@
 use std::fmt;
 
+use crate::tokenize::{tt, TokenType};
+
 use super::ExprAst;
 
 #[derive(Debug, Clone)]
@@ -18,6 +20,16 @@ impl fmt::Display for Unary {
 pub enum UnaryOp {
     Bang,
     Minus,
+}
+
+impl UnaryOp {
+    pub(crate) fn from_token_type(token_type: TokenType) -> Option<UnaryOp> {
+        match token_type {
+            tt!("!") => Some(Self::Bang),
+            tt!("-") => Some(Self::Minus),
+            _ => None,
+        }
+    }
 }
 
 impl fmt::Display for UnaryOp {
