@@ -148,3 +148,20 @@ fn yf2() {
         stdout = "(/ (* (group (+ (- 14.0) 66.0)) (group (* 70.0 83.0))) (group (+ 66.0 38.0)))"
     );
 }
+
+/// Comparison operators
+/// https://app.codecrafters.io/courses/interpreter/stages/uh4
+#[test]
+fn uh4() {
+    // #UH4 test-1
+    parse_test!("68 > 38", stdout = "(> 68.0 38.0)");
+    // #UH4 test-2
+    parse_test!("30 <= 98", stdout = "(<= 30.0 98.0)");
+    // #UH4 test-3
+    parse_test!("68 < 98 < 128", stdout = "(< (< 68.0 98.0) 128.0)");
+    // #UH4 test-4
+    parse_test!(
+        "(16 - 16) >= -(29 / 64 + 19)",
+        stdout = "(>= (group (- 16.0 16.0)) (- (group (+ (/ 29.0 64.0) 19.0))))"
+    );
+}
