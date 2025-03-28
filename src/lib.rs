@@ -54,7 +54,6 @@ where
             ExitCode::SUCCESS
         }
         Err(err) => {
-            let err = err.map(|err| err.into());
             writeln!(err_buf, "{}", err).unwrap();
             ExitCode::from(65)
         }

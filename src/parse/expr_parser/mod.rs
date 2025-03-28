@@ -1,3 +1,4 @@
+mod binary;
 mod binding_power;
 mod grouping;
 mod literal;
@@ -34,9 +35,13 @@ impl<'a, 'b> ExprParser<'a, 'b> {
     }
 
     fn parse_within_binding_power(&mut self, bp: BindingPower) -> Result<ExprAst, ParseError> {
-        let left = self.parse_start_of_expr_ast()?;
+        let mut left = self.parse_start_of_expr_ast()?;
         loop {
-            break;
+            // Here, we expect an left-associative operator.
+            left = match self.parse_binary(left.clone()) {
+                Some(binary) => binary?.into(),
+                None => break,
+            }
         }
         Ok(left)
     }
@@ -57,10 +62,9 @@ impl<'a, 'b> ExprParser<'a, 'b> {
     fn parse_end_node(&mut self) -> Option<Result<ExprAst, ParseError>> {
         if let Some(literal) = self.parse_literal() {
             Some(literal.map(Into::into))
-        } else if let Some(grouping) = self.parse_grouping() {
-            Some(grouping.map(Into::into))
         } else {
-            None
+            self.parse_grouping()
+                .map(|grouping| grouping.map(Into::into))
         }
     }
 
@@ -79,15 +83,6 @@ impl<'a, 'b> ExprParser<'a, 'b> {
             Ok(token)
         } else {
             todo!("")
-        }
-    }
-
-    fn eat(&mut self, allowed_token_types: &[TokenType]) -> Option<&Token<'a>> {
-        let token = self.peek();
-        if allowed_token_types.contains(&token.token_type) {
-            Some(self.next())
-        } else {
-            None
         }
     }
 
