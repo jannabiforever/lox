@@ -2,6 +2,7 @@ use std::fmt;
 
 use super::ExprAst;
 
+#[derive(Debug, Clone)]
 pub struct FieldCall {
     pub object: Box<ExprAst>,
     pub field: String,

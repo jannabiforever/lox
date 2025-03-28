@@ -14,6 +14,7 @@ pub(crate) use self::function_call::FunctionCall;
 pub(crate) use self::grouping::Grouping;
 pub(crate) use self::unary::{Unary, UnaryOp};
 
+#[derive(Debug, Clone)]
 pub enum ExprAst {
     Binary(Binary),
     FieldCall(FieldCall),

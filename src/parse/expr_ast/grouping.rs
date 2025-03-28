@@ -2,6 +2,7 @@ use std::fmt;
 
 use super::ExprAst;
 
+#[derive(Debug, Clone)]
 pub struct Grouping {
     pub inner: Box<ExprAst>,
 }

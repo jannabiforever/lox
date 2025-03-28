@@ -2,6 +2,7 @@ use std::fmt;
 
 use super::ExprAst;
 
+#[derive(Debug, Clone)]
 pub struct Unary {
     pub op: UnaryOp,
     pub right: Box<ExprAst>,
@@ -13,6 +14,7 @@ impl fmt::Display for Unary {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum UnaryOp {
     Bang,
     Minus,

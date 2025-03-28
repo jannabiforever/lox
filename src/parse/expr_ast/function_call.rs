@@ -2,6 +2,7 @@ use std::fmt;
 
 use super::ExprAst;
 
+#[derive(Debug, Clone)]
 pub struct FunctionCall {
     pub callee: Box<ExprAst>,
     pub arguments: Vec<ExprAst>,

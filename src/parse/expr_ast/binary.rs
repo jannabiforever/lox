@@ -2,12 +2,14 @@ use std::fmt;
 
 use super::ExprAst;
 
+#[derive(Debug, Clone)]
 pub struct Binary {
     pub left: Box<ExprAst>,
     pub op: BinaryOp,
     pub right: Box<ExprAst>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum BinaryOp {
     Plus,
     Minus,
