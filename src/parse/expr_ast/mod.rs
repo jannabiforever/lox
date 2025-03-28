@@ -1,3 +1,4 @@
+mod assign;
 mod binary;
 mod field_call;
 mod function_call;
@@ -8,6 +9,7 @@ use std::fmt;
 
 use crate::literal::Literal;
 
+pub(crate) use self::assign::Assign;
 pub(crate) use self::binary::{Binary, BinaryOp};
 pub(crate) use self::field_call::FieldCall;
 pub(crate) use self::function_call::FunctionCall;
@@ -16,6 +18,7 @@ pub(crate) use self::unary::{Unary, UnaryOp};
 
 #[derive(Debug, Clone)]
 pub enum ExprAst {
+    Assign(Assign),
     Binary(Binary),
     FieldCall(FieldCall),
     FunctionCall(FunctionCall),
@@ -51,6 +54,7 @@ impl From<Unary> for ExprAst {
 impl fmt::Display for ExprAst {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Self::Assign(v) => write!(f, "{}", v),
             Self::Binary(v) => write!(f, "{}", v),
             Self::FieldCall(v) => write!(f, "{}", v),
             Self::FunctionCall(v) => write!(f, "{}", v),
