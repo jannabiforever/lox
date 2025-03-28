@@ -11,7 +11,7 @@ impl super::ExprParser<'_, '_> {
     /// consuming the operator and the right operand.
     ///
     /// Otherwise, it doesn't consume anything and returns `None`.
-    pub(super) fn parse_binary(&mut self, lhs: ExprAst) -> Option<Result<Binary, ParseError>> {
+    pub(super) fn try_parse_binary(&mut self, lhs: ExprAst) -> Option<Result<Binary, ParseError>> {
         let op = self.eat_binary_op()?;
 
         let binding_power: (BindingPower, BindingPower) = op.into();

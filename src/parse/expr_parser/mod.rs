@@ -8,7 +8,7 @@ use self::binding_power::BindingPower;
 
 use crate::{
     error::{ErrorReporter, LoxError, ResultWithLine, WithLine},
-    tokenize::{Token, TokenType},
+    tokenize::{tt, Token, TokenType},
 };
 
 use super::{expr_ast::ExprAst, ParseError};
@@ -35,12 +35,36 @@ impl<'a, 'b> ExprParser<'a, 'b> {
     }
 
     fn parse_within_binding_power(&mut self, bp: BindingPower) -> Result<ExprAst, ParseError> {
-        let mut left = self.parse_start_of_expr_ast()?;
+        let mut left = self.try_parse_start_of_expr_ast()?;
         loop {
-            // Here, we expect an left-associative operator.
-            left = match self.parse_binary(left.clone()) {
-                Some(binary) => binary?.into(),
-                None => break,
+            let token_type = self.peek().token_type;
+
+            // Note: this line might indicate that peeked token is ';' or ')' or '}' or eof or etc...
+            // In that case, [`BindingPower::from_token_type`] returns [`Bindingpower::None`], the lowest binding power,
+            // so it is guaranteed that the loop will break.
+            //
+            // We need to break the loop and not consume the peeked token, so it can be consumed by the stmt parser later.
+            if BindingPower::from_token_type(token_type).0 <= bp {
+                break;
+            }
+
+            match token_type {
+                tt!("=") => {
+                    todo!("assignment")
+                }
+                tt!(".") => {
+                    todo!("field call")
+                }
+                tt!("(") => {
+                    todo!("function call")
+                }
+                _ => {
+                    if let Some(binary) = self.try_parse_binary(left.clone()) {
+                        left = binary?.into();
+                    } else {
+                        break;
+                    }
+                }
             }
         }
         Ok(left)
@@ -48,8 +72,8 @@ impl<'a, 'b> ExprParser<'a, 'b> {
 
     /// For the start of an expression, only literal, grouping, and unary are allowed.
     /// e.g. `42`, `(42)`, `!42`, `-42`
-    fn parse_start_of_expr_ast(&mut self) -> Result<ExprAst, ParseError> {
-        if let Some(end_node) = self.parse_end_node() {
+    fn try_parse_start_of_expr_ast(&mut self) -> Result<ExprAst, ParseError> {
+        if let Some(end_node) = self.try_parse_end_node() {
             end_node
         } else if let Some(unary) = self.parse_unary() {
             Ok(unary?.into())
@@ -59,7 +83,7 @@ impl<'a, 'b> ExprParser<'a, 'b> {
     }
 
     /// End node := Literal | Grouping
-    fn parse_end_node(&mut self) -> Option<Result<ExprAst, ParseError>> {
+    fn try_parse_end_node(&mut self) -> Option<Result<ExprAst, ParseError>> {
         if let Some(literal) = self.parse_literal() {
             Some(literal.map(Into::into))
         } else {
@@ -141,6 +165,7 @@ mod tests {
 
     #[test]
     fn binary_binding() {
-        let _ = vec![tt!("")];
+        let token_types = vec![tt!("number"), tt!("+"), tt!("number"), tt!("")];
+        test_expr_parse(token_types, "(+ 42.0 42.0)");
     }
 }

@@ -1,75 +1,53 @@
 use crate::{
     parse::expr_ast::{BinaryOp, UnaryOp},
-    tokenize::{tt, TokenType},
+    tokenize::TokenType,
 };
 
-static LEFT_ASSOCIATIVE_OPERATORS: &[TokenType] = &[
-    // Assignment
-    tt!("="),
-    // Binary operators
-    tt!("+"),
-    tt!("-"),
-    tt!("*"),
-    tt!("/"),
-    tt!("=="),
-    tt!("!="),
-    tt!("<"),
-    tt!("<="),
-    tt!(">"),
-    tt!(">="),
-    tt!("and"),
-    tt!("or"),
-    // Field call
-    tt!("."),
-    // Function call
-    tt!("("),
-];
-
-static RIGHT_ASSOCIATIVE_OPERATORS: &[TokenType] = &[
-    // Assignment
-    tt!("="),
-    // Binary operators
-    tt!("+"),
-    tt!("-"),
-    tt!("*"),
-    tt!("/"),
-    tt!("=="),
-    tt!("!="),
-    tt!("<"),
-    tt!("<="),
-    tt!(">"),
-    tt!(">="),
-    tt!("and"),
-    tt!("or"),
-    // Unary
-    tt!("!"),
-    tt!("-"),
-];
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, PartialOrd, Ord)]
 pub enum BindingPower {
-    #[default]
     /// This means that the operator cannot be binded this direction.
+    #[default]
     None,
-    PlusMinusLeft,
-    PlusMinusRight,
-    StarSlashLeft,
-    StarSlashRight,
-    ComparisonLeft,
-    ComparisonRight,
-    AndLeft,
-    AndRight,
+    /// a = b or c := a = (b or c), so [`BindingPower::Assign`] is lower than [`BindingPower::OrLeft`].
+    Assign,
+    /// a or b or c := (a or b) or c, so [`BindingPower::OrLeft`] is lower than [`BindingPower::OrRight`].
     OrLeft,
+    /// a or b and c := a or (b and c), so [`BindingPower::OrRight`] is lower than [`BindingPower::AndLeft`].
     OrRight,
+    /// a and b and c := (a and b) and c, so [`BindingPower::AndLeft`] is lower than [`BindingPower::AndRight`].
+    AndLeft,
+    /// a and b >= c := a and (b >= c), so [`BindingPower::AndRight`] is lower than [`BindingPower::Comparison`].
+    AndRight,
+    /// a >= b + c := a >= (b + c), so [`BindingPower::Comparison`] is lower than [`BindingPower::PlusMinusLeft`].
+    Comparison,
+    /// a + b - c := (a + b) - c, so [`BindingPower::PlusMinusLeft`] is lower than [`BindingPower::PlusMinusRight`].
+    PlusMinusLeft,
+    /// a - b * c := a - (b * c), so [`BindingPower::PlusMinusRight`] is lower than [`BindingPower::StarSlashLeft`].
+    PlusMinusRight,
+    /// a * b / c := (a * b) / c, so [`BindingPower::StarSlashLeft`] is lower than [`BindingPower::StarSlashRight`].
+    StarSlashLeft,
+    /// -a * b := (-a) * b, so [`BindingPower::StarSlashRight`] is lower than [`BindingPower::Unary`].
+    StarSlashRight,
+    /// -a.foo := -(a.foo), so [`BindingPower::Unary`] is lower than [`BindingPower::Call`].
     Unary,
     Call,
 }
 
-impl From<UnaryOp> for (BindingPower, BindingPower) {
-    fn from(op: UnaryOp) -> Self {
-        match op {
-            UnaryOp::Bang | UnaryOp::Minus => (BindingPower::None, BindingPower::Unary),
+impl BindingPower {
+    pub(crate) fn from_token_type(token_type: TokenType) -> (BindingPower, BindingPower) {
+        if let Some(op) = UnaryOp::from_token_type(token_type) {
+            op.into()
+        } else if let Some(op) = BinaryOp::from_token_type(token_type) {
+            op.into()
+        } else {
+            (Self::None, Self::None)
         }
+    }
+}
+
+impl From<UnaryOp> for (BindingPower, BindingPower) {
+    fn from(_: UnaryOp) -> Self {
+        (BindingPower::None, BindingPower::Unary)
     }
 }
 
@@ -87,9 +65,7 @@ impl From<BinaryOp> for (BindingPower, BindingPower) {
             | BinaryOp::Less
             | BinaryOp::LessEqual
             | BinaryOp::Greater
-            | BinaryOp::GreaterEqual => {
-                (BindingPower::ComparisonLeft, BindingPower::ComparisonRight)
-            }
+            | BinaryOp::GreaterEqual => (BindingPower::Comparison, BindingPower::Comparison),
             BinaryOp::And => (BindingPower::AndLeft, BindingPower::AndRight),
             BinaryOp::Or => (BindingPower::OrLeft, BindingPower::OrRight),
         }

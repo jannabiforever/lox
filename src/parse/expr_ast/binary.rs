@@ -68,6 +68,6 @@ impl fmt::Display for BinaryOp {
 
 impl fmt::Display for Binary {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "({} {} {})", self.left, self.op, self.right)
+        write!(f, "({} {} {})", self.op, self.left, self.right)
     }
 }
