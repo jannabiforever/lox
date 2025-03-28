@@ -100,3 +100,39 @@ fn mq1() {
     // #MQ1 test-4
     parse_test!("(!!(true))", stdout = "(group (! (! (group true))))");
 }
+
+/// Arithmetic operators (1/2)
+/// https://app.codecrafters.io/courses/interpreter/stages/wa9
+#[test]
+fn wa9() {
+    // #WA9 test-1
+    parse_test!("29 * 48 / 44", stdout = "(/ (* 29.0 48.0) 44.0)");
+
+    // #WA9 test-2
+    parse_test!("48 / 18 / 56", stdout = "(/ (/ 48.0 18.0) 56.0)");
+
+    // #WA9 test-3
+    parse_test!(
+        "58 * 12 * 60 / 21",
+        stdout = "(/ (* (* 58.0 12.0) 60.0) 21.0)"
+    );
+
+    parse_test!(
+        "(87 * -26 / (27 * 15))",
+        stdout = "(group (/ (* 87.0 (- 26.0)) (group (* 27.0 15.0))))"
+    );
+}
+
+/// Arithmetic operators (2/2)
+/// https://app.codecrafters.io/courses/interpreter/stages/yf2
+#[test]
+fn yf2() {
+    // #YF2 test-1
+    parse_test!(r#""hello" + "world""#, stdout = "(+ hello world)");
+
+    // #YF2 test-2
+    parse_test!(
+        "17 - 15 * 13 - 16",
+        stdout = "(- (- 17.0 (* 15.0 13.0)) 16.0)"
+    );
+}

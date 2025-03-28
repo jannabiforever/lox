@@ -44,7 +44,7 @@ impl<'a, 'b> ExprParser<'a, 'b> {
             // so it is guaranteed that the loop will break.
             //
             // We need to break the loop and not consume the peeked token, so it can be consumed by the stmt parser later.
-            if BindingPower::from_token_type(token_type).0 <= bp {
+            if dbg!(BindingPower::from_token_type(token_type)).0 <= bp {
                 break;
             }
 
@@ -122,50 +122,5 @@ impl ErrorReporter<ParseError> for ExprParser<'_, '_> {
         // So, we might need to subtract 1 from self.current... but it's not that clear.
         // It is not that important for now, but it should be fixed.
         self.tokens[self.current].line
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    //! This test module is for testing single expression parsing.
-    //! So it doesn't really care much about the line number.
-    #![allow(unused)]
-    use crate::tokenize::tt;
-
-    use super::*;
-
-    /// This macro only takes the vector of token types.
-    fn test_expr_parse(token_types: Vec<TokenType>, expected: &str) {
-        let tokens = token_types
-            .iter()
-            .map(|&token_type| {
-                // set default src
-                // TODO: maybe src should be more complete?
-                let src = match token_type {
-                    tt!("number") => "42",
-                    _ => "sample",
-                };
-                WithLine::new(0, Token { token_type, src })
-            })
-            .collect::<Vec<_>>();
-
-        let mut parser = ExprParser::new(&tokens);
-        let expr = parser
-            .parse_within_binding_power(BindingPower::default())
-            .unwrap();
-
-        assert_eq!(
-            format!("{}", expr),
-            expected,
-            "expected: {}, got: {}",
-            expected,
-            expr
-        );
-    }
-
-    #[test]
-    fn binary_binding() {
-        let token_types = vec![tt!("number"), tt!("+"), tt!("number"), tt!("")];
-        test_expr_parse(token_types, "(+ 42.0 42.0)");
     }
 }

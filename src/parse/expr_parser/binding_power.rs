@@ -35,9 +35,13 @@ pub enum BindingPower {
 
 impl BindingPower {
     pub(crate) fn from_token_type(token_type: TokenType) -> (BindingPower, BindingPower) {
-        if let Some(op) = UnaryOp::from_token_type(token_type) {
+        // Note: - is both unary and binary operator.
+        // So be careful when getting the binding power of -.
+        // for most cases, it is a binary operator, because - as an unary operator,
+        // is might be handled for the first expression node by [`ExprParser::try_parse_start_of_expr_ast`].
+        if let Some(op) = BinaryOp::from_token_type(token_type) {
             op.into()
-        } else if let Some(op) = BinaryOp::from_token_type(token_type) {
+        } else if let Some(op) = UnaryOp::from_token_type(token_type) {
             op.into()
         } else {
             (Self::None, Self::None)
