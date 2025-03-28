@@ -39,17 +39,6 @@ impl<T> WithLine<T> {
         (self.line, self.value)
     }
 
-    pub fn as_ref(&self) -> WithLine<&T> {
-        WithLine {
-            line: self.line,
-            value: &self.value,
-        }
-    }
-
-    pub fn into_inner(self) -> T {
-        self.value
-    }
-
     pub fn inner_ref(&self) -> &T {
         &self.value
     }
@@ -96,13 +85,5 @@ pub trait ErrorReporter<E: Into<LoxError>> {
 
     fn wrap<T>(&self, value: T) -> WithLine<T> {
         WithLine::new(self.line(), value)
-    }
-
-    fn get_err<T>(&self, err: E) -> ResultWithLine<T, E> {
-        WithLine::new(self.line(), Err(err))
-    }
-
-    fn get_lox_err<T>(&self, err: E) -> ResultWithLine<T, LoxError> {
-        WithLine::new(self.line(), Err(err.into()))
     }
 }
