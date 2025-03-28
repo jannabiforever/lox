@@ -78,7 +78,8 @@ impl<'a, 'b> ExprParser<'a, 'b> {
         } else if let Some(unary) = self.parse_unary() {
             Ok(unary?.into())
         } else {
-            todo!("error handling for expected end nodes")
+            let token = self.next();
+            Err(ParseError::ExpectedExpression(token.src.to_string()))
         }
     }
 
@@ -101,12 +102,12 @@ impl<'a, 'b> ExprParser<'a, 'b> {
     }
 
     /// Expect the next token to be of a certain type.
-    fn expect(&mut self, token_type: TokenType) -> Result<&Token<'a>, ParseError> {
+    fn expect(&mut self, token_type: TokenType) -> Option<&Token<'a>> {
         let token = self.next();
         if token.token_type == token_type {
-            Ok(token)
+            Some(token)
         } else {
-            todo!("")
+            None
         }
     }
 

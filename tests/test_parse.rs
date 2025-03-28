@@ -165,3 +165,23 @@ fn uh4() {
         stdout = "(>= (group (- 16.0 16.0)) (- (group (+ (/ 29.0 64.0) 19.0))))"
     );
 }
+
+/// Equality operators
+/// https://app.codecrafters.io/courses/interpreter/stages/ht8
+#[test]
+fn ht8() {
+    // #HT8 test-1
+    parse_test!(r#""world" != "hello""#, stdout = "(!= world hello)");
+
+    // #HT8 test-2
+    parse_test!(r#""hello" == "hello""#, stdout = "(== hello hello)");
+
+    // #HT8 test-3
+    parse_test!("70 == 76", stdout = "(== 70.0 76.0)");
+
+    // #HT8 test-4
+    parse_test!(
+        "(89 != 88) == ((-39 + 60) >= (87 * 47))",
+        stdout = "(== (group (!= 89.0 88.0)) (group (>= (group (+ (- 39.0) 60.0)) (group (* 87.0 47.0)))))"
+    );
+}
