@@ -1,6 +1,6 @@
 use crate::{
     parse::expr_ast::{BinaryOp, UnaryOp},
-    tokenize::TokenType,
+    tokenize::{tt, TokenType},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, PartialOrd, Ord)]
@@ -45,7 +45,10 @@ impl BindingPower {
         } else if let Some(op) = UnaryOp::from_token_type(token_type) {
             op.into()
         } else {
-            (Self::None, Self::None)
+            match token_type {
+                tt!("(") | tt!(".") => (Self::Call, Self::None),
+                _ => (Self::None, Self::None),
+            }
         }
     }
 }
