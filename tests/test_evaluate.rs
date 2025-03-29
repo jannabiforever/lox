@@ -35,3 +35,37 @@ fn iz6() {
     // #IZ6 test-3
     evaluate_test!("nil", stdout = "nil");
 }
+
+/// Literals: Strings & Numbers
+/// https://app.codecrafters.io/courses/interpreter/stages/lv1
+#[test]
+fn lv1() {
+    // #LV1 test-1
+    evaluate_test!("20", stdout = "20");
+
+    // #LV2 test-2
+    evaluate_test!("73.47", stdout = "73.47");
+
+    // #LV3 test-3
+    evaluate_test!(r#""quz baz""#, stdout = "quz baz");
+
+    // #LV4 test-4
+    evaluate_test!("19", stdout = "19");
+}
+
+///
+/// https://app.codecrafters.io/courses/interpreter/stages/oq9
+#[test]
+fn oq9() {
+    // #OQ9 test-1
+    evaluate_test!("(true)", stdout = "true");
+
+    // #OQ9 test-2
+    evaluate_test!("(25)", stdout = "25");
+
+    // #OQ9 test-3
+    evaluate_test!(r#"("hello foo")"#, stdout = "hello foo");
+
+    // #OQ9 test-4
+    evaluate_test!("((false))", stdout = "false");
+}
