@@ -13,7 +13,7 @@ macro_rules! evaluate_test {
         assert_eq!(String::from_utf8(err_buf).unwrap().trim(), $stderr.trim());
     };
     ($src:expr, stdout = $stdout:expr) => {
-        parse_test! {
+        evaluate_test! {
             $src,
             exit_code = 0,
             stdout = $stdout,
@@ -25,4 +25,13 @@ macro_rules! evaluate_test {
 /// Literals: Booleans & Nil
 /// https://app.codecrafters.io/courses/interpreter/stages/iz6
 #[test]
-fn iz6() {}
+fn iz6() {
+    // #IZ6 test-1
+    evaluate_test!("true", stdout = "true");
+
+    // #IZ6 test-2
+    evaluate_test!("false", stdout = "false");
+
+    // #IZ6 test-3
+    evaluate_test!("nil", stdout = "nil");
+}

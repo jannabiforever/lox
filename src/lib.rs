@@ -6,6 +6,8 @@ mod tokenize;
 
 use std::{io::Write, process::ExitCode};
 
+use literal::Number;
+
 use self::error::{LoxError, WithLine};
 
 /// Entry point for 'tokenize' command.
@@ -131,6 +133,11 @@ where
     if debug {
         writeln!(ok_buf, "{:?}", result).unwrap();
     } else {
+        let result = match result {
+            // `evaluate` prints numbers differently.
+            literal::Literal::Number(Number(number)) => number.to_string(),
+            _ => result.to_string(),
+        };
         writeln!(ok_buf, "{}", result).unwrap();
     }
 
