@@ -43,6 +43,14 @@ impl<T> WithLine<T> {
     pub fn inner_ref(&self) -> &T {
         &self.value
     }
+
+    pub fn into_inner(self) -> T {
+        self.value
+    }
+
+    pub fn map<F: FnOnce(T) -> U, U>(self, f: F) -> WithLine<U> {
+        WithLine::new(self.line, f(self.value))
+    }
 }
 
 /// A wrapper for a [`Result`] that also contains the line number where the value was found.
