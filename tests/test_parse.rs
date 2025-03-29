@@ -185,3 +185,40 @@ fn ht8() {
         stdout = "(== (group (!= 89.0 88.0)) (group (>= (group (+ (- 39.0) 60.0)) (group (* 87.0 47.0)))))"
     );
 }
+
+/// Syntactic errors
+/// https://app.codecrafters.io/courses/interpreter/stages/wz8
+#[test]
+fn wz8() {
+    // #WZ8 test-1
+    parse_test!(
+        r#""bar"#,
+        exit_code = 65,
+        stdout = "",
+        stderr = "[line 1] Error: Unterminated string."
+    );
+
+    // #WZ8 test-2
+    parse_test!(
+        "(foo",
+        exit_code = 65,
+        stdout = "",
+        stderr = "[line 1] Error at end: Expected ')'."
+    );
+
+    // #WZ8 test-3
+    parse_test!(
+        "(67 +)",
+        exit_code = 65,
+        stdout = "",
+        stderr = "[line 1] Error at ')': Expected expression."
+    );
+
+    // #WZ8 test-4
+    parse_test!(
+        "+",
+        exit_code = 65,
+        stdout = "",
+        stderr = "[line 1] Error at '+': Expected expression."
+    );
+}

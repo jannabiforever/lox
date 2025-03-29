@@ -34,4 +34,16 @@ impl super::ExprParser<'_, '_> {
             _ => None,
         }
     }
+
+    pub(super) fn try_parse_variable(&mut self) -> Option<String> {
+        let peeked = self.peek();
+        let src = peeked.src;
+        match peeked.token_type {
+            tt!("identifier") => {
+                self.next();
+                Some(src.to_string())
+            }
+            _ => None,
+        }
+    }
 }

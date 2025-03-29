@@ -17,7 +17,7 @@ impl super::ExprParser<'_, '_> {
                     Err(e) => return Some(Err(e)),
                 };
 
-                if self.expect(tt!(")")).is_some() {
+                if self.expect(tt!(")")).is_ok() {
                     Some(Ok(Grouping { inner }))
                 } else {
                     Some(Err(ParseError::ExpectedClosingParenthesis))

@@ -1,5 +1,8 @@
+mod assign;
 mod binary;
 mod binding_power;
+mod field_call;
+mod function_call;
 mod grouping;
 mod literal;
 mod unary;
@@ -30,12 +33,14 @@ impl<'a, 'b> ExprParser<'a, 'b> {
         self.wrap(expr)
     }
 
+    /// Parse within the lowest binding power.
+    /// This is the entry point for parsing expressions.
     pub(crate) fn parse(&mut self) -> Result<ExprAst, ParseError> {
         self.parse_within_binding_power(BindingPower::default())
     }
 
     fn parse_within_binding_power(&mut self, bp: BindingPower) -> Result<ExprAst, ParseError> {
-        let mut left = self.try_parse_start_of_expr_ast()?;
+        let mut left = self.parse_start_of_expr_ast()?;
         loop {
             let token_type = self.peek().token_type;
 
@@ -50,13 +55,13 @@ impl<'a, 'b> ExprParser<'a, 'b> {
 
             match token_type {
                 tt!("=") => {
-                    todo!("assignment")
+                    left = self.parse_assign(left)?.into();
                 }
                 tt!(".") => {
-                    todo!("field call")
+                    left = self.parse_field_call(left)?.into();
                 }
                 tt!("(") => {
-                    todo!("function call")
+                    left = self.parse_function_call(left)?.into();
                 }
                 _ => {
                     if let Some(binary) = self.try_parse_binary(left.clone()) {
@@ -72,10 +77,10 @@ impl<'a, 'b> ExprParser<'a, 'b> {
 
     /// For the start of an expression, only literal, grouping, and unary are allowed.
     /// e.g. `42`, `(42)`, `!42`, `-42`
-    fn try_parse_start_of_expr_ast(&mut self) -> Result<ExprAst, ParseError> {
+    fn parse_start_of_expr_ast(&mut self) -> Result<ExprAst, ParseError> {
         if let Some(end_node) = self.try_parse_end_node() {
             end_node
-        } else if let Some(unary) = self.parse_unary() {
+        } else if let Some(unary) = self.try_parse_unary() {
             Ok(unary?.into())
         } else {
             let token = self.next();
@@ -87,6 +92,8 @@ impl<'a, 'b> ExprParser<'a, 'b> {
     fn try_parse_end_node(&mut self) -> Option<Result<ExprAst, ParseError>> {
         if let Some(literal) = self.parse_literal() {
             Some(literal.map(Into::into))
+        } else if let Some(variable) = self.try_parse_variable() {
+            Some(Ok(ExprAst::Variable(variable)))
         } else {
             self.parse_grouping()
                 .map(|grouping| grouping.map(Into::into))
@@ -102,12 +109,13 @@ impl<'a, 'b> ExprParser<'a, 'b> {
     }
 
     /// Expect the next token to be of a certain type.
-    fn expect(&mut self, token_type: TokenType) -> Option<&Token<'a>> {
+    /// If it is, return Ok(token) else return Err(token).
+    fn expect(&mut self, token_type: TokenType) -> Result<&Token<'a>, &Token<'a>> {
         let token = self.next();
         if token.token_type == token_type {
-            Some(token)
+            Ok(token)
         } else {
-            None
+            Err(token)
         }
     }
 
@@ -122,6 +130,9 @@ impl ErrorReporter<ParseError> for ExprParser<'_, '_> {
         // TODO: the correct definition of self.current is the index of the token that would be returned by [`ExprParser::next`] or [`ExprParser::peek`].
         // So, we might need to subtract 1 from self.current... but it's not that clear.
         // It is not that important for now, but it should be fixed.
-        self.tokens[self.current].line
+        if self.current == 0 {
+            return 1;
+        }
+        self.tokens[self.current - 1].line
     }
 }

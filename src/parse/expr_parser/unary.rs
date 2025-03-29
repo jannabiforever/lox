@@ -8,7 +8,7 @@ use super::binding_power::BindingPower;
 impl super::ExprParser<'_, '_> {
     /// Parse a unary expression following only if exists.
     /// And consume from unary operator(!, -) to the right operand.
-    pub(super) fn parse_unary(&mut self) -> Option<Result<Unary, ParseError>> {
+    pub(super) fn try_parse_unary(&mut self) -> Option<Result<Unary, ParseError>> {
         let op = self.eat_unary_op()?;
 
         let right = match self.parse_within_binding_power(BindingPower::Unary) {

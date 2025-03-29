@@ -25,6 +25,13 @@ pub enum ExprAst {
     Grouping(Grouping),
     Literal(Literal),
     Unary(Unary),
+    Variable(String),
+}
+
+impl From<Assign> for ExprAst {
+    fn from(assign: Assign) -> Self {
+        Self::Assign(assign)
+    }
 }
 
 impl From<Binary> for ExprAst {
@@ -36,6 +43,18 @@ impl From<Binary> for ExprAst {
 impl From<Grouping> for ExprAst {
     fn from(grouping: Grouping) -> Self {
         Self::Grouping(grouping)
+    }
+}
+
+impl From<FieldCall> for ExprAst {
+    fn from(field_call: FieldCall) -> Self {
+        Self::FieldCall(field_call)
+    }
+}
+
+impl From<FunctionCall> for ExprAst {
+    fn from(function_call: FunctionCall) -> Self {
+        Self::FunctionCall(function_call)
     }
 }
 
@@ -61,6 +80,7 @@ impl fmt::Display for ExprAst {
             Self::Grouping(v) => write!(f, "{}", v),
             Self::Literal(v) => write!(f, "{}", v),
             Self::Unary(v) => write!(f, "{}", v),
+            Self::Variable(v) => write!(f, "{}", v),
         }
     }
 }

@@ -5,4 +5,10 @@ pub(crate) enum ParseError {
 
     #[error("Error at '{0}': Expected expression.")]
     ExpectedExpression(String),
+
+    #[error("Error at '{0}': Field name must be an identifier.")]
+    ExpectedFieldName(String),
+
+    #[error("Error at '{0}': Invalid function argument.")]
+    InvalidFunctionArgument(String),
 }
