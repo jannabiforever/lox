@@ -1,10 +1,21 @@
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use codecrafters_interpreter::{lox_parse, lox_tokenize};
 use std::{fs, io, path::PathBuf, process::ExitCode};
 
 #[non_exhaustive]
 #[derive(Debug, Parser)]
-enum Cli {
+struct Cli {
+    /// Debug mode
+    #[arg(short, long)]
+    debug: bool,
+
+    /// The command to run
+    #[clap(subcommand)]
+    command: LoxCommand,
+}
+
+#[derive(Debug, Subcommand)]
+enum LoxCommand {
     Tokenize { file_name: PathBuf },
     Parse { file_name: PathBuf },
 }
@@ -18,14 +29,15 @@ fn main() -> ExitCode {
     let mut stdout = io::stdout();
     let mut stderr = io::stderr();
 
-    match arg {
-        Cli::Tokenize { file_name } => {
+    let debug = arg.debug;
+    match arg.command {
+        LoxCommand::Tokenize { file_name } => {
             let src = read(file_name);
-            lox_tokenize(&src, &mut stdout, &mut stderr)
+            lox_tokenize(&src, &mut stdout, &mut stderr, debug)
         }
-        Cli::Parse { file_name } => {
+        LoxCommand::Parse { file_name } => {
             let src = read(file_name);
-            lox_parse(&src, &mut stdout, &mut stderr)
+            lox_parse(&src, &mut stdout, &mut stderr, debug)
         }
     }
 }

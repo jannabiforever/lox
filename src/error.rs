@@ -25,6 +25,7 @@ impl From<ParseError> for LoxError {
 
 /// A wrapper for a value that also contains the line number where the value was found.
 /// This is used for error reporting.
+#[derive(Debug)]
 pub struct WithLine<T> {
     pub line: usize,
     pub value: T,

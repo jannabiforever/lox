@@ -3,6 +3,7 @@ use std::fmt;
 
 use super::tt;
 
+#[derive(Debug)]
 pub(crate) struct Token<'a> {
     /// The reference to the actual source.
     /// Be careful with [`TokenType::String`], because it contains the quotes.
