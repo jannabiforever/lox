@@ -53,7 +53,7 @@ fn lv1() {
     evaluate_test!("19", stdout = "19");
 }
 
-///
+/// Parentheses
 /// https://app.codecrafters.io/courses/interpreter/stages/oq9
 #[test]
 fn oq9() {
@@ -68,4 +68,21 @@ fn oq9() {
 
     // #OQ9 test-4
     evaluate_test!("((false))", stdout = "false");
+}
+
+/// Unary Operators: Negation & Not
+/// https://app.codecrafters.io/courses/interpreter/stages/dc1
+#[test]
+fn dc1() {
+    // #DC1 test-1
+    evaluate_test!("-42", stdout = "-42");
+
+    // #DC1 test-2
+    evaluate_test!("!true", stdout = "false");
+
+    // #DC1 test-3
+    evaluate_test!("!nil", stdout = "true");
+
+    // #DC1 test-4
+    evaluate_test!("(!!25)", stdout = "true");
 }
