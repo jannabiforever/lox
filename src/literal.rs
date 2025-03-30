@@ -8,6 +8,18 @@ pub enum Literal {
     String(String),
 }
 
+impl Literal {
+    /// Check if the literal is truthy.
+    /// In Lox, nil and false are falsy, everything else is truthy.
+    pub fn is_truthy(&self) -> bool {
+        match self {
+            Literal::Nil => false,
+            Literal::Boolean(b) => *b,
+            _ => true,
+        }
+    }
+}
+
 impl From<Number> for Literal {
     fn from(n: Number) -> Self {
         Literal::Number(n)

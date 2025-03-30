@@ -133,12 +133,17 @@ where
     if debug {
         writeln!(ok_buf, "{:?}", result).unwrap();
     } else {
-        let result = match result {
+        match result {
             // `evaluate` prints numbers differently.
-            literal::Literal::Number(Number(number)) => number.to_string(),
-            _ => result.to_string(),
+            Ok(literal::Literal::Number(Number(number))) => {
+                writeln!(ok_buf, "{}", number.to_string()).unwrap()
+            }
+            Ok(res) => writeln!(ok_buf, "{}", res.to_string()).unwrap(),
+            Err(err) => {
+                writeln!(err_buf, "{}", err).unwrap();
+                return ExitCode::from(65);
+            }
         };
-        writeln!(ok_buf, "{}", result).unwrap();
     }
 
     ExitCode::SUCCESS

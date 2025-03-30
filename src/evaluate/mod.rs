@@ -1,4 +1,5 @@
 mod binary;
+mod error;
 mod evaluator;
 mod unary;
 

@@ -1,9 +1,11 @@
 use crate::{literal::Literal, parse::ExprAst};
 
+use super::error::EvaluateError;
+
 pub(crate) struct Evaluator;
 
 impl Evaluator {
-    pub fn eval(&self, expr_ast: &ExprAst) -> Literal {
+    pub fn eval(&self, expr_ast: &ExprAst) -> Result<Literal, EvaluateError> {
         match expr_ast {
             ExprAst::Assign(_) => todo!("self.evaluate_assign(assign)"),
             ExprAst::Binary(binary) => self.evaluate_binary(binary),
@@ -15,7 +17,7 @@ impl Evaluator {
                 let inner = grouping.inner.as_ref();
                 self.eval(inner)
             }
-            ExprAst::Literal(literal) => literal.clone(),
+            ExprAst::Literal(literal) => Ok(literal.clone()),
             ExprAst::Unary(unary) => self.evaluate_unary(unary),
             ExprAst::Variable(_) => todo!("self.evaluate_variable(variable_name)"),
         }
