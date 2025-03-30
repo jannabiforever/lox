@@ -17,6 +17,8 @@ impl Evaluator {
         function(left?, right.deref())
     }
 
+    /// Get the binary function for the given operator.
+    /// LL stands for LazyLiteral.
     fn get_binary_function<LL>(
         &self,
         op: &BinaryOp,
@@ -59,6 +61,50 @@ impl Evaluator {
                     }
                     _ => Err(EvaluateError::OperandMustBe("numbers")),
                 })
+            },
+            BinaryOp::Greater => |left, right| {
+                right.deref().clone().and_then(|right| match (left, right) {
+                    (Literal::Number(left), Literal::Number(right)) => {
+                        Ok(Literal::Boolean(left > right))
+                    }
+                    _ => Err(EvaluateError::OperandMustBe("numbers")),
+                })
+            },
+            BinaryOp::GreaterEqual => |left, right| {
+                right.deref().clone().and_then(|right| match (left, right) {
+                    (Literal::Number(left), Literal::Number(right)) => {
+                        Ok(Literal::Boolean(left >= right))
+                    }
+                    _ => Err(EvaluateError::OperandMustBe("numbers")),
+                })
+            },
+            BinaryOp::Less => |left, right| {
+                right.deref().clone().and_then(|right| match (left, right) {
+                    (Literal::Number(left), Literal::Number(right)) => {
+                        Ok(Literal::Boolean(left < right))
+                    }
+                    _ => Err(EvaluateError::OperandMustBe("numbers")),
+                })
+            },
+            BinaryOp::LessEqual => |left, right| {
+                right.deref().clone().and_then(|right| match (left, right) {
+                    (Literal::Number(left), Literal::Number(right)) => {
+                        Ok(Literal::Boolean(left <= right))
+                    }
+                    _ => Err(EvaluateError::OperandMustBe("numbers")),
+                })
+            },
+            BinaryOp::EqualEqual => |left, right| {
+                right
+                    .deref()
+                    .clone()
+                    .and_then(|right| Ok(Literal::Boolean(left == right)))
+            },
+            BinaryOp::BangEqual => |left, right| {
+                right
+                    .deref()
+                    .clone()
+                    .and_then(|right| Ok(Literal::Boolean(left != right)))
             },
             _ => todo!("Implement other binary operations"),
         }
