@@ -141,7 +141,7 @@ where
             Ok(res) => writeln!(ok_buf, "{}", res.to_string()).unwrap(),
             Err(err) => {
                 writeln!(err_buf, "{}", err).unwrap();
-                return ExitCode::from(65);
+                return ExitCode::from(70);
             }
         };
     }
