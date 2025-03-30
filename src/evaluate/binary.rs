@@ -30,7 +30,7 @@ impl Evaluator {
                     (Literal::Number(left), Literal::Number(right)) => {
                         Ok(Literal::Number(left * right.clone()))
                     }
-                    _ => Err(EvaluateError::OperandMustBe("numbers or strings")),
+                    _ => Err(EvaluateError::OperandMustBe("numbers")),
                 })
             },
             BinaryOp::Slash => |left, right| {
@@ -38,7 +38,26 @@ impl Evaluator {
                     (Literal::Number(left), Literal::Number(right)) => {
                         Ok(Literal::Number(left / right.clone()))
                     }
+                    _ => Err(EvaluateError::OperandMustBe("numbers")),
+                })
+            },
+            BinaryOp::Plus => |left, right| {
+                right.deref().clone().and_then(|right| match (left, right) {
+                    (Literal::Number(left), Literal::Number(right)) => {
+                        Ok(Literal::Number(left + right.clone()))
+                    }
+                    (Literal::String(left), Literal::String(right)) => {
+                        Ok(Literal::String(format!("{}{}", left, right)))
+                    }
                     _ => Err(EvaluateError::OperandMustBe("numbers or strings")),
+                })
+            },
+            BinaryOp::Minus => |left, right| {
+                right.deref().clone().and_then(|right| match (left, right) {
+                    (Literal::Number(left), Literal::Number(right)) => {
+                        Ok(Literal::Number(left - right.clone()))
+                    }
+                    _ => Err(EvaluateError::OperandMustBe("numbers")),
                 })
             },
             _ => todo!("Implement other binary operations"),

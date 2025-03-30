@@ -86,3 +86,20 @@ fn dc1() {
     // #DC1 test-4
     evaluate_test!("(!!25)", stdout = "true");
 }
+
+/// Arithmetic Operators (1/2)
+/// https://app.codecrafters.io/courses/interpreter/stages/bp3
+#[test]
+fn bp3() {
+    // #BP3 test-1
+    evaluate_test!("16 * 58", stdout = "928");
+
+    // #BP3 test-2
+    evaluate_test!("40 / 5", stdout = "8");
+
+    // #BP3 test-3
+    evaluate_test!("7 * 3 / 7 / 1", stdout = "3");
+
+    // #BP3 test-4
+    evaluate_test!("(18 * 3 / (3 * 6))", stdout = "3");
+}
