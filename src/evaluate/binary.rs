@@ -30,7 +30,7 @@ impl Evaluator {
             BinaryOp::Star => |left, right| {
                 right.deref().clone().and_then(|right| match (left, right) {
                     (Literal::Number(left), Literal::Number(right)) => {
-                        Ok(Literal::Number(left * right.clone()))
+                        Ok(Literal::Number(left * right))
                     }
                     _ => Err(EvaluateError::OperandMustBe("numbers")),
                 })
@@ -38,7 +38,7 @@ impl Evaluator {
             BinaryOp::Slash => |left, right| {
                 right.deref().clone().and_then(|right| match (left, right) {
                     (Literal::Number(left), Literal::Number(right)) => {
-                        Ok(Literal::Number(left / right.clone()))
+                        Ok(Literal::Number(left / right))
                     }
                     _ => Err(EvaluateError::OperandMustBe("numbers")),
                 })
@@ -46,7 +46,7 @@ impl Evaluator {
             BinaryOp::Plus => |left, right| {
                 right.deref().clone().and_then(|right| match (left, right) {
                     (Literal::Number(left), Literal::Number(right)) => {
-                        Ok(Literal::Number(left + right.clone()))
+                        Ok(Literal::Number(left + right))
                     }
                     (Literal::String(left), Literal::String(right)) => {
                         Ok(Literal::String(format!("{}{}", left, right)))
@@ -57,7 +57,7 @@ impl Evaluator {
             BinaryOp::Minus => |left, right| {
                 right.deref().clone().and_then(|right| match (left, right) {
                     (Literal::Number(left), Literal::Number(right)) => {
-                        Ok(Literal::Number(left - right.clone()))
+                        Ok(Literal::Number(left - right))
                     }
                     _ => Err(EvaluateError::OperandMustBe("numbers")),
                 })
@@ -98,13 +98,13 @@ impl Evaluator {
                 right
                     .deref()
                     .clone()
-                    .and_then(|right| Ok(Literal::Boolean(left == right)))
+                    .map(|right| Literal::Boolean(left == right))
             },
             BinaryOp::BangEqual => |left, right| {
                 right
                     .deref()
                     .clone()
-                    .and_then(|right| Ok(Literal::Boolean(left != right)))
+                    .map(|right| Literal::Boolean(left != right))
             },
             _ => todo!("Implement other binary operations"),
         }

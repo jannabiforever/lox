@@ -9,103 +9,114 @@ pub(crate) struct Token<'a> {
     /// Be careful with [`TokenType::String`], because it contains the quotes.
     /// e.g) \"Hello, World!\"
     /// It is used for translating literal tokens to its own value.
+    pub line: usize,
     pub src: &'a str,
     pub token_type: TokenType,
 }
 
-impl Token<'_> {
-    pub(crate) const fn eof() -> Self {
-        Self {
-            src: "",
-            token_type: TokenType::Eof,
-        }
-    }
-}
-
 impl<'a> Token<'a> {
     /// Create reserved word tokens or identifiers.
-    pub(crate) fn word(src: &'a str) -> Self {
+    pub(crate) fn word(line: usize, src: &'a str) -> Self {
         match src {
             "and" => Token {
+                line,
                 src,
                 token_type: tt!("and"),
             },
             "class" => Token {
+                line,
                 src,
                 token_type: tt!("class"),
             },
             "else" => Token {
+                line,
                 src,
                 token_type: tt!("else"),
             },
             "false" => Token {
+                line,
                 src,
                 token_type: tt!("false"),
             },
             "fun" => Token {
+                line,
                 src,
                 token_type: tt!("fun"),
             },
             "for" => Token {
+                line,
                 src,
                 token_type: tt!("for"),
             },
             "if" => Token {
+                line,
                 src,
                 token_type: tt!("if"),
             },
             "nil" => Token {
+                line,
                 src,
                 token_type: tt!("nil"),
             },
             "or" => Token {
+                line,
                 src,
                 token_type: tt!("or"),
             },
             "print" => Token {
+                line,
                 src,
                 token_type: tt!("print"),
             },
             "return" => Token {
+                line,
                 src,
                 token_type: tt!("return"),
             },
             "super" => Token {
+                line,
                 src,
                 token_type: tt!("super"),
             },
             "this" => Token {
+                line,
                 src,
                 token_type: tt!("this"),
             },
             "true" => Token {
+                line,
                 src,
                 token_type: tt!("true"),
             },
             "var" => Token {
+                line,
                 src,
                 token_type: tt!("var"),
             },
             "while" => Token {
+                line,
                 src,
                 token_type: tt!("while"),
             },
             _ => Token {
+                line,
                 src,
                 token_type: tt!("identifier"),
             },
         }
     }
 
-    pub(crate) fn number(src: &'a str) -> Self {
+    pub(crate) fn number(line: usize, src: &'a str) -> Self {
         Token {
+            line,
             src,
             token_type: tt!("number"),
         }
     }
 
-    pub(crate) fn string(src: &'a str) -> Self {
+    pub(crate) fn string(line: usize, src: &'a str) -> Self {
         Token {
+            line,
             src,
             token_type: tt!("string"),
         }

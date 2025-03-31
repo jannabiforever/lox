@@ -1,6 +1,6 @@
 use regex::Regex;
 
-use crate::error::{ErrorReporter, LoxError, ResultWithLine};
+use crate::error::{IntoLoxError, LoxError};
 
 use super::{
     regex::{
@@ -8,7 +8,7 @@ use super::{
         WORD_REGEX,
     },
     token::Token,
-    tt,
+    tt, TokenType,
     TokenizeError::{self, *},
 };
 
@@ -29,12 +29,12 @@ impl<'a> Tokenizer<'a> {
 
     /// Wrap the result of `next_token` with the current line number,
     /// and collect them until eof is returned.
-    pub(crate) fn tokenize(&mut self) -> Vec<ResultWithLine<Token<'a>, LoxError>> {
+    pub(crate) fn tokenize(&mut self) -> Vec<Result<Token<'a>, LoxError>> {
         let mut tokens = Vec::new();
 
         loop {
             let token = self.next_token_with_line();
-            match token.inner_ref() {
+            match token.as_ref() {
                 Ok(Token {
                     token_type: tt!(""),
                     ..
@@ -49,9 +49,8 @@ impl<'a> Tokenizer<'a> {
         tokens
     }
 
-    fn next_token_with_line(&mut self) -> ResultWithLine<Token<'a>, LoxError> {
-        let token = self.next_token().map_err(|e| e.into());
-        self.wrap(token)
+    fn next_token_with_line(&mut self) -> Result<Token<'a>, LoxError> {
+        self.next_token().map_err(|e| e.error(self.line))
     }
 
     fn next_token(&mut self) -> Result<Token<'a>, TokenizeError> {
@@ -62,122 +61,65 @@ impl<'a> Tokenizer<'a> {
             // If we find a whitespace, we skip it and continue to the next token.
             self.next_token()?
         } else if let Some(src) = self.consume_match(&RAW_STRING_REGEX) {
-            Token::string(src)
+            Token::string(self.line, src)
         } else if self.consume_match(&UNTERMINATED_STRING_REGEX).is_some() {
             // It is confirmed that the string doesn't have a closing quote,
             // which is not determined by [`UNTERMINATED_STRING_REGEX`], but by [`RAW_STRING_REGEX`] above.
             return Err(UnterminatedString);
         } else if let Some(src) = self.consume_match(&NUMBER_REGEX) {
-            Token::number(src)
+            Token::number(self.line, src)
         } else if let Some(src) = self.consume_match(&WORD_REGEX) {
-            Token::word(src)
+            Token::word(self.line, src)
         } else if let Some(ch) = self.advance() {
             match ch {
-                '(' => Token {
-                    src: "(",
-                    token_type: tt!("("),
-                },
-                ')' => Token {
-                    src: ")",
-                    token_type: tt!(")"),
-                },
-                '{' => Token {
-                    src: "{",
-                    token_type: tt!("{"),
-                },
-                '}' => Token {
-                    src: "}",
-                    token_type: tt!("}"),
-                },
-                ',' => Token {
-                    src: ",",
-                    token_type: tt!(","),
-                },
-                '.' => Token {
-                    src: ".",
-                    token_type: tt!("."),
-                },
-                '-' => Token {
-                    src: "-",
-                    token_type: tt!("-"),
-                },
-                '+' => Token {
-                    src: "+",
-                    token_type: tt!("+"),
-                },
-                ';' => Token {
-                    src: ";",
-                    token_type: tt!(";"),
-                },
-                '*' => Token {
-                    src: "*",
-                    token_type: tt!("*"),
-                },
+                '(' => self.token("(", tt!("(")),
+                ')' => self.token(")", tt!(")")),
+                '{' => self.token("{", tt!("{")),
+                '}' => self.token("}", tt!("}")),
+                ',' => self.token(",", tt!(",")),
+                '.' => self.token(".", tt!(".")),
+                '-' => self.token("-", tt!("-")),
+                '+' => self.token("+", tt!("+")),
+                ';' => self.token(";", tt!(";")),
+                '*' => self.token("*", tt!("*")),
                 '=' => {
                     if self.remain().starts_with('=') {
                         self.advance();
-                        Token {
-                            src: "==",
-                            token_type: tt!("=="),
-                        }
+                        self.token("==", tt!("=="))
                     } else {
-                        Token {
-                            src: "=",
-                            token_type: tt!("="),
-                        }
+                        self.token("=", tt!("="))
                     }
                 }
                 '!' => {
                     if self.remain().starts_with('=') {
                         self.advance();
-                        Token {
-                            src: "!=",
-                            token_type: tt!("!="),
-                        }
+                        self.token("!=", tt!("!="))
                     } else {
-                        Token {
-                            src: "!",
-                            token_type: tt!("!"),
-                        }
+                        self.token("!", tt!("!"))
                     }
                 }
                 '>' => {
                     if self.remain().starts_with('=') {
                         self.advance();
-                        Token {
-                            src: ">=",
-                            token_type: tt!(">="),
-                        }
+                        self.token(">=", tt!(">="))
                     } else {
-                        Token {
-                            src: ">",
-                            token_type: tt!(">"),
-                        }
+                        self.token(">", tt!(">"))
                     }
                 }
                 '<' => {
                     if self.remain().starts_with('=') {
                         self.advance();
-                        Token {
-                            src: "<=",
-                            token_type: tt!("<="),
-                        }
+                        self.token("<=", tt!("<="))
                     } else {
-                        Token {
-                            src: "<",
-                            token_type: tt!("<"),
-                        }
+                        self.token("<", tt!("<"))
                     }
                 }
-                '/' => Token {
-                    src: "/",
-                    token_type: tt!("/"),
-                },
+                '/' => self.token("/", tt!("/")),
                 ch => return Err(UnexpectedCharacter(ch)),
             }
         } else {
             // None of the above, so we must be at the end of the file.
-            Token::eof()
+            self.token("", tt!(""))
         };
 
         Ok(token)
@@ -205,10 +147,12 @@ impl<'a> Tokenizer<'a> {
     fn remain(&self) -> &'a str {
         &self.src[self.pos..]
     }
-}
 
-impl ErrorReporter<TokenizeError> for Tokenizer<'_> {
-    fn line(&self) -> usize {
-        self.line
+    fn token(&self, src: &'a str, token_type: TokenType) -> Token<'a> {
+        Token {
+            line: self.line,
+            src,
+            token_type,
+        }
     }
 }

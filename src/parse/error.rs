@@ -1,3 +1,5 @@
+use crate::error::IntoLoxError;
+
 #[derive(Debug, Clone, thiserror::Error)]
 pub(crate) enum ParseError {
     #[error("Error at end: Expected ')'.")]
@@ -11,4 +13,10 @@ pub(crate) enum ParseError {
 
     #[error("Error at '{0}': Invalid function argument.")]
     InvalidFunctionArgument(String),
+}
+
+impl IntoLoxError for ParseError {
+    fn error_kind(self) -> crate::LoxErrorKind {
+        crate::LoxErrorKind::Parse(self)
+    }
 }

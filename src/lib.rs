@@ -6,9 +6,20 @@ mod tokenize;
 
 use std::{io::Write, process::ExitCode};
 
+use error::LoxError;
 use literal::Number;
 
-use self::error::{LoxError, WithLine};
+use self::error::LoxErrorKind;
+
+macro_rules! debug_writeln {
+    ($w:expr, $obj:ident, $debug:ident) => {
+        if $debug {
+            writeln!($w, "{:?}", $obj).unwrap();
+        } else {
+            writeln!($w, "{}", $obj).unwrap();
+        }
+    };
+}
 
 /// Entry point for 'tokenize' command.
 pub fn lox_tokenize<W1, W2>(src: &str, ok_buf: &mut W1, err_buf: &mut W2, debug: bool) -> ExitCode
@@ -18,27 +29,17 @@ where
 {
     let tokens = tokenize::Tokenizer::new(src).tokenize();
     let mut exit_code = ExitCode::SUCCESS;
-    if debug {
-        for token in tokens {
-            match token.exposure() {
-                Ok(token) => writeln!(ok_buf, "{:?}", token).unwrap(),
-                Err(error_message) => {
-                    writeln!(err_buf, "{:?}", error_message).unwrap();
-                    exit_code = ExitCode::from(65);
-                }
-            }
-        }
-    } else {
-        for token in tokens {
-            match token.exposure() {
-                Ok(token) => writeln!(ok_buf, "{}", token).unwrap(),
-                Err(error_message) => {
-                    writeln!(err_buf, "{}", error_message).unwrap();
-                    exit_code = ExitCode::from(65);
-                }
+
+    for token in tokens {
+        match token.as_ref() {
+            Ok(token) => debug_writeln!(ok_buf, token, debug),
+            Err(error_message) => {
+                debug_writeln!(err_buf, error_message, debug);
+                exit_code = ExitCode::from(65);
             }
         }
     }
+
     exit_code
 }
 
@@ -52,8 +53,7 @@ where
     let tokens = match tokenize::Tokenizer::new(src)
         .tokenize()
         .into_iter()
-        .map(|t_res| t_res.cast_down())
-        .collect::<Result<Vec<_>, WithLine<LoxError>>>()
+        .collect::<Result<Vec<_>, LoxError>>()
     {
         Ok(tokens) => tokens,
         Err(err) => {
@@ -68,7 +68,7 @@ where
 
     let parsed = parse::ExprParser::new(&tokens).parse_with_line();
     if debug {
-        match parsed.exposure() {
+        match parsed {
             Ok(ast) => {
                 writeln!(ok_buf, "{:?}", ast).unwrap();
                 ExitCode::SUCCESS
@@ -79,7 +79,7 @@ where
             }
         }
     } else {
-        match parsed.exposure() {
+        match parsed {
             Ok(ast) => {
                 writeln!(ok_buf, "{}", ast).unwrap();
                 ExitCode::SUCCESS
@@ -102,8 +102,7 @@ where
     let tokens = match tokenize::Tokenizer::new(src)
         .tokenize()
         .into_iter()
-        .map(|t_res| t_res.cast_down())
-        .collect::<Result<Vec<_>, WithLine<LoxError>>>()
+        .collect::<Result<Vec<_>, LoxError>>()
     {
         Ok(tokens) => tokens,
         Err(err) => {
@@ -112,17 +111,10 @@ where
         }
     };
 
-    let parsed = match parse::ExprParser::new(&tokens)
-        .parse_with_line()
-        .cast_down()
-    {
-        Ok(ast_with_line) => ast_with_line.into_inner(),
+    let parsed = match parse::ExprParser::new(&tokens).parse_with_line() {
+        Ok(ast) => ast,
         Err(err) => {
-            if debug {
-                writeln!(err_buf, "{:?}", err).unwrap();
-            } else {
-                writeln!(err_buf, "{}", err).unwrap();
-            }
+            debug_writeln!(err_buf, err, debug);
             return ExitCode::from(65);
         }
     };
@@ -130,20 +122,17 @@ where
     let evaluator = evaluate::Evaluator;
     let result = evaluator.eval(&parsed);
 
-    if debug {
-        writeln!(ok_buf, "{:?}", result).unwrap();
-    } else {
-        match result {
-            // `evaluate` prints numbers differently.
-            Ok(literal::Literal::Number(Number(number))) => {
-                writeln!(ok_buf, "{}", number.to_string()).unwrap()
-            }
-            Ok(res) => writeln!(ok_buf, "{}", res.to_string()).unwrap(),
-            Err(err) => {
-                writeln!(err_buf, "{}", err).unwrap();
-                return ExitCode::from(70);
-            }
-        };
+    let result = result.map(|res| match res {
+        literal::Literal::Number(Number(number)) => number.to_string(),
+        res => res.to_string(),
+    });
+
+    match result {
+        Ok(result) => debug_writeln!(ok_buf, result, debug),
+        Err(error_message) => {
+            debug_writeln!(err_buf, error_message, debug);
+            return ExitCode::from(70);
+        }
     }
 
     ExitCode::SUCCESS

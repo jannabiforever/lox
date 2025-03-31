@@ -10,27 +10,27 @@ mod unary;
 use self::binding_power::BindingPower;
 
 use crate::{
-    error::{ErrorReporter, LoxError, ResultWithLine, WithLine},
+    error::IntoLoxError,
     tokenize::{tt, Token, TokenType},
+    LoxError,
 };
 
 use super::{expr_ast::ExprAst, ParseError};
 
 pub(crate) struct ExprParser<'a, 'b> {
     /// Note: For reporting errors, we need to know the line number.
-    tokens: &'b [WithLine<Token<'a>>],
+    tokens: &'b [Token<'a>],
     /// Index of the token that would be returned by [`ExprParser::next`] or [`ExprParser::peek`].
     current: usize,
 }
 
 impl<'a, 'b> ExprParser<'a, 'b> {
-    pub(crate) fn new(tokens: &'b [WithLine<Token<'a>>]) -> Self {
+    pub(crate) fn new(tokens: &'b [Token<'a>]) -> Self {
         Self { tokens, current: 0 }
     }
 
-    pub(crate) fn parse_with_line(&mut self) -> ResultWithLine<ExprAst, LoxError> {
-        let expr = self.parse().map_err(|e| e.into());
-        self.wrap(expr)
+    pub(crate) fn parse_with_line(&mut self) -> Result<ExprAst, LoxError> {
+        self.parse().map_err(|e| e.error(self.peek().line))
     }
 
     /// Parse within the lowest binding power.
@@ -103,7 +103,7 @@ impl<'a, 'b> ExprParser<'a, 'b> {
     /// Get the next token. Panics if the end of the tokens is reached.
     /// Note: No need to return line number, because it is hanlded by [`ErrorReporter`] trait.
     fn next(&mut self) -> &Token<'a> {
-        let token = self.tokens.get(self.current).unwrap().inner_ref();
+        let token = self.tokens.get(self.current).unwrap();
         self.current += 1;
         token
     }
@@ -120,19 +120,6 @@ impl<'a, 'b> ExprParser<'a, 'b> {
     }
 
     fn peek(&self) -> &Token<'a> {
-        self.tokens.get(self.current).unwrap().inner_ref()
-    }
-}
-
-impl ErrorReporter<ParseError> for ExprParser<'_, '_> {
-    /// current token's line number
-    fn line(&self) -> usize {
-        // TODO: the correct definition of self.current is the index of the token that would be returned by [`ExprParser::next`] or [`ExprParser::peek`].
-        // So, we might need to subtract 1 from self.current... but it's not that clear.
-        // It is not that important for now, but it should be fixed.
-        if self.current == 0 {
-            return 1;
-        }
-        self.tokens[self.current - 1].line
+        self.tokens.get(self.current).unwrap()
     }
 }
