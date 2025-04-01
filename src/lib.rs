@@ -8,6 +8,7 @@ use std::{io::Write, process::ExitCode};
 
 use error::LoxError;
 use literal::Number;
+use tokenize::TokenStream;
 
 use self::error::LoxErrorKind;
 
@@ -66,7 +67,8 @@ where
         }
     };
 
-    let parsed = parse::ExprParser::new(&tokens).parse_with_line();
+    let mut stream = TokenStream::new(&tokens);
+    let parsed = parse::ExprParser::new(&mut stream).parse_with_line();
     if debug {
         match parsed {
             Ok(ast) => {
@@ -111,7 +113,8 @@ where
         }
     };
 
-    let parsed = match parse::ExprParser::new(&tokens).parse_with_line() {
+    let mut stream = TokenStream::new(&tokens);
+    let parsed = match parse::ExprParser::new(&mut stream).parse_with_line() {
         Ok(ast) => ast,
         Err(err) => {
             debug_writeln!(err_buf, err, debug);

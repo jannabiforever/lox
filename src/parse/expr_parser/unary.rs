@@ -21,7 +21,7 @@ impl super::ExprParser<'_, '_> {
 
     /// Consume a unary operator if exists.
     fn eat_unary_op(&mut self) -> Option<UnaryOp> {
-        let token_type = self.peek()?.token_type;
+        let token_type = self.peek().token_type;
         UnaryOp::from_token_type(token_type).inspect(|_| {
             self.next();
         })

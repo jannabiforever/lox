@@ -11,22 +11,19 @@ use self::binding_power::BindingPower;
 
 use crate::{
     error::IntoLoxError,
-    tokenize::{tt, Token, TokenType},
+    tokenize::{tt, Token, TokenStream, TokenType},
     LoxError,
 };
 
 use super::{expr_ast::ExprAst, ParseError};
 
 pub(crate) struct ExprParser<'a, 'b> {
-    /// Note: For reporting errors, we need to know the line number.
-    tokens: &'b [Token<'a>],
-    /// Index of the token that would be returned by [`ExprParser::next`] or [`ExprParser::peek`].
-    current: usize,
+    token_stream: &'b mut TokenStream<'a>,
 }
 
 impl<'a, 'b> ExprParser<'a, 'b> {
-    pub(crate) fn new(tokens: &'b [Token<'a>]) -> Self {
-        Self { tokens, current: 0 }
+    pub(crate) fn new(token_stream: &'b mut TokenStream<'a>) -> Self {
+        Self { token_stream }
     }
 
     pub(crate) fn parse_with_line(&mut self) -> Result<ExprAst, LoxError> {
@@ -42,10 +39,7 @@ impl<'a, 'b> ExprParser<'a, 'b> {
     fn parse_within_binding_power(&mut self, bp: BindingPower) -> Result<ExprAst, ParseError> {
         let mut left = self.parse_start_of_expr_ast()?;
         loop {
-            let token_type = match self.peek() {
-                Some(token) => token.token_type,
-                None => break,
-            };
+            let token_type = self.peek().token_type;
 
             // Note: this line might indicate that peeked token is ';' or ')' or '}' or eof or etc...
             // In that case, [`BindingPower::from_token_type`] returns [`Bindingpower::None`], the lowest binding power,
@@ -105,10 +99,8 @@ impl<'a, 'b> ExprParser<'a, 'b> {
 
     /// Get the next token. Panics if the end of the tokens is reached.
     /// Note: No need to return line number, because it is hanlded by [`ErrorReporter`] trait.
-    fn next(&mut self) -> &Token<'a> {
-        let token = self.tokens.get(self.current).unwrap();
-        self.current += 1;
-        token
+    fn next(&mut self) -> &'a Token<'a> {
+        self.token_stream.next()
     }
 
     /// Expect the next token to be of a certain type.
@@ -122,13 +114,11 @@ impl<'a, 'b> ExprParser<'a, 'b> {
         }
     }
 
-    fn peek(&self) -> Option<&Token<'a>> {
-        self.tokens.get(self.current)
+    fn peek(&self) -> &'a Token<'a> {
+        self.token_stream.peek()
     }
 
     fn line(&self) -> usize {
-        self.peek()
-            .map(|token| token.line)
-            .unwrap_or_else(|| self.tokens.last().map_or(0, |token| token.line))
+        self.token_stream.line()
     }
 }

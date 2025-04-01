@@ -15,7 +15,7 @@ impl ExprParser<'_, '_> {
         let mut arguments = Vec::new();
 
         loop {
-            match self.peek().unwrap().token_type {
+            match self.peek().token_type {
                 tt!(")") => {
                     self.next(); // consume the ')'
                     break;
@@ -24,7 +24,7 @@ impl ExprParser<'_, '_> {
                     let argument = self.parse()?;
                     arguments.push(argument);
 
-                    let peeked = self.peek().ok_or_else(|| ParseError::UnexpectedEof)?;
+                    let peeked = self.peek();
                     let src = peeked.src;
                     match peeked.token_type {
                         tt!(")") => {
