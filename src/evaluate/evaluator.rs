@@ -5,6 +5,10 @@ use super::error::EvaluateError;
 pub(crate) struct Evaluator;
 
 impl Evaluator {
+    pub fn new() -> Self {
+        Evaluator
+    }
+
     pub fn eval(&self, expr_ast: &ExprAst) -> Result<Literal, EvaluateError> {
         match expr_ast {
             ExprAst::Assign(_) => todo!("self.evaluate_assign(assign)"),

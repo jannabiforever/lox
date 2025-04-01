@@ -1,19 +1,31 @@
+mod print;
+
+use crate::{evaluate::Evaluator, literal::Literal, parse::ExprAst};
+
 use super::{stmt_ast::StmtAst, RuntimeError};
 
-pub struct Runtime {
-    stmts: Vec<StmtAst>,
-}
+pub struct Runtime;
 
 impl Runtime {
-    pub fn new(stmts: Vec<StmtAst>) -> Self {
-        Runtime { stmts }
+    pub fn new() -> Self {
+        Runtime
     }
 
-    pub fn run(&mut self) -> Result<(), RuntimeError> {
-        for stmt in &self.stmts {
-            todo!()
+    pub fn run(&mut self, stmt: StmtAst) -> Result<(), RuntimeError> {
+        match stmt {
+            StmtAst::Print(print) => {
+                self.run_print(print)?;
+            }
         }
 
         Ok(())
+    }
+
+    fn evaluate(&self, expr: &ExprAst) -> Result<Literal, RuntimeError> {
+        self.evaluator().eval(expr).map_err(Into::into)
+    }
+
+    fn evaluator(&self) -> Evaluator {
+        Evaluator::new()
     }
 }

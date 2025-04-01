@@ -143,7 +143,7 @@ where
 }
 
 /// Entry point for 'run' command.
-pub fn lox_run<W1, W2>(src: &str, ok_buf: &mut W1, err_buf: &mut W2, debug: bool) -> ExitCode
+pub fn lox_run<W1, W2>(src: &str, _: &mut W1, err_buf: &mut W2, debug: bool) -> ExitCode
 where
     W1: Write,
     W2: Write,
@@ -169,12 +169,13 @@ where
         }
     };
 
-    let mut runtime = run::Runtime::new(stmts);
-    match runtime.run() {
-        Ok(_) => ExitCode::SUCCESS,
-        Err(err) => {
+    let mut runtime = run::Runtime::new();
+    for stmt in stmts {
+        if let Err(err) = runtime.run(stmt) {
             debug_writeln!(err_buf, err, debug);
-            ExitCode::from(70)
+            return ExitCode::from(70);
         }
     }
+
+    ExitCode::SUCCESS
 }

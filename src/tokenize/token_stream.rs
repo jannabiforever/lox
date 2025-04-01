@@ -54,7 +54,14 @@ impl<'a> TokenStream<'a> {
     }
 
     pub fn expired(&self) -> bool {
-        matches!(self.state, TokenStreamState::Expired(_))
+        match self.state {
+            TokenStreamState::NotExpired(index) => {
+                // Check if the next token is EOF
+                let next_token = &self.tokens[index];
+                next_token.token_type == TokenType::Eof
+            }
+            TokenStreamState::Expired(_) => true,
+        }
     }
 
     pub fn line(&self) -> usize {

@@ -1,7 +1,16 @@
-use crate::{error::IntoLoxError, parse::ExprParseError};
+use crate::{error::IntoLoxError, evaluate::EvaluateError, parse::ExprParseError};
 
 #[derive(Debug, Clone, thiserror::Error)]
-pub(crate) enum RuntimeError {}
+pub(crate) enum RuntimeError {
+    #[error("{0}")]
+    EvaluateError(EvaluateError),
+}
+
+impl From<EvaluateError> for RuntimeError {
+    fn from(err: EvaluateError) -> Self {
+        RuntimeError::EvaluateError(err)
+    }
+}
 
 #[derive(Debug, Clone, thiserror::Error)]
 pub(crate) enum StmtParseError {
