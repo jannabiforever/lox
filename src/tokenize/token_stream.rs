@@ -1,4 +1,4 @@
-use super::Token;
+use super::{Token, TokenType};
 
 enum TokenStreamState<'a> {
     /// Index of the next token to be returned.
@@ -22,6 +22,7 @@ impl<'a> TokenStream<'a> {
         }
     }
 
+    /// Get the next token.
     pub fn next(&mut self) -> &'a Token<'a> {
         match self.state {
             TokenStreamState::NotExpired(index) => {
@@ -38,6 +39,17 @@ impl<'a> TokenStream<'a> {
         match self.state {
             TokenStreamState::NotExpired(index) => &self.tokens[index],
             TokenStreamState::Expired(token) => token,
+        }
+    }
+
+    /// Expect the next token to be of a certain type.
+    /// If it is, return Ok(token) else return Err(token).
+    pub fn expect(&mut self, expected: TokenType) -> Result<&'a Token<'a>, &'a Token<'a>> {
+        let token = self.next();
+        if token.token_type == expected {
+            Ok(token)
+        } else {
+            Err(token)
         }
     }
 
