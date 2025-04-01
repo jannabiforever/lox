@@ -1,6 +1,6 @@
 use crate::parse::{
     expr_ast::{Binary, BinaryOp, ExprAst},
-    ParseError,
+    ExprParseError,
 };
 
 use super::binding_power::BindingPower;
@@ -11,7 +11,10 @@ impl super::ExprParser<'_, '_> {
     /// consuming the operator and the right operand.
     ///
     /// Otherwise, it doesn't consume anything and returns `None`.
-    pub(super) fn try_parse_binary(&mut self, lhs: ExprAst) -> Option<Result<Binary, ParseError>> {
+    pub(super) fn try_parse_binary(
+        &mut self,
+        lhs: ExprAst,
+    ) -> Option<Result<Binary, ExprParseError>> {
         let op = self.eat_binary_op()?;
 
         let binding_power: (BindingPower, BindingPower) = op.into();
@@ -30,9 +33,9 @@ impl super::ExprParser<'_, '_> {
     }
 
     fn eat_binary_op(&mut self) -> Option<BinaryOp> {
-        let token_type = self.peek().token_type;
+        let token_type = self.token_stream.peek().token_type;
         BinaryOp::from_token_type(token_type).inspect(|_| {
-            self.next();
+            self.token_stream.next();
         })
     }
 }

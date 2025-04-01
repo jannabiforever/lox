@@ -1,7 +1,7 @@
 use crate::error::IntoLoxError;
 
 #[derive(Debug, Clone, thiserror::Error)]
-pub(crate) enum ParseError {
+pub(crate) enum ExprParseError {
     #[error("Error at end: Expected ')'.")]
     ExpectedClosingParenthesis,
 
@@ -15,7 +15,7 @@ pub(crate) enum ParseError {
     InvalidFunctionArgument(String),
 }
 
-impl IntoLoxError for ParseError {
+impl IntoLoxError for ExprParseError {
     fn error_kind(self) -> crate::LoxErrorKind {
         crate::LoxErrorKind::Parse(self)
     }

@@ -11,11 +11,11 @@ use self::binding_power::BindingPower;
 
 use crate::{
     error::IntoLoxError,
-    tokenize::{tt, Token, TokenStream, TokenType},
+    tokenize::{tt, TokenStream},
     LoxError,
 };
 
-use super::{expr_ast::ExprAst, ParseError};
+use super::{expr_ast::ExprAst, ExprParseError};
 
 pub(crate) struct ExprParser<'a, 'b> {
     token_stream: &'b mut TokenStream<'a>,
@@ -32,14 +32,14 @@ impl<'a, 'b> ExprParser<'a, 'b> {
 
     /// Parse within the lowest binding power.
     /// This is the entry point for parsing expressions.
-    pub(crate) fn parse(&mut self) -> Result<ExprAst, ParseError> {
+    pub(crate) fn parse(&mut self) -> Result<ExprAst, ExprParseError> {
         self.parse_within_binding_power(BindingPower::default())
     }
 
-    fn parse_within_binding_power(&mut self, bp: BindingPower) -> Result<ExprAst, ParseError> {
+    fn parse_within_binding_power(&mut self, bp: BindingPower) -> Result<ExprAst, ExprParseError> {
         let mut left = self.parse_start_of_expr_ast()?;
         loop {
-            let token_type = self.peek().token_type;
+            let token_type = self.token_stream.peek().token_type;
 
             // Note: this line might indicate that peeked token is ';' or ')' or '}' or eof or etc...
             // In that case, [`BindingPower::from_token_type`] returns [`Bindingpower::None`], the lowest binding power,
@@ -74,19 +74,19 @@ impl<'a, 'b> ExprParser<'a, 'b> {
 
     /// For the start of an expression, only literal, grouping, and unary are allowed.
     /// e.g. `42`, `(42)`, `!42`, `-42`
-    fn parse_start_of_expr_ast(&mut self) -> Result<ExprAst, ParseError> {
+    fn parse_start_of_expr_ast(&mut self) -> Result<ExprAst, ExprParseError> {
         if let Some(end_node) = self.try_parse_end_node() {
             end_node
         } else if let Some(unary) = self.try_parse_unary() {
             Ok(unary?.into())
         } else {
-            let token = self.next();
-            Err(ParseError::ExpectedExpression(token.src.to_string()))
+            let token = self.token_stream.next();
+            Err(ExprParseError::ExpectedExpression(token.src.to_string()))
         }
     }
 
     /// End node := Literal | Grouping
-    fn try_parse_end_node(&mut self) -> Option<Result<ExprAst, ParseError>> {
+    fn try_parse_end_node(&mut self) -> Option<Result<ExprAst, ExprParseError>> {
         if let Some(literal) = self.parse_literal() {
             Some(literal.map(Into::into))
         } else if let Some(variable) = self.try_parse_variable() {
@@ -95,27 +95,6 @@ impl<'a, 'b> ExprParser<'a, 'b> {
             self.parse_grouping()
                 .map(|grouping| grouping.map(Into::into))
         }
-    }
-
-    /// Get the next token. Panics if the end of the tokens is reached.
-    /// Note: No need to return line number, because it is hanlded by [`ErrorReporter`] trait.
-    fn next(&mut self) -> &'a Token<'a> {
-        self.token_stream.next()
-    }
-
-    /// Expect the next token to be of a certain type.
-    /// If it is, return Ok(token) else return Err(token).
-    fn expect(&mut self, token_type: TokenType) -> Result<&Token<'a>, &Token<'a>> {
-        let token = self.next();
-        if token.token_type == token_type {
-            Ok(token)
-        } else {
-            Err(token)
-        }
-    }
-
-    fn peek(&self) -> &'a Token<'a> {
-        self.token_stream.peek()
     }
 
     fn line(&self) -> usize {
