@@ -53,6 +53,10 @@ impl<'a> TokenStream<'a> {
         }
     }
 
+    pub fn expired(&self) -> bool {
+        matches!(self.state, TokenStreamState::Expired(_))
+    }
+
     pub fn line(&self) -> usize {
         self.line
     }

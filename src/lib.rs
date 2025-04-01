@@ -2,6 +2,7 @@ mod error;
 mod evaluate;
 mod literal;
 mod parse;
+mod run;
 mod tokenize;
 
 use std::{io::Write, process::ExitCode};
@@ -139,4 +140,41 @@ where
     }
 
     ExitCode::SUCCESS
+}
+
+/// Entry point for 'run' command.
+pub fn lox_run<W1, W2>(src: &str, ok_buf: &mut W1, err_buf: &mut W2, debug: bool) -> ExitCode
+where
+    W1: Write,
+    W2: Write,
+{
+    let tokens = match tokenize::Tokenizer::new(src)
+        .tokenize()
+        .into_iter()
+        .collect::<Result<Vec<_>, LoxError>>()
+    {
+        Ok(tokens) => tokens,
+        Err(err) => {
+            writeln!(err_buf, "{}", err).unwrap();
+            return ExitCode::from(65);
+        }
+    };
+
+    let mut stream = TokenStream::new(&tokens);
+    let stmts = match run::StmtParser::new(&mut stream).parse_all() {
+        Ok(stmts) => stmts,
+        Err(err) => {
+            debug_writeln!(err_buf, err, debug);
+            return ExitCode::from(65);
+        }
+    };
+
+    let mut runtime = run::Runtime::new(stmts);
+    match runtime.run() {
+        Ok(_) => ExitCode::SUCCESS,
+        Err(err) => {
+            debug_writeln!(err_buf, err, debug);
+            ExitCode::from(70)
+        }
+    }
 }

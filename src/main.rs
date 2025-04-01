@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use codecrafters_interpreter::{lox_evaluate, lox_parse, lox_tokenize};
+use codecrafters_interpreter::{lox_evaluate, lox_parse, lox_run, lox_tokenize};
 use std::{fs, io, path::PathBuf, process::ExitCode};
 
 #[non_exhaustive]
@@ -19,6 +19,7 @@ enum LoxCommand {
     Tokenize { file_name: PathBuf },
     Parse { file_name: PathBuf },
     Evaluate { file_name: PathBuf },
+    Run { file_name: PathBuf },
 }
 
 fn read(file_name: PathBuf) -> String {
@@ -43,6 +44,10 @@ fn main() -> ExitCode {
         LoxCommand::Evaluate { file_name } => {
             let src = read(file_name);
             lox_evaluate(&src, &mut stdout, &mut stderr, debug)
+        }
+        LoxCommand::Run { file_name } => {
+            let src = read(file_name);
+            lox_run(&src, &mut stdout, &mut stderr, debug)
         }
     }
 }

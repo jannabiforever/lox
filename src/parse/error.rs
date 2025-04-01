@@ -17,6 +17,6 @@ pub(crate) enum ExprParseError {
 
 impl IntoLoxError for ExprParseError {
     fn error_kind(self) -> crate::LoxErrorKind {
-        crate::LoxErrorKind::Parse(self)
+        crate::LoxErrorKind::ExprParse(self)
     }
 }

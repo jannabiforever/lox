@@ -1,6 +1,11 @@
 use std::fmt;
 
-use crate::{evaluate::EvaluateError, parse::ParseError, tokenize::TokenizeError};
+use crate::{
+    evaluate::EvaluateError,
+    parse::ExprParseError,
+    run::{RuntimeError, StmtParseError},
+    tokenize::TokenizeError,
+};
 
 #[derive(Debug, thiserror::Error)]
 pub(crate) struct LoxError {
@@ -20,10 +25,16 @@ pub(crate) enum LoxErrorKind {
     Tokenize(TokenizeError),
 
     #[error("{0}")]
-    Parse(ParseError),
+    ExprParse(ExprParseError),
 
     #[error("{0}")]
     Evaluate(EvaluateError),
+
+    #[error("{0}")]
+    StmtParse(StmtParseError),
+
+    #[error("{0}")]
+    Runtime(RuntimeError),
 }
 
 impl From<TokenizeError> for LoxErrorKind {
@@ -32,9 +43,9 @@ impl From<TokenizeError> for LoxErrorKind {
     }
 }
 
-impl From<ParseError> for LoxErrorKind {
-    fn from(value: ParseError) -> Self {
-        Self::Parse(value)
+impl From<ExprParseError> for LoxErrorKind {
+    fn from(value: ExprParseError) -> Self {
+        Self::ExprParse(value)
     }
 }
 
