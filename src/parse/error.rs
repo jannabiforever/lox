@@ -13,6 +13,9 @@ pub(crate) enum ParseError {
 
     #[error("Error at '{0}': Invalid function argument.")]
     InvalidFunctionArgument(String),
+
+    #[error("Error at end: Unexpected EOF.")]
+    UnexpectedEof,
 }
 
 impl IntoLoxError for ParseError {

@@ -30,7 +30,7 @@ impl super::ExprParser<'_, '_> {
     }
 
     fn eat_binary_op(&mut self) -> Option<BinaryOp> {
-        let token_type = self.peek().token_type;
+        let token_type = self.peek()?.token_type;
         BinaryOp::from_token_type(token_type).inspect(|_| {
             self.next();
         })

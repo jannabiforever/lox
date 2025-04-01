@@ -6,7 +6,7 @@ use crate::{
 
 impl super::ExprParser<'_, '_> {
     pub(super) fn parse_literal(&mut self) -> Option<Result<Literal, ParseError>> {
-        let peeked = self.peek();
+        let peeked = self.peek()?;
         let src = peeked.src;
         match peeked.token_type {
             tt!("nil") => {
@@ -36,7 +36,7 @@ impl super::ExprParser<'_, '_> {
     }
 
     pub(super) fn try_parse_variable(&mut self) -> Option<String> {
-        let peeked = self.peek();
+        let peeked = self.peek()?;
         let src = peeked.src;
         match peeked.token_type {
             tt!("identifier") => {

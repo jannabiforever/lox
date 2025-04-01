@@ -30,7 +30,7 @@ impl<'a, 'b> ExprParser<'a, 'b> {
     }
 
     pub(crate) fn parse_with_line(&mut self) -> Result<ExprAst, LoxError> {
-        self.parse().map_err(|e| e.error(self.peek().line))
+        self.parse().map_err(|e| e.error(self.line()))
     }
 
     /// Parse within the lowest binding power.
@@ -42,7 +42,10 @@ impl<'a, 'b> ExprParser<'a, 'b> {
     fn parse_within_binding_power(&mut self, bp: BindingPower) -> Result<ExprAst, ParseError> {
         let mut left = self.parse_start_of_expr_ast()?;
         loop {
-            let token_type = self.peek().token_type;
+            let token_type = match self.peek() {
+                Some(token) => token.token_type,
+                None => break,
+            };
 
             // Note: this line might indicate that peeked token is ';' or ')' or '}' or eof or etc...
             // In that case, [`BindingPower::from_token_type`] returns [`Bindingpower::None`], the lowest binding power,
@@ -119,7 +122,13 @@ impl<'a, 'b> ExprParser<'a, 'b> {
         }
     }
 
-    fn peek(&self) -> &Token<'a> {
-        self.tokens.get(self.current).unwrap()
+    fn peek(&self) -> Option<&Token<'a>> {
+        self.tokens.get(self.current)
+    }
+
+    fn line(&self) -> usize {
+        self.peek()
+            .map(|token| token.line)
+            .unwrap_or_else(|| self.tokens.last().map_or(0, |token| token.line))
     }
 }
