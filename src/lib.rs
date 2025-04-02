@@ -8,7 +8,6 @@ mod tokenize;
 use std::{io::Write, process::ExitCode};
 
 use error::LoxError;
-use literal::Number;
 use tokenize::TokenStream;
 
 use self::error::LoxErrorKind;
@@ -110,10 +109,8 @@ where
     let evaluator = evaluate::Evaluator;
     let result = evaluator.eval(&parsed);
 
-    let result = result.map(|res| match res {
-        literal::Literal::Number(Number(number)) => number.to_string(),
-        res => res.to_string(),
-    });
+    // Pretty print for evaluate command.
+    let result = result.map(|res| res.pretty());
 
     match result {
         Ok(result) => debug_writeln!(ok_buf, result, debug),

@@ -18,6 +18,13 @@ impl Literal {
             _ => true,
         }
     }
+
+    pub fn pretty(&self) -> String {
+        match self {
+            Literal::Number(Number(n)) => n.to_string(),
+            v => v.to_string(),
+        }
+    }
 }
 
 impl From<Number> for Literal {
