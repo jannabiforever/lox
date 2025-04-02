@@ -1,6 +1,9 @@
 mod print;
 
-use super::{error::StmtParseError, stmt_ast::StmtAst};
+use super::{
+    error::StmtParseError,
+    stmt_ast::{Expression, StmtAst},
+};
 use crate::{
     parse::{ExprAst, ExprParser},
     tokenize::tt,
@@ -30,7 +33,16 @@ impl<'a> StmtParser<'a, '_> {
     pub fn parse(&mut self) -> Result<StmtAst, StmtParseError> {
         match self.token_stream.peek().token_type {
             tt!("print") => self.parse_print().map(Into::into),
-            _ => todo!("Parse other statements"),
+            _ => {
+                // Expression statement.
+                let expr = self.parse_following_expression()?;
+                self.token_stream
+                    .expect(tt!(";"))
+                    .map_err(|unexpected_token| {
+                        StmtParseError::ExpectedSemicolon(unexpected_token.to_string())
+                    })?;
+                Ok(Expression { expr }.into())
+            }
         }
     }
 

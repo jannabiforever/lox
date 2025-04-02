@@ -16,6 +16,10 @@ impl Runtime {
             StmtAst::Print(print) => {
                 self.run_print(print)?;
             }
+            StmtAst::Expression(expr) => {
+                // Evaluate the expression, but ignore the result.
+                self.evaluate(&expr.expr)?;
+            }
         }
 
         Ok(())
