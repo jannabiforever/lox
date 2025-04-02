@@ -20,6 +20,9 @@ impl Runtime {
                 // Evaluate the expression, but ignore the result.
                 self.evaluate(&expr.expr)?;
             }
+            StmtAst::VarDecl(_) => {
+                todo!("Variable declaration is not implemented yet.");
+            }
         }
 
         Ok(())

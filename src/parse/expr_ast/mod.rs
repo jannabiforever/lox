@@ -28,6 +28,12 @@ pub enum ExprAst {
     Variable(String),
 }
 
+impl Default for ExprAst {
+    fn default() -> Self {
+        Self::Literal(Literal::Nil)
+    }
+}
+
 impl From<Assign> for ExprAst {
     fn from(assign: Assign) -> Self {
         Self::Assign(assign)

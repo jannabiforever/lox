@@ -19,6 +19,9 @@ pub(crate) enum StmtParseError {
 
     #[error("Expected semicolon, but found {0}")]
     ExpectedSemicolon(String),
+
+    #[error("Expected assign or variable after 'var', but found {0}")]
+    InvalidVarDecl(String),
 }
 
 impl From<ExprParseError> for StmtParseError {

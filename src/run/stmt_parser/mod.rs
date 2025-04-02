@@ -1,4 +1,5 @@
 mod print;
+mod var_decl;
 
 use super::{
     error::StmtParseError,
@@ -33,6 +34,7 @@ impl<'a> StmtParser<'a, '_> {
     pub fn parse(&mut self) -> Result<StmtAst, StmtParseError> {
         match self.token_stream.peek().token_type {
             tt!("print") => self.parse_print().map(Into::into),
+            tt!("var") => self.parse_var_decl().map(Into::into),
             _ => {
                 // Expression statement.
                 let expr = self.parse_following_expression()?;
