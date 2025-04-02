@@ -59,38 +59,22 @@ where
     {
         Ok(tokens) => tokens,
         Err(err) => {
-            if debug {
-                writeln!(err_buf, "{:?}", err).unwrap();
-            } else {
-                writeln!(err_buf, "{}", err).unwrap();
-            }
+            debug_writeln!(err_buf, err, debug);
             return ExitCode::from(65);
         }
     };
 
     let mut stream = TokenStream::new(&tokens);
     let parsed = parse::ExprParser::new(&mut stream).parse_with_line();
-    if debug {
-        match parsed {
-            Ok(ast) => {
-                writeln!(ok_buf, "{:?}", ast).unwrap();
-                ExitCode::SUCCESS
-            }
-            Err(err) => {
-                writeln!(err_buf, "{:?}", err).unwrap();
-                ExitCode::from(65)
-            }
+
+    match parsed {
+        Ok(ast) => {
+            debug_writeln!(ok_buf, ast, debug);
+            ExitCode::SUCCESS
         }
-    } else {
-        match parsed {
-            Ok(ast) => {
-                writeln!(ok_buf, "{}", ast).unwrap();
-                ExitCode::SUCCESS
-            }
-            Err(err) => {
-                writeln!(err_buf, "{}", err).unwrap();
-                ExitCode::from(65)
-            }
+        Err(err) => {
+            debug_writeln!(err_buf, err, debug);
+            ExitCode::from(65)
         }
     }
 }
@@ -109,7 +93,7 @@ where
     {
         Ok(tokens) => tokens,
         Err(err) => {
-            writeln!(err_buf, "{}", err).unwrap();
+            debug_writeln!(err_buf, err, debug);
             return ExitCode::from(65);
         }
     };
@@ -155,7 +139,7 @@ where
     {
         Ok(tokens) => tokens,
         Err(err) => {
-            writeln!(err_buf, "{}", err).unwrap();
+            debug_writeln!(err_buf, err, debug);
             return ExitCode::from(65);
         }
     };
