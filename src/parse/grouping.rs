@@ -1,7 +1,19 @@
-use crate::{
-    parse::{expr_ast::Grouping, ExprParseError},
-    tokenize::tt,
-};
+use std::fmt;
+
+use crate::tokenize::tt;
+
+use super::{ExprAst, ExprParseError};
+
+#[derive(Debug, Clone)]
+pub struct Grouping {
+    pub inner: Box<ExprAst>,
+}
+
+impl fmt::Display for Grouping {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "(group {})", self.inner)
+    }
+}
 
 impl super::ExprParser<'_, '_> {
     /// Parse a grouping expression follwing only if exists.

@@ -1,9 +1,18 @@
-use crate::parse::{
-    expr_ast::{Assign, ExprAst},
-    ExprParseError,
-};
+use std::fmt;
 
-use super::binding_power::BindingPower;
+use super::{binding_power::BindingPower, ExprAst, ExprParseError};
+
+#[derive(Debug, Clone)]
+pub struct Assign {
+    pub assignee: Box<ExprAst>,
+    pub value: Box<ExprAst>,
+}
+
+impl fmt::Display for Assign {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "(= {} {})", self.assignee, self.value)
+    }
+}
 
 impl super::ExprParser<'_, '_> {
     pub(super) fn parse_assign(&mut self, left: ExprAst) -> Result<Assign, ExprParseError> {

@@ -1,7 +1,6 @@
-use crate::{
-    parse::expr_ast::{BinaryOp, UnaryOp},
-    tokenize::{tt, TokenType},
-};
+use crate::tokenize::{tt, TokenType};
+
+use super::{binary::BinaryOp, unary::UnaryOp};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, PartialOrd, Ord)]
 pub enum BindingPower {

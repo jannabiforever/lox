@@ -1,12 +1,20 @@
-use crate::{
-    parse::{
-        expr_ast::{ExprAst, FieldCall},
-        ExprParseError,
-    },
-    tokenize::tt,
-};
+use std::fmt;
 
-use super::ExprParser;
+use crate::tokenize::tt;
+
+use super::{ExprAst, ExprParseError, ExprParser};
+
+#[derive(Debug, Clone)]
+pub struct FieldCall {
+    pub object: Box<ExprAst>,
+    pub field: String,
+}
+
+impl fmt::Display for FieldCall {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}.{}", self.object, self.field)
+    }
+}
 
 impl ExprParser<'_, '_> {
     pub(super) fn parse_field_call(&mut self, left: ExprAst) -> Result<FieldCall, ExprParseError> {
