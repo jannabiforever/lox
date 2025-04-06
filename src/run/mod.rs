@@ -63,6 +63,7 @@ impl StmtParser<'_, '_> {
         match self.token_stream.peek().token_type {
             tt!("print") => self.parse_print().map(Into::into),
             tt!("var") => self.parse_var_decl().map(Into::into),
+            tt!("{") => self.parse_block().map(Into::into),
             _ => self.parse_expression_stmt().map(Into::into),
         }
     }
@@ -91,8 +92,8 @@ impl StmtParser<'_, '_> {
 ///
 /// Represents the runtime environment for the interpreter.
 ///
-/// The `Runtime` struct holds a reference to the global environment, which
-/// is shared across the execution of the program. The global environment
+/// The `Runtime` struct holds a reference to the current scope's environment,
+/// which is shared across the execution of the program. Environment
 /// contains variables and their associated values, and it is managed using
 /// reference counting and interior mutability to allow for safe and flexible
 /// updates during runtime.

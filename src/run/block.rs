@@ -1,8 +1,28 @@
-use super::{Runtime, RuntimeError, StmtAst};
+use crate::tokenize::tt;
+
+use super::{Runtime, RuntimeError, StmtAst, StmtParseError, StmtParser};
 
 #[derive(Debug, Clone)]
 pub(crate) struct Block {
     inner: Vec<StmtAst>,
+}
+
+impl StmtParser<'_, '_> {
+    pub(super) fn parse_block(&mut self) -> Result<Block, StmtParseError> {
+        let mut inner = Vec::new();
+
+        self.token_stream.next(); // Consume '{'.
+        while self.token_stream.peek().token_type == tt!("}") {
+            let next_stmt = self.parse()?;
+            inner.push(next_stmt);
+        }
+
+        self.token_stream
+            .expect(tt!("}"))
+            .map_err(|_| StmtParseError::ExpectedEndOfBracket)?;
+
+        Ok(Block { inner })
+    }
 }
 
 impl Runtime {

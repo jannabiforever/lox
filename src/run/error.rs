@@ -27,6 +27,9 @@ pub(crate) enum StmtParseError {
 
     #[error("Expected assign or variable after 'var', but found {0}")]
     InvalidVarDecl(String),
+
+    #[error("Error at end: Expected end of bracket")]
+    ExpectedEndOfBracket,
 }
 
 impl_from!(StmtParseError: ExprParseError);
