@@ -15,9 +15,10 @@ impl Evaluator {
         };
         let value = self.eval(&assign.value)?;
 
-        self.env.borrow_mut().update(name, value.clone())?;
-
-        // Return the value that was assigned.
-        Ok(value)
+        if self.env.borrow_mut().update(&name, value.clone()) {
+            Ok(value)
+        } else {
+            Err(EvaluateError::UndefinedVariable(name))
+        }
     }
 }

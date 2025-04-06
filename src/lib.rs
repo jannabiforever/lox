@@ -1,6 +1,8 @@
+mod env;
 mod error;
 mod evaluate;
 mod literal;
+mod mac;
 mod parse;
 mod run;
 mod tokenize;

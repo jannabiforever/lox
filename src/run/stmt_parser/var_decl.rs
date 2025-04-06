@@ -8,7 +8,7 @@ use super::StmtParser;
 impl StmtParser<'_, '_> {
     pub fn parse_var_decl(&mut self) -> Result<VarDecl, StmtParseError> {
         self.token_stream.next(); // consume the 'var' token.
-        let following = dbg!(self.parse_following_expression()?);
+        let following = self.parse_following_expression()?;
 
         let result = match following {
             // e.g. var x;

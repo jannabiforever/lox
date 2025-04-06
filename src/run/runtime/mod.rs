@@ -3,11 +3,7 @@ mod var_decl;
 
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{
-    evaluate::{Environment, Evaluator},
-    literal::Literal,
-    parse::ExprAst,
-};
+use crate::{env::Environment, evaluate::Evaluator, literal::Literal, mac::rc_rc, parse::ExprAst};
 
 use super::{stmt_ast::StmtAst, RuntimeError};
 
@@ -18,7 +14,7 @@ pub struct Runtime {
 impl Runtime {
     pub fn new() -> Self {
         Runtime {
-            global_env: Rc::new(RefCell::new(Environment::new())),
+            global_env: rc_rc!(Environment::new()),
         }
     }
 
@@ -41,5 +37,12 @@ impl Runtime {
 
     fn evaluator(&self) -> Evaluator {
         Evaluator::with_env(self.global_env.clone())
+    }
+
+    fn assignable_key(&self, expr: &ExprAst) -> Result<String, RuntimeError> {
+        match expr {
+            ExprAst::Variable(variable) => Ok(variable.clone()),
+            rest => Err(RuntimeError::InvalidAssignmentTarget(rest.to_string())),
+        }
     }
 }

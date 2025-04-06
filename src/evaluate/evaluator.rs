@@ -1,11 +1,13 @@
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
+    env::Environment,
     literal::Literal,
+    mac::rc_rc,
     parse::{ExprAst, Grouping},
 };
 
-use super::{error::EvaluateError, Environment};
+use super::error::EvaluateError;
 
 pub(crate) struct Evaluator {
     pub(super) env: Rc<RefCell<Environment>>,
@@ -14,7 +16,7 @@ pub(crate) struct Evaluator {
 impl Evaluator {
     pub fn new() -> Self {
         Evaluator {
-            env: Rc::new(RefCell::new(Environment::new())),
+            env: rc_rc!(Environment::new()),
         }
     }
 
@@ -30,10 +32,7 @@ impl Evaluator {
             ExprAst::FunctionCall(_) => {
                 todo!("self.evaluate_function_call(function_call)")
             }
-            ExprAst::Grouping(Grouping { inner }) => {
-                let inner = inner.as_ref();
-                self.eval(inner)
-            }
+            ExprAst::Grouping(Grouping { inner }) => self.eval(inner.as_ref()),
             ExprAst::Literal(literal) => Ok(literal.clone()),
             ExprAst::Unary(unary) => self.evaluate_unary(unary),
             ExprAst::Variable(variable) => self.evaluate_variable(variable),
