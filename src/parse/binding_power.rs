@@ -7,8 +7,10 @@ pub enum BindingPower {
     /// This means that the operator cannot be binded this direction.
     #[default]
     None,
-    /// a = b or c := a = (b or c), so [`BindingPower::Assign`] is lower than [`BindingPower::OrLeft`].
-    Assign,
+    /// a = b = c := a = (b = c), so [`BindingPower::AssignLeft`] is lower than [`BindingPower::AssignRight`].
+    AssignLeft,
+    /// a = b or c := a = (b or c), so [`BindingPower::AssignRight`] is lower than [`BindingPower::OrLeft`].
+    AssignRight,
     /// a or b or c := (a or b) or c, so [`BindingPower::OrLeft`] is lower than [`BindingPower::OrRight`].
     OrLeft,
     /// a or b and c := a or (b and c), so [`BindingPower::OrRight`] is lower than [`BindingPower::AndLeft`].
@@ -46,7 +48,7 @@ impl BindingPower {
         } else {
             match token_type {
                 tt!("(") | tt!(".") => (Self::Call, Self::None),
-                tt!("=") => (Self::Assign, Self::Assign),
+                tt!("=") => (Self::AssignLeft, Self::AssignRight),
                 _ => (Self::None, Self::None),
             }
         }
