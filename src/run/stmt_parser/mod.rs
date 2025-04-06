@@ -21,7 +21,7 @@ impl<'a, 'b> StmtParser<'a, 'b> {
     }
 }
 
-impl<'a> StmtParser<'a, '_> {
+impl StmtParser<'_, '_> {
     pub fn parse_all(mut self) -> Result<Vec<StmtAst>, StmtParseError> {
         let mut statements = Vec::new();
         while !self.token_stream.expired() {
@@ -49,7 +49,7 @@ impl<'a> StmtParser<'a, '_> {
     }
 
     fn parse_following_expression(&mut self) -> Result<ExprAst, StmtParseError> {
-        ExprParser::new(&mut self.token_stream)
+        ExprParser::new(self.token_stream)
             .parse()
             .map_err(Into::into)
     }

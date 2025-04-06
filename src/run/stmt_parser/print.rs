@@ -5,7 +5,7 @@ use crate::{
 
 use super::StmtParser;
 
-impl<'a> StmtParser<'a, '_> {
+impl StmtParser<'_, '_> {
     pub fn parse_print(&mut self) -> Result<Print, StmtParseError> {
         self.token_stream.next(); // consume the 'print' token.
         let expr = self.parse_following_expression()?;

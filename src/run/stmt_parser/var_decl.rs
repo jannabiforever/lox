@@ -5,7 +5,7 @@ use crate::{
 
 use super::StmtParser;
 
-impl<'a> StmtParser<'a, '_> {
+impl StmtParser<'_, '_> {
     pub fn parse_var_decl(&mut self) -> Result<VarDecl, StmtParseError> {
         self.token_stream.next(); // consume the 'var' token.
         let following = self.parse_following_expression()?;
