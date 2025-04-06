@@ -20,6 +20,7 @@ pub(crate) use self::unary::{Unary, UnaryOp};
 
 use self::binding_power::BindingPower;
 
+use crate::mac::impl_from;
 use crate::{
     error::IntoLoxError,
     literal::Literal,
@@ -45,47 +46,9 @@ impl Default for ExprAst {
     }
 }
 
-impl From<Assign> for ExprAst {
-    fn from(assign: Assign) -> Self {
-        Self::Assign(assign)
-    }
-}
-
-impl From<Binary> for ExprAst {
-    fn from(value: Binary) -> Self {
-        Self::Binary(value)
-    }
-}
-
-impl From<Grouping> for ExprAst {
-    fn from(grouping: Grouping) -> Self {
-        Self::Grouping(grouping)
-    }
-}
-
-impl From<FieldCall> for ExprAst {
-    fn from(field_call: FieldCall) -> Self {
-        Self::FieldCall(field_call)
-    }
-}
-
-impl From<FunctionCall> for ExprAst {
-    fn from(function_call: FunctionCall) -> Self {
-        Self::FunctionCall(function_call)
-    }
-}
-
-impl From<Literal> for ExprAst {
-    fn from(literal: Literal) -> Self {
-        Self::Literal(literal)
-    }
-}
-
-impl From<Unary> for ExprAst {
-    fn from(unary: Unary) -> Self {
-        Self::Unary(unary)
-    }
-}
+impl_from!(
+    ExprAst: Assign, Binary, Grouping, FieldCall, FunctionCall, Literal, Unary
+);
 
 impl fmt::Display for ExprAst {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

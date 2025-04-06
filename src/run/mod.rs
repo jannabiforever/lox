@@ -14,7 +14,7 @@ pub(crate) use self::var_decl::VarDecl;
 use crate::env::Environment;
 use crate::evaluate::Evaluator;
 use crate::literal::Literal;
-use crate::mac::rc_rc;
+use crate::mac::{impl_from, rc_rc};
 use crate::{
     parse::{ExprAst, ExprParser},
     tokenize::tt,
@@ -29,23 +29,7 @@ pub(crate) enum StmtAst {
     VarDecl(VarDecl),
 }
 
-impl From<Expression> for StmtAst {
-    fn from(expression: Expression) -> Self {
-        StmtAst::Expression(expression)
-    }
-}
-
-impl From<Print> for StmtAst {
-    fn from(print: Print) -> Self {
-        StmtAst::Print(print)
-    }
-}
-
-impl From<VarDecl> for StmtAst {
-    fn from(var_decl: VarDecl) -> Self {
-        StmtAst::VarDecl(var_decl)
-    }
-}
+impl_from!(StmtAst: Expression, Print, VarDecl);
 
 /// Parser for statement AST.
 /// Generic 'a is for the source's lifetime.

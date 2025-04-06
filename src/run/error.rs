@@ -1,4 +1,4 @@
-use crate::{error::IntoLoxError, evaluate::EvaluateError, parse::ExprParseError};
+use crate::{error::IntoLoxError, evaluate::EvaluateError, mac::impl_from, parse::ExprParseError};
 
 #[derive(Debug, Clone, thiserror::Error)]
 pub(crate) enum RuntimeError {
@@ -9,11 +9,7 @@ pub(crate) enum RuntimeError {
     InvalidAssignmentTarget(String),
 }
 
-impl From<EvaluateError> for RuntimeError {
-    fn from(err: EvaluateError) -> Self {
-        RuntimeError::EvaluateError(err)
-    }
-}
+impl_from!(RuntimeError: EvaluateError);
 
 impl IntoLoxError for RuntimeError {
     fn error_kind(self) -> crate::LoxErrorKind {
@@ -33,11 +29,7 @@ pub(crate) enum StmtParseError {
     InvalidVarDecl(String),
 }
 
-impl From<ExprParseError> for StmtParseError {
-    fn from(err: ExprParseError) -> Self {
-        StmtParseError::ExprParseError(err)
-    }
-}
+impl_from!(StmtParseError: ExprParseError);
 
 impl IntoLoxError for StmtParseError {
     fn error_kind(self) -> crate::LoxErrorKind {
