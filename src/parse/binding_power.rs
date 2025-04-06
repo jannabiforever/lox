@@ -7,41 +7,31 @@ pub enum BindingPower {
     /// This means that the operator cannot be binded this direction.
     #[default]
     None,
-    /// a = b = c := a = (b = c),
-    /// so [`BindingPower::AssignLeft`] is lower than [`BindingPower::AssignRight`].
-    AssignLeft,
     /// a = b or c := a = (b or c),
-    /// so [`BindingPower::AssignRight`] is lower than [`BindingPower::OrLeft`].
     AssignRight,
     /// a or b or c := (a or b) or c,
-    /// so [`BindingPower::OrLeft`] is lower than [`BindingPower::OrRight`].
     OrLeft,
-    /// a or b and c := a or (b and c),
-    /// so [`BindingPower::OrRight`] is lower than [`BindingPower::AndLeft`].
+    /// a or b = c := a or (b = c),
     OrRight,
+    /// a and b = c is not desirable ast...
+    /// but treat as (a and b) = c when parsing,
+    /// so it can raise error.
+    AssignLeft,
     /// a and b and c := (a and b) and c,
-    /// so [`BindingPower::AndLeft`] is lower than [`BindingPower::AndRight`].
     AndLeft,
     /// a and b >= c := a and (b >= c),
-    /// so [`BindingPower::AndRight`] is lower than [`BindingPower::Comparison`].
     AndRight,
     /// a >= b + c := a >= (b + c),
-    /// so [`BindingPower::Comparison`] is lower than [`BindingPower::PlusMinusLeft`].
     Comparison,
     /// a + b - c := (a + b) - c,
-    /// so [`BindingPower::PlusMinusLeft`] is lower than [`BindingPower::PlusMinusRight`].
     PlusMinusLeft,
     /// a - b * c := a - (b * c),
-    /// so [`BindingPower::PlusMinusRight`] is lower than [`BindingPower::StarSlashLeft`].
     PlusMinusRight,
     /// a * b / c := (a * b) / c,
-    /// so [`BindingPower::StarSlashLeft`] is lower than [`BindingPower::StarSlashRight`].
     StarSlashLeft,
     /// -a * b := (-a) * b,
-    /// so [`BindingPower::StarSlashRight`] is lower than [`BindingPower::Unary`].
     StarSlashRight,
     /// -a.foo := -(a.foo),
-    /// so [`BindingPower::Unary`] is lower than [`BindingPower::Call`].
     Unary,
     Call,
 }
