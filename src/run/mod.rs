@@ -1,3 +1,4 @@
+mod block;
 mod error;
 mod expression;
 mod print;
@@ -6,6 +7,7 @@ mod var_decl;
 use std::cell::RefCell;
 use std::rc::Rc;
 
+pub(crate) use self::block::Block;
 pub(crate) use self::error::{RuntimeError, StmtParseError};
 pub(crate) use self::expression::Expression;
 pub(crate) use self::print::Print;
@@ -27,9 +29,10 @@ pub(crate) enum StmtAst {
     Expression(Expression),
     Print(Print),
     VarDecl(VarDecl),
+    Block(Block),
 }
 
-impl_from!(StmtAst: Expression, Print, VarDecl);
+impl_from!(StmtAst: Expression, Print, VarDecl, Block);
 
 /// Parser for statement AST.
 /// Generic 'a is for the source's lifetime.
@@ -94,14 +97,23 @@ impl StmtParser<'_, '_> {
 /// reference counting and interior mutability to allow for safe and flexible
 /// updates during runtime.
 pub struct Runtime {
-    global_env: Rc<RefCell<Environment>>,
+    env: Rc<RefCell<Environment>>,
 }
 
 impl Runtime {
     pub fn new() -> Self {
         Self {
-            global_env: rc_rc!(Environment::new()),
+            env: rc_rc!(Environment::new()),
         }
+    }
+
+    pub fn from_env(env: Rc<RefCell<Environment>>) -> Self {
+        Self { env }
+    }
+
+    fn child_runtime(&self) -> Self {
+        let child_env = Environment::from_parent(&self.env);
+        Self::from_env(rc_rc!(child_env))
     }
 
     pub fn run(&self, stmt: StmtAst) -> Result<(), RuntimeError> {
@@ -109,6 +121,7 @@ impl Runtime {
             StmtAst::Print(print) => self.run_print(print)?,
             StmtAst::Expression(expr) => self.run_expression(expr)?,
             StmtAst::VarDecl(var_decl) => self.run_var_decl(var_decl)?,
+            StmtAst::Block(block) => self.run_block(block)?,
         }
 
         Ok(())
@@ -119,7 +132,7 @@ impl Runtime {
     }
 
     fn evaluator(&self) -> Evaluator {
-        Evaluator::with_env(self.global_env.clone())
+        Evaluator::with_env(self.env.clone())
     }
 
     fn assignable_key(&self, expr: &ExprAst) -> Result<String, RuntimeError> {

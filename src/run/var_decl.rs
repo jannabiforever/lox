@@ -41,7 +41,7 @@ impl Runtime {
         let VarDecl { var, value } = var_decl;
         let var = self.assignable_key(&var)?;
         let value = self.evaluate(&value)?;
-        self.global_env.borrow_mut().set(&var, value);
+        self.env.borrow_mut().set(&var, value);
         Ok(())
     }
 }
