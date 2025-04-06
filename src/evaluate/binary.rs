@@ -14,7 +14,7 @@ impl Evaluator {
         let function = self.get_binary_function(&binary.op);
         let right = LazyLock::new(|| self.eval(&binary.right));
 
-        function(left?, right.deref())
+        function(left?, right)
     }
 
     /// Get the binary function for the given operator.
