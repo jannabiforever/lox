@@ -11,9 +11,9 @@ impl Evaluator {
     pub(super) fn evaluate_binary(&self, binary: &Binary) -> Result<Literal, EvaluateError> {
         let left = self.eval(&binary.left);
         // Lazily evaluate the right side of the binary expression, for short-circuiting.
+        let function = self.get_binary_function(&binary.op);
         let right = LazyLock::new(|| self.eval(&binary.right));
 
-        let function = self.get_binary_function(&binary.op);
         function(left?, right.deref())
     }
 

@@ -1,17 +1,23 @@
+use std::{cell::RefCell, rc::Rc};
+
 use crate::{literal::Literal, parse::ExprAst};
 
-use super::error::EvaluateError;
+use super::{error::EvaluateError, Environment};
 
-pub(crate) struct Evaluator;
+pub(crate) struct Evaluator {
+    pub(super) env: Rc<RefCell<Environment>>,
+}
 
 impl Evaluator {
     pub fn new() -> Self {
-        Evaluator
+        Evaluator {
+            env: Rc::new(RefCell::new(Environment::new())),
+        }
     }
 
     pub fn eval(&self, expr_ast: &ExprAst) -> Result<Literal, EvaluateError> {
         match expr_ast {
-            ExprAst::Assign(_) => todo!("self.evaluate_assign(assign)"),
+            ExprAst::Assign(assign) => self.evaluate_assign(assign),
             ExprAst::Binary(binary) => self.evaluate_binary(binary),
             ExprAst::FieldCall(_) => todo!("self.evaluate_field_call(field_call)"),
             ExprAst::FunctionCall(_) => {
@@ -23,7 +29,7 @@ impl Evaluator {
             }
             ExprAst::Literal(literal) => Ok(literal.clone()),
             ExprAst::Unary(unary) => self.evaluate_unary(unary),
-            ExprAst::Variable(_) => todo!("self.evaluate_variable(variable_name)"),
+            ExprAst::Variable(variable) => self.evaluate_variable(variable),
         }
     }
 }
