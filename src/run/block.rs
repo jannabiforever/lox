@@ -12,7 +12,7 @@ impl StmtParser<'_, '_> {
         let mut inner = Vec::new();
 
         self.token_stream.next(); // Consume '{'.
-        while self.token_stream.peek().token_type == tt!("}") {
+        while self.token_stream.peek().token_type != tt!("}") {
             let next_stmt = self.parse()?;
             inner.push(next_stmt);
         }
