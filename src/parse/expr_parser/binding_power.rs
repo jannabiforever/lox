@@ -47,6 +47,7 @@ impl BindingPower {
         } else {
             match token_type {
                 tt!("(") | tt!(".") => (Self::Call, Self::None),
+                tt!("=") => (Self::Assign, Self::Assign),
                 _ => (Self::None, Self::None),
             }
         }
