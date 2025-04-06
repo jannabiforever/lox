@@ -1,6 +1,9 @@
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{literal::Literal, parse::ExprAst};
+use crate::{
+    literal::Literal,
+    parse::{ExprAst, Grouping},
+};
 
 use super::{error::EvaluateError, Environment};
 
@@ -15,6 +18,10 @@ impl Evaluator {
         }
     }
 
+    pub fn with_env(env: Rc<RefCell<Environment>>) -> Self {
+        Evaluator { env }
+    }
+
     pub fn eval(&self, expr_ast: &ExprAst) -> Result<Literal, EvaluateError> {
         match expr_ast {
             ExprAst::Assign(assign) => self.evaluate_assign(assign),
@@ -23,8 +30,8 @@ impl Evaluator {
             ExprAst::FunctionCall(_) => {
                 todo!("self.evaluate_function_call(function_call)")
             }
-            ExprAst::Grouping(grouping) => {
-                let inner = grouping.inner.as_ref();
+            ExprAst::Grouping(Grouping { inner }) => {
+                let inner = inner.as_ref();
                 self.eval(inner)
             }
             ExprAst::Literal(literal) => Ok(literal.clone()),

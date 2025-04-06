@@ -7,10 +7,9 @@ mod tokenize;
 
 use std::{io::Write, process::ExitCode};
 
-use error::LoxError;
-use tokenize::TokenStream;
-
+use self::error::LoxError;
 use self::error::LoxErrorKind;
+use self::tokenize::TokenStream;
 
 macro_rules! debug_writeln {
     ($w:expr, $obj:ident, $debug:ident) => {
@@ -106,7 +105,7 @@ where
         }
     };
 
-    let evaluator = evaluate::Evaluator;
+    let evaluator = evaluate::Evaluator::new();
     let result = evaluator.eval(&parsed);
 
     // Pretty print for evaluate command.
@@ -150,7 +149,7 @@ where
         }
     };
 
-    let mut runtime = run::Runtime::new();
+    let runtime = run::Runtime::new();
     for stmt in stmts {
         if let Err(err) = runtime.run(stmt) {
             debug_writeln!(err_buf, err, debug);

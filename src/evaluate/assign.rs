@@ -15,7 +15,7 @@ impl Evaluator {
         };
         let value = self.eval(&assign.value)?;
 
-        self.env.borrow_mut().set(name, value.clone());
+        self.env.borrow_mut().update(name, value.clone())?;
 
         // Return the value that was assigned.
         Ok(value)

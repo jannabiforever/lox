@@ -1,7 +1,4 @@
-use crate::{
-    run::{error::StmtParseError, stmt_ast::Print},
-    tokenize::tt,
-};
+use crate::run::{error::StmtParseError, stmt_ast::Print};
 
 use super::StmtParser;
 
@@ -9,12 +6,8 @@ impl StmtParser<'_, '_> {
     pub fn parse_print(&mut self) -> Result<Print, StmtParseError> {
         self.token_stream.next(); // consume the 'print' token.
         let expr = self.parse_following_expression()?;
+        self.expect_semicolon()?;
 
-        match self.token_stream.expect(tt!(";")) {
-            Ok(_) => Ok(Print { expr }),
-            Err(unexpected_token) => Err(StmtParseError::ExpectedSemicolon(
-                unexpected_token.src.to_string(),
-            )),
-        }
+        Ok(Print { expr })
     }
 }

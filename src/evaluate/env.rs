@@ -2,11 +2,14 @@ use std::collections::HashMap;
 
 use crate::literal::Literal;
 
+use super::EvaluateError;
+
 pub(crate) struct Environment {
-    pub(super) value_map: HashMap<String, Literal>,
+    pub(crate) value_map: HashMap<String, Literal>,
 }
 
 impl Environment {
+    /// Creates a global environment,
     pub fn new() -> Self {
         Self {
             value_map: HashMap::new(),
@@ -17,7 +20,12 @@ impl Environment {
         self.value_map.get(name)
     }
 
-    pub fn set(&mut self, name: String, value: Literal) {
-        self.value_map.insert(name, value);
+    pub fn update(&mut self, name: String, value: Literal) -> Result<(), EvaluateError> {
+        if let Some(existing_value) = self.value_map.get_mut(&name) {
+            *existing_value = value.clone();
+            Ok(())
+        } else {
+            Err(EvaluateError::UndefinedVariable(name))
+        }
     }
 }

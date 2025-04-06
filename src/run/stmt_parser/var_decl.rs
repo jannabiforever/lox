@@ -8,9 +8,9 @@ use super::StmtParser;
 impl StmtParser<'_, '_> {
     pub fn parse_var_decl(&mut self) -> Result<VarDecl, StmtParseError> {
         self.token_stream.next(); // consume the 'var' token.
-        let following = self.parse_following_expression()?;
+        let following = dbg!(self.parse_following_expression()?);
 
-        match following {
+        let result = match following {
             // e.g. var x;
             ExprAst::Variable(_) => Ok(VarDecl {
                 var: following,
@@ -22,6 +22,10 @@ impl StmtParser<'_, '_> {
                 value: *value.clone(),
             }),
             _ => Err(StmtParseError::InvalidVarDecl(following.to_string())),
-        }
+        };
+
+        self.expect_semicolon()?;
+
+        result
     }
 }

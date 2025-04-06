@@ -53,4 +53,14 @@ impl StmtParser<'_, '_> {
             .parse()
             .map_err(Into::into)
     }
+
+    fn expect_semicolon(&mut self) -> Result<(), StmtParseError> {
+        self.token_stream
+            .expect(tt!(";"))
+            .map_err(|unexpected_token| {
+                StmtParseError::ExpectedSemicolon(unexpected_token.src.to_string())
+            })?;
+
+        Ok(())
+    }
 }

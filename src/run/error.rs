@@ -4,6 +4,9 @@ use crate::{error::IntoLoxError, evaluate::EvaluateError, parse::ExprParseError}
 pub(crate) enum RuntimeError {
     #[error("{0}")]
     EvaluateError(EvaluateError),
+
+    #[error("Error: Cannot assign value into '{0}'.")]
+    InvalidAssignmentTarget(String),
 }
 
 impl From<EvaluateError> for RuntimeError {
