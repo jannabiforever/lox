@@ -15,6 +15,12 @@ impl From<EvaluateError> for RuntimeError {
     }
 }
 
+impl IntoLoxError for RuntimeError {
+    fn error_kind(self) -> crate::LoxErrorKind {
+        crate::LoxErrorKind::Runtime(self)
+    }
+}
+
 #[derive(Debug, Clone, thiserror::Error)]
 pub(crate) enum StmtParseError {
     #[error("{0}")]
@@ -36,11 +42,5 @@ impl From<ExprParseError> for StmtParseError {
 impl IntoLoxError for StmtParseError {
     fn error_kind(self) -> crate::LoxErrorKind {
         crate::LoxErrorKind::StmtParse(self)
-    }
-}
-
-impl IntoLoxError for RuntimeError {
-    fn error_kind(self) -> crate::LoxErrorKind {
-        crate::LoxErrorKind::Runtime(self)
     }
 }
