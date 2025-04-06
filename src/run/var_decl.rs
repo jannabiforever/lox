@@ -1,9 +1,15 @@
 use crate::{
     parse::{Assign, ExprAst},
-    run::{error::StmtParseError, stmt_ast::VarDecl},
+    run::error::StmtParseError,
 };
 
-use super::StmtParser;
+use super::{Runtime, RuntimeError, StmtParser};
+
+#[derive(Debug, Clone)]
+pub(crate) struct VarDecl {
+    pub(crate) var: ExprAst,
+    pub(crate) value: ExprAst,
+}
 
 impl StmtParser<'_, '_> {
     pub fn parse_var_decl(&mut self) -> Result<VarDecl, StmtParseError> {
@@ -27,5 +33,15 @@ impl StmtParser<'_, '_> {
         self.expect_semicolon()?;
 
         result
+    }
+}
+
+impl Runtime {
+    pub(super) fn run_var_decl(&self, var_decl: VarDecl) -> Result<(), RuntimeError> {
+        let VarDecl { var, value } = var_decl;
+        let var = self.assignable_key(&var)?;
+        let value = self.evaluate(&value)?;
+        self.global_env.borrow_mut().set(&var, value);
+        Ok(())
     }
 }
