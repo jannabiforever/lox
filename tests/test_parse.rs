@@ -6,7 +6,7 @@ macro_rules! parse_test {
         let mut ok_buf = Vec::new();
         let mut err_buf = Vec::new();
 
-        let exit_code = lox_parse($src, &mut ok_buf, &mut err_buf, false);
+        let exit_code = lox_parse($src, &mut ok_buf, &mut err_buf);
 
         assert_eq!(exit_code, ExitCode::from($exit_code));
         assert_eq!(String::from_utf8(ok_buf).unwrap().trim(), $stdout.trim());

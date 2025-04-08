@@ -13,18 +13,8 @@ use self::error::LoxError;
 use self::error::LoxErrorKind;
 use self::tokenize::TokenStream;
 
-macro_rules! debug_writeln {
-    ($w:expr, $obj:ident, $debug:ident) => {
-        if $debug {
-            writeln!($w, "{:?}", $obj).unwrap();
-        } else {
-            writeln!($w, "{}", $obj).unwrap();
-        }
-    };
-}
-
 /// Entry point for 'tokenize' command.
-pub fn lox_tokenize<W1, W2>(src: &str, ok_buf: &mut W1, err_buf: &mut W2, debug: bool) -> ExitCode
+pub fn lox_tokenize<W1, W2>(src: &str, ok_buf: &mut W1, err_buf: &mut W2) -> ExitCode
 where
     W1: Write,
     W2: Write,
@@ -34,9 +24,9 @@ where
 
     for token in tokens {
         match token.as_ref() {
-            Ok(token) => debug_writeln!(ok_buf, token, debug),
+            Ok(token) => writeln!(ok_buf, "{token}").unwrap(),
             Err(error_message) => {
-                debug_writeln!(err_buf, error_message, debug);
+                writeln!(err_buf, "{error_message}").unwrap();
                 exit_code = ExitCode::from(65);
             }
         }
@@ -46,7 +36,7 @@ where
 }
 
 /// Entry point for 'parse' command.
-pub fn lox_parse<W1, W2>(src: &str, ok_buf: &mut W1, err_buf: &mut W2, debug: bool) -> ExitCode
+pub fn lox_parse<W1, W2>(src: &str, ok_buf: &mut W1, err_buf: &mut W2) -> ExitCode
 where
     W1: Write,
     W2: Write,
@@ -59,7 +49,7 @@ where
     {
         Ok(tokens) => tokens,
         Err(err) => {
-            debug_writeln!(err_buf, err, debug);
+            writeln!(err_buf, "{err}").unwrap();
             return ExitCode::from(65);
         }
     };
@@ -69,11 +59,11 @@ where
 
     match parsed {
         Ok(ast) => {
-            debug_writeln!(ok_buf, ast, debug);
+            writeln!(ok_buf, "{ast}").unwrap();
             ExitCode::SUCCESS
         }
         Err(err) => {
-            debug_writeln!(err_buf, err, debug);
+            writeln!(err_buf, "{err}").unwrap();
             ExitCode::from(65)
         }
     }
@@ -81,7 +71,7 @@ where
 
 /// Entry point for 'evaluate' command.
 /// Currently not implemented.
-pub fn lox_evaluate<W1, W2>(src: &str, ok_buf: &mut W1, err_buf: &mut W2, debug: bool) -> ExitCode
+pub fn lox_evaluate<W1, W2>(src: &str, ok_buf: &mut W1, err_buf: &mut W2) -> ExitCode
 where
     W1: Write,
     W2: Write,
@@ -93,7 +83,7 @@ where
     {
         Ok(tokens) => tokens,
         Err(err) => {
-            debug_writeln!(err_buf, err, debug);
+            writeln!(err_buf, "{err}").unwrap();
             return ExitCode::from(65);
         }
     };
@@ -102,7 +92,7 @@ where
     let parsed = match parse::ExprParser::new(&mut stream).parse_with_line() {
         Ok(ast) => ast,
         Err(err) => {
-            debug_writeln!(err_buf, err, debug);
+            writeln!(err_buf, "{err}").unwrap();
             return ExitCode::from(65);
         }
     };
@@ -114,9 +104,9 @@ where
     let result = result.map(|res| res.pretty());
 
     match result {
-        Ok(result) => debug_writeln!(ok_buf, result, debug),
+        Ok(result) => writeln!(ok_buf, "{result}").unwrap(),
         Err(error_message) => {
-            debug_writeln!(err_buf, error_message, debug);
+            writeln!(err_buf, "{error_message}").unwrap();
             return ExitCode::from(70);
         }
     }
@@ -125,7 +115,7 @@ where
 }
 
 /// Entry point for 'run' command.
-pub fn lox_run<W1, W2>(src: &str, _: &mut W1, err_buf: &mut W2, debug: bool) -> ExitCode
+pub fn lox_run<W1, W2>(src: &str, _: &mut W1, err_buf: &mut W2) -> ExitCode
 where
     W1: Write,
     W2: Write,
@@ -137,7 +127,7 @@ where
     {
         Ok(tokens) => tokens,
         Err(err) => {
-            debug_writeln!(err_buf, err, debug);
+            writeln!(err_buf, "{err}").unwrap();
             return ExitCode::from(65);
         }
     };
@@ -146,7 +136,7 @@ where
     let stmts = match run::StmtParser::new(&mut stream).parse_all() {
         Ok(stmts) => stmts,
         Err(err) => {
-            debug_writeln!(err_buf, err, debug);
+            writeln!(err_buf, "{err}").unwrap();
             return ExitCode::from(65);
         }
     };
@@ -154,7 +144,7 @@ where
     let runtime = run::Runtime::new();
     for stmt in stmts {
         if let Err(err) = runtime.run(stmt) {
-            debug_writeln!(err_buf, err, debug);
+            writeln!(err_buf, "{err}").unwrap();
             return ExitCode::from(70);
         }
     }

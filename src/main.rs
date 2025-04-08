@@ -5,10 +5,6 @@ use std::{fs, io, path::PathBuf, process::ExitCode};
 #[non_exhaustive]
 #[derive(Debug, Parser)]
 struct Cli {
-    /// Debug mode
-    #[arg(short, long)]
-    debug: bool,
-
     /// The command to run
     #[clap(subcommand)]
     command: LoxCommand,
@@ -30,24 +26,22 @@ fn main() -> ExitCode {
     let arg = Cli::parse();
     let mut stdout = io::stdout();
     let mut stderr = io::stderr();
-
-    let debug = arg.debug;
     match arg.command {
         LoxCommand::Tokenize { file_name } => {
             let src = read(file_name);
-            lox_tokenize(&src, &mut stdout, &mut stderr, debug)
+            lox_tokenize(&src, &mut stdout, &mut stderr)
         }
         LoxCommand::Parse { file_name } => {
             let src = read(file_name);
-            lox_parse(&src, &mut stdout, &mut stderr, debug)
+            lox_parse(&src, &mut stdout, &mut stderr)
         }
         LoxCommand::Evaluate { file_name } => {
             let src = read(file_name);
-            lox_evaluate(&src, &mut stdout, &mut stderr, debug)
+            lox_evaluate(&src, &mut stdout, &mut stderr)
         }
         LoxCommand::Run { file_name } => {
             let src = read(file_name);
-            lox_run(&src, &mut stdout, &mut stderr, debug)
+            lox_run(&src, &mut stdout, &mut stderr)
         }
     }
 }
