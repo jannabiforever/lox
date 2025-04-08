@@ -110,20 +110,14 @@ impl Evaluator {
                 if !left.is_truthy() {
                     Ok(Literal::Boolean(false))
                 } else {
-                    right
-                        .deref()
-                        .clone()
-                        .map(|right| Literal::Boolean(right.is_truthy()))
+                    right.deref().clone()
                 }
             },
             BinaryOp::Or => |left, right| {
                 if left.is_truthy() {
                     Ok(Literal::Boolean(true))
                 } else {
-                    right
-                        .deref()
-                        .clone()
-                        .map(|right| Literal::Boolean(right.is_truthy()))
+                    right.deref().clone()
                 }
             },
         }
