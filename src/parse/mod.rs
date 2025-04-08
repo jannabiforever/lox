@@ -7,19 +7,24 @@ mod function_call;
 mod grouping;
 mod literal;
 mod unary;
+mod variable;
 
+use std::cell::RefCell;
 use std::fmt;
+use std::rc::Rc;
 
 pub(crate) use self::assign::Assign;
-pub(crate) use self::binary::{Binary, BinaryOp};
+pub(crate) use self::binary::Binary;
 pub(crate) use self::error::ExprParseError;
 pub(crate) use self::field_call::FieldCall;
 pub(crate) use self::function_call::FunctionCall;
 pub(crate) use self::grouping::Grouping;
-pub(crate) use self::unary::{Unary, UnaryOp};
+pub(crate) use self::unary::Unary;
+pub(crate) use self::variable::Variable;
 
 use self::binding_power::BindingPower;
 
+use crate::env::{Environment, Evaluatable, EvaluateError};
 use crate::error::LoxError;
 use crate::mac::impl_from;
 use crate::{
@@ -37,12 +42,27 @@ pub enum ExprAst {
     Grouping(Grouping),
     Literal(Literal),
     Unary(Unary),
-    Variable(String),
+    Variable(Variable),
 }
 
 impl_from!(
-    ExprAst: Assign, Binary, Grouping, FieldCall, FunctionCall, Literal, Unary
+    ExprAst: Assign, Binary, Grouping, FieldCall, FunctionCall, Literal, Unary, Variable
 );
+
+impl Evaluatable for ExprAst {
+    fn eval(&self, env: Rc<RefCell<Environment>>) -> Result<Literal, EvaluateError> {
+        match self {
+            Self::Assign(v) => v.eval(env),
+            Self::Binary(v) => v.eval(env),
+            Self::FieldCall(_) => todo!(),
+            Self::FunctionCall(_) => todo!(),
+            Self::Grouping(v) => v.eval(env),
+            Self::Literal(v) => v.eval(env),
+            Self::Unary(v) => v.eval(env),
+            Self::Variable(v) => v.eval(env),
+        }
+    }
+}
 
 impl fmt::Display for ExprAst {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -132,7 +152,7 @@ impl<'a, 'b> ExprParser<'a, 'b> {
         if let Some(literal) = self.parse_literal() {
             Some(literal.map(Into::into))
         } else if let Some(variable) = self.try_parse_variable() {
-            Some(Ok(ExprAst::Variable(variable)))
+            Some(Ok(variable.into()))
         } else {
             self.parse_grouping()
                 .map(|grouping| grouping.map(Into::into))

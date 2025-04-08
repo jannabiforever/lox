@@ -1,19 +1,27 @@
 use std::{fmt, io::Write, process::ExitCode};
 
 pub(crate) trait LoxResulT {
-    fn write_to_buffer<W1: Write, W2: Write>(self, ok_buf: &mut W1, err_buf: &mut W2) -> ExitCode;
+    fn write_to_buffer<W1: Write, W2: Write>(
+        self,
+        ok_buf: &mut W1,
+        err_buf: &mut W2,
+    ) -> Result<(), ExitCode>;
 }
 
 impl<T: fmt::Display, E: IntoLoxError> LoxResulT for Result<T, LoxError<E>> {
-    fn write_to_buffer<W1: Write, W2: Write>(self, ok_buf: &mut W1, err_buf: &mut W2) -> ExitCode {
+    fn write_to_buffer<W1: Write, W2: Write>(
+        self,
+        ok_buf: &mut W1,
+        err_buf: &mut W2,
+    ) -> Result<(), ExitCode> {
         match self {
             Ok(result) => {
                 writeln!(ok_buf, "{result}").unwrap();
-                ExitCode::SUCCESS
+                Ok(())
             }
             Err(err) => {
                 writeln!(err_buf, "{err}").unwrap();
-                err.kind.exit_code()
+                Err(err.kind.exit_code())
             }
         }
     }

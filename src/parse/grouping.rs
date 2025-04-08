@@ -1,6 +1,10 @@
-use std::fmt;
+use std::{cell::RefCell, fmt, rc::Rc};
 
-use crate::tokenize::tt;
+use crate::{
+    env::{Environment, Evaluatable, EvaluateError},
+    literal::Literal,
+    tokenize::tt,
+};
 
 use super::{ExprAst, ExprParseError};
 
@@ -37,5 +41,11 @@ impl super::ExprParser<'_, '_> {
             }
             _ => None,
         }
+    }
+}
+
+impl Evaluatable for Grouping {
+    fn eval(&self, env: Rc<RefCell<Environment>>) -> Result<Literal, EvaluateError> {
+        self.inner.eval(env)
     }
 }

@@ -1,6 +1,6 @@
-use std::{cell::RefCell, collections::HashMap, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, process::ExitCode, rc::Rc};
 
-use crate::literal::Literal;
+use crate::{error::IntoLoxError, literal::Literal};
 
 pub(crate) struct Environment {
     pub(crate) parent: Option<Rc<RefCell<Environment>>>,
@@ -49,5 +49,28 @@ impl Environment {
         } else {
             false
         }
+    }
+}
+
+pub(crate) trait Evaluatable {
+    // Required methods
+    fn eval(&self, env: Rc<RefCell<Environment>>) -> Result<Literal, EvaluateError>;
+}
+
+#[derive(Debug, thiserror::Error, Clone)]
+pub(crate) enum EvaluateError {
+    #[error("Error: Operand must be {0}")]
+    OperandMustBe(&'static str),
+
+    #[error("Error: Undefined variable '{0}'.")]
+    UndefinedVariable(String),
+
+    #[error("Error: Cannot assign value into '{0}'.")]
+    InvalidAssignmentTarget(String),
+}
+
+impl IntoLoxError for EvaluateError {
+    fn exit_code(&self) -> ExitCode {
+        ExitCode::from(65)
     }
 }

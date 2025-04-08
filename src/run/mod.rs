@@ -20,9 +20,8 @@ pub(crate) use self::print::Print;
 pub(crate) use self::var_decl::VarDecl;
 pub(crate) use self::while_stmt::While;
 
-use crate::env::Environment;
+use crate::env::{Environment, Evaluatable};
 use crate::error::{IntoLoxError, LoxError};
-use crate::evaluate::Evaluator;
 use crate::literal::Literal;
 use crate::mac::{impl_from, rc_rc};
 use crate::{
@@ -170,16 +169,12 @@ impl<W: Write> Runtime<W> {
     }
 
     fn evaluate(&self, expr: &ExprAst) -> Result<Literal, RuntimeError> {
-        self.evaluator().eval(expr).map_err(Into::into)
-    }
-
-    fn evaluator(&self) -> Evaluator {
-        Evaluator::with_env(self.env.clone())
+        expr.eval(self.env.clone()).map_err(Into::into)
     }
 
     fn assignable_key(&self, expr: &ExprAst) -> Result<String, RuntimeError> {
         match expr {
-            ExprAst::Variable(variable) => Ok(variable.clone()),
+            ExprAst::Variable(variable) => Ok(variable.name.clone()),
             rest => Err(RuntimeError::InvalidAssignmentTarget(rest.to_string())),
         }
     }

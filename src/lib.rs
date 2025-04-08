@@ -1,6 +1,5 @@
 mod env;
 mod error;
-mod evaluate;
 mod literal;
 mod mac;
 mod parse;
@@ -9,6 +8,7 @@ mod tokenize;
 
 use std::{cell::RefCell, io::Write, process::ExitCode, rc::Rc};
 
+use env::{Environment, Evaluatable};
 use error::LoxResulT;
 
 use self::error::IntoLoxError;
@@ -68,7 +68,9 @@ where
     let tokens = tokenize::Tokenizer::new(src).tokenize();
 
     for token in tokens {
-        exit_code = token.write_to_buffer(ok_buf, err_buf);
+        if let Err(e) = token.write_to_buffer(ok_buf, err_buf) {
+            exit_code = e;
+        }
     }
 
     exit_code
@@ -85,9 +87,14 @@ where
 
     let mut stream = TokenStream::new(&tokens);
 
-    parse::ExprParser::new(&mut stream)
+    if let Err(exit_code) = parse::ExprParser::new(&mut stream)
         .parse_with_line()
         .write_to_buffer(ok_buf, err_buf)
+    {
+        exit_code
+    } else {
+        ExitCode::SUCCESS
+    }
 }
 
 /// Entry point for 'evaluate' command.
@@ -101,8 +108,10 @@ where
     let mut stream = TokenStream::new(&tokens);
     let parsed = expr_parse!(stream, err_buf);
 
-    let evaluator = evaluate::Evaluator::new();
-    match evaluator.eval(&parsed).map(|res| res.pretty()) {
+    match parsed
+        .eval(rc_rc!(Environment::new()))
+        .map(|res| res.pretty())
+    {
         Ok(result) => writeln!(ok_buf, "{result}").unwrap(),
         Err(err) => {
             writeln!(err_buf, "{err}").unwrap();

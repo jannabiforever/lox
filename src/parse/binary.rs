@@ -1,6 +1,10 @@
-use std::fmt;
+use std::{cell::RefCell, fmt, ops::Deref, rc::Rc, sync::LazyLock};
 
-use crate::tokenize::{tt, TokenType};
+use crate::{
+    env::{Environment, Evaluatable, EvaluateError},
+    literal::Literal,
+    tokenize::{tt, TokenType},
+};
 
 use super::{binding_power::BindingPower, ExprAst, ExprParseError};
 
@@ -43,6 +47,109 @@ impl BinaryOp {
             tt!("and") => Some(Self::And),
             tt!("or") => Some(Self::Or),
             _ => None,
+        }
+    }
+
+    /// Get the binary function for the given operator.
+    /// LL stands for LazyLiteral.
+    fn get_binary_function<LL>(&self) -> fn(Literal, LL) -> Result<Literal, EvaluateError>
+    where
+        LL: Deref<Target = Result<Literal, EvaluateError>>,
+    {
+        match self {
+            BinaryOp::Star => |left, right| {
+                right.deref().clone().and_then(|right| match (left, right) {
+                    (Literal::Number(left), Literal::Number(right)) => {
+                        Ok(Literal::Number(left * right))
+                    }
+                    _ => Err(EvaluateError::OperandMustBe("numbers")),
+                })
+            },
+            BinaryOp::Slash => |left, right| {
+                right.deref().clone().and_then(|right| match (left, right) {
+                    (Literal::Number(left), Literal::Number(right)) => {
+                        Ok(Literal::Number(left / right))
+                    }
+                    _ => Err(EvaluateError::OperandMustBe("numbers")),
+                })
+            },
+            BinaryOp::Plus => |left, right| {
+                right.deref().clone().and_then(|right| match (left, right) {
+                    (Literal::Number(left), Literal::Number(right)) => {
+                        Ok(Literal::Number(left + right))
+                    }
+                    (Literal::String(left), Literal::String(right)) => {
+                        Ok(Literal::String(format!("{}{}", left, right)))
+                    }
+                    _ => Err(EvaluateError::OperandMustBe("numbers or strings")),
+                })
+            },
+            BinaryOp::Minus => |left, right| {
+                right.deref().clone().and_then(|right| match (left, right) {
+                    (Literal::Number(left), Literal::Number(right)) => {
+                        Ok(Literal::Number(left - right))
+                    }
+                    _ => Err(EvaluateError::OperandMustBe("numbers")),
+                })
+            },
+            BinaryOp::Greater => |left, right| {
+                right.deref().clone().and_then(|right| match (left, right) {
+                    (Literal::Number(left), Literal::Number(right)) => {
+                        Ok(Literal::Boolean(left > right))
+                    }
+                    _ => Err(EvaluateError::OperandMustBe("numbers")),
+                })
+            },
+            BinaryOp::GreaterEqual => |left, right| {
+                right.deref().clone().and_then(|right| match (left, right) {
+                    (Literal::Number(left), Literal::Number(right)) => {
+                        Ok(Literal::Boolean(left >= right))
+                    }
+                    _ => Err(EvaluateError::OperandMustBe("numbers")),
+                })
+            },
+            BinaryOp::Less => |left, right| {
+                right.deref().clone().and_then(|right| match (left, right) {
+                    (Literal::Number(left), Literal::Number(right)) => {
+                        Ok(Literal::Boolean(left < right))
+                    }
+                    _ => Err(EvaluateError::OperandMustBe("numbers")),
+                })
+            },
+            BinaryOp::LessEqual => |left, right| {
+                right.deref().clone().and_then(|right| match (left, right) {
+                    (Literal::Number(left), Literal::Number(right)) => {
+                        Ok(Literal::Boolean(left <= right))
+                    }
+                    _ => Err(EvaluateError::OperandMustBe("numbers")),
+                })
+            },
+            BinaryOp::EqualEqual => |left, right| {
+                right
+                    .deref()
+                    .clone()
+                    .map(|right| Literal::Boolean(left == right))
+            },
+            BinaryOp::BangEqual => |left, right| {
+                right
+                    .deref()
+                    .clone()
+                    .map(|right| Literal::Boolean(left != right))
+            },
+            BinaryOp::And => |left, right| {
+                if !left.is_truthy() {
+                    Ok(Literal::Boolean(false))
+                } else {
+                    right.deref().clone()
+                }
+            },
+            BinaryOp::Or => |left, right| {
+                if left.is_truthy() {
+                    Ok(left)
+                } else {
+                    right.deref().clone()
+                }
+            },
         }
     }
 }
@@ -104,5 +211,16 @@ impl super::ExprParser<'_, '_> {
         BinaryOp::from_token_type(token_type).inspect(|_| {
             self.token_stream.next();
         })
+    }
+}
+
+impl Evaluatable for Binary {
+    fn eval(&self, env: Rc<RefCell<Environment>>) -> Result<Literal, EvaluateError> {
+        let left = self.left.eval(env.clone())?;
+        // Lazily evaluate the right side of the binary expression, for short-circuiting.
+        let function = self.op.get_binary_function();
+        let right = LazyLock::new(|| self.right.eval(env.clone()));
+
+        function(left, right)
     }
 }

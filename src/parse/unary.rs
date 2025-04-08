@@ -1,6 +1,10 @@
-use std::fmt;
+use std::{cell::RefCell, fmt, rc::Rc};
 
-use crate::tokenize::{tt, TokenType};
+use crate::{
+    env::{Environment, Evaluatable, EvaluateError},
+    literal::Literal,
+    tokenize::{tt, TokenType},
+};
 
 use super::{binding_power::BindingPower, ExprAst, ExprParseError};
 
@@ -61,5 +65,22 @@ impl super::ExprParser<'_, '_> {
         UnaryOp::from_token_type(token_type).inspect(|_| {
             self.token_stream.next();
         })
+    }
+}
+
+impl Evaluatable for Unary {
+    fn eval(&self, env: Rc<RefCell<Environment>>) -> Result<Literal, EvaluateError> {
+        let right = self.right.eval(env.clone())?;
+
+        match self.op {
+            UnaryOp::Minus => {
+                if let Literal::Number(num) = right {
+                    Ok(Literal::Number(-num))
+                } else {
+                    Err(EvaluateError::OperandMustBe("number"))
+                }
+            }
+            UnaryOp::Bang => Ok((!right.is_truthy()).into()),
+        }
     }
 }

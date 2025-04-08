@@ -1,4 +1,9 @@
-use std::fmt;
+use std::{cell::RefCell, fmt, rc::Rc};
+
+use crate::{
+    env::{Environment, Evaluatable, EvaluateError},
+    literal::Literal,
+};
 
 use super::{binding_power::BindingPower, ExprAst, ExprParseError};
 
@@ -23,5 +28,21 @@ impl super::ExprParser<'_, '_> {
             assignee: Box::new(left),
             value: Box::new(right),
         })
+    }
+}
+
+impl Evaluatable for Assign {
+    fn eval(&self, env: Rc<RefCell<Environment>>) -> Result<Literal, EvaluateError> {
+        let name = match *self.assignee.clone() {
+            ExprAst::Variable(var) => var.name,
+            rest => return Err(EvaluateError::InvalidAssignmentTarget(rest.to_string())),
+        };
+        let value = (*self.value).eval(env.clone())?;
+
+        if env.borrow_mut().update(&name, value.clone()) {
+            Ok(value)
+        } else {
+            Err(EvaluateError::UndefinedVariable(name))
+        }
     }
 }

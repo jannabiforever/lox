@@ -1,4 +1,9 @@
-use std::{cmp, fmt, ops};
+use std::{cell::RefCell, cmp, fmt, ops, rc::Rc};
+
+use crate::{
+    env::{Environment, Evaluatable, EvaluateError},
+    mac::impl_from,
+};
 
 #[derive(Debug, Clone, PartialEq, Default)]
 pub enum Literal {
@@ -28,17 +33,13 @@ impl Literal {
     }
 }
 
-impl From<Number> for Literal {
-    fn from(n: Number) -> Self {
-        Literal::Number(n)
+impl Evaluatable for Literal {
+    fn eval(&self, _: Rc<RefCell<Environment>>) -> Result<Literal, EvaluateError> {
+        Ok(self.clone())
     }
 }
 
-impl From<String> for Literal {
-    fn from(s: String) -> Self {
-        Literal::String(s)
-    }
-}
+impl_from!(Literal: Number, String);
 
 impl From<bool> for Literal {
     fn from(b: bool) -> Self {
