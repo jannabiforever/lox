@@ -1,3 +1,5 @@
+use std::io::Write;
+
 use crate::tokenize::tt;
 
 use super::{Runtime, RuntimeError, StmtAst, StmtParseError, StmtParser};
@@ -27,7 +29,7 @@ impl StmtParser<'_, '_> {
     }
 }
 
-impl Runtime {
+impl<W: Write> Runtime<W> {
     pub(super) fn run_block(&self, block: Block) -> Result<(), RuntimeError> {
         let runtime = self.child_runtime();
         for stmt in block.inner {

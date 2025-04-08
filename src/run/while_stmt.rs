@@ -1,3 +1,5 @@
+use std::io::Write;
+
 use crate::parse::ExprAst;
 
 use super::{Runtime, RuntimeError, StmtAst, StmtParseError, StmtParser};
@@ -29,7 +31,7 @@ impl StmtParser<'_, '_> {
     }
 }
 
-impl Runtime {
+impl<W: Write> Runtime<W> {
     pub(super) fn run_while(&self, while_stmt: While) -> Result<(), RuntimeError> {
         let While { condition, body } = while_stmt;
 

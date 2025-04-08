@@ -8,6 +8,7 @@ mod var_decl;
 mod while_stmt;
 
 use std::cell::RefCell;
+use std::io::Write;
 use std::rc::Rc;
 
 pub(crate) use self::block::Block;
@@ -129,24 +130,26 @@ impl StmtParser<'_, '_> {
 /// contains variables and their associated values, and it is managed using
 /// reference counting and interior mutability to allow for safe and flexible
 /// updates during runtime.
-pub struct Runtime {
+pub struct Runtime<W: Write> {
+    stdout: Rc<RefCell<W>>,
     env: Rc<RefCell<Environment>>,
 }
 
-impl Runtime {
-    pub fn new() -> Self {
+impl<W: Write> Runtime<W> {
+    pub fn new(stdout: Rc<RefCell<W>>) -> Self {
         Self {
+            stdout,
             env: rc_rc!(Environment::new()),
         }
     }
 
-    pub fn from_env(env: Rc<RefCell<Environment>>) -> Self {
-        Self { env }
+    pub fn from_env(stdout: Rc<RefCell<W>>, env: Rc<RefCell<Environment>>) -> Self {
+        Self { stdout, env }
     }
 
     fn child_runtime(&self) -> Self {
         let child_env = Environment::from_parent(&self.env);
-        Self::from_env(rc_rc!(child_env))
+        Self::from_env(self.stdout.clone(), rc_rc!(child_env))
     }
 
     pub fn run(&self, stmt: StmtAst) -> Result<(), RuntimeError> {

@@ -1,3 +1,5 @@
+use std::io::Write;
+
 use crate::{
     literal::Literal,
     parse::{Assign, ExprAst},
@@ -37,7 +39,7 @@ impl StmtParser<'_, '_> {
     }
 }
 
-impl Runtime {
+impl<W: Write> Runtime<W> {
     pub(super) fn run_var_decl(&self, var_decl: VarDecl) -> Result<(), RuntimeError> {
         let VarDecl { var, value } = var_decl;
         let var = self.assignable_key(&var)?;

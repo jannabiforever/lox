@@ -7,11 +7,30 @@ mod parse;
 mod run;
 mod tokenize;
 
-use std::{io::Write, process::ExitCode};
+use std::{cell::RefCell, io::Write, process::ExitCode, rc::Rc};
+
+use mac::rc_rc;
 
 use self::error::LoxError;
 use self::error::LoxErrorKind;
 use self::tokenize::TokenStream;
+
+/// tokenize without allowing error.
+macro_rules! tokenize {
+    ($src:expr, $err_buf:ident) => {
+        match tokenize::Tokenizer::new($src)
+            .tokenize()
+            .into_iter()
+            .collect::<Result<Vec<_>, LoxError>>()
+        {
+            Ok(tokens) => tokens,
+            Err(err) => {
+                writeln!($err_buf, "{err}").unwrap();
+                return ExitCode::from(65);
+            }
+        }
+    };
+}
 
 /// Entry point for 'tokenize' command.
 pub fn lox_tokenize<W1, W2>(src: &str, ok_buf: &mut W1, err_buf: &mut W2) -> ExitCode
@@ -42,17 +61,7 @@ where
     W2: Write,
 {
     // Try tokenizing. If fails, don't parse.
-    let tokens = match tokenize::Tokenizer::new(src)
-        .tokenize()
-        .into_iter()
-        .collect::<Result<Vec<_>, LoxError>>()
-    {
-        Ok(tokens) => tokens,
-        Err(err) => {
-            writeln!(err_buf, "{err}").unwrap();
-            return ExitCode::from(65);
-        }
-    };
+    let tokens = tokenize!(src, err_buf);
 
     let mut stream = TokenStream::new(&tokens);
     let parsed = parse::ExprParser::new(&mut stream).parse_with_line();
@@ -70,23 +79,12 @@ where
 }
 
 /// Entry point for 'evaluate' command.
-/// Currently not implemented.
 pub fn lox_evaluate<W1, W2>(src: &str, ok_buf: &mut W1, err_buf: &mut W2) -> ExitCode
 where
     W1: Write,
     W2: Write,
 {
-    let tokens = match tokenize::Tokenizer::new(src)
-        .tokenize()
-        .into_iter()
-        .collect::<Result<Vec<_>, LoxError>>()
-    {
-        Ok(tokens) => tokens,
-        Err(err) => {
-            writeln!(err_buf, "{err}").unwrap();
-            return ExitCode::from(65);
-        }
-    };
+    let tokens = tokenize!(src, err_buf);
 
     let mut stream = TokenStream::new(&tokens);
     let parsed = match parse::ExprParser::new(&mut stream).parse_with_line() {
@@ -115,22 +113,12 @@ where
 }
 
 /// Entry point for 'run' command.
-pub fn lox_run<W1, W2>(src: &str, _: &mut W1, err_buf: &mut W2) -> ExitCode
+pub fn lox_run<W1, W2>(src: &str, ok_buf: &mut W1, err_buf: &mut W2) -> ExitCode
 where
     W1: Write,
     W2: Write,
 {
-    let tokens = match tokenize::Tokenizer::new(src)
-        .tokenize()
-        .into_iter()
-        .collect::<Result<Vec<_>, LoxError>>()
-    {
-        Ok(tokens) => tokens,
-        Err(err) => {
-            writeln!(err_buf, "{err}").unwrap();
-            return ExitCode::from(65);
-        }
-    };
+    let tokens = tokenize!(src, err_buf);
 
     let mut stream = TokenStream::new(&tokens);
     let stmts = match run::StmtParser::new(&mut stream).parse_all() {
@@ -141,7 +129,7 @@ where
         }
     };
 
-    let runtime = run::Runtime::new();
+    let runtime = run::Runtime::new(rc_rc!(ok_buf));
     for stmt in stmts {
         if let Err(err) = runtime.run(stmt) {
             writeln!(err_buf, "{err}").unwrap();

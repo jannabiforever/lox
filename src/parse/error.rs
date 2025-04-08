@@ -1,3 +1,5 @@
+use std::process::ExitCode;
+
 use crate::error::IntoLoxError;
 
 #[derive(Debug, Clone, thiserror::Error)]
@@ -18,5 +20,9 @@ pub(crate) enum ExprParseError {
 impl IntoLoxError for ExprParseError {
     fn error_kind(self) -> crate::LoxErrorKind {
         crate::LoxErrorKind::ExprParse(self)
+    }
+
+    fn exit_code(&self) -> ExitCode {
+        ExitCode::from(65)
     }
 }

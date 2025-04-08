@@ -1,3 +1,5 @@
+use std::io::Write;
+
 use crate::{parse::ExprAst, tokenize::tt};
 
 use super::{Runtime, RuntimeError, StmtAst, StmtParseError, StmtParser};
@@ -65,7 +67,7 @@ impl StmtParser<'_, '_> {
     }
 }
 
-impl Runtime {
+impl<W: Write> Runtime<W> {
     pub(super) fn run_for(&self, for_stmt: For) -> Result<(), RuntimeError> {
         let For {
             initializer,

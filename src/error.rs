@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{fmt, process::ExitCode};
 
 use crate::{
     evaluate::EvaluateError,
@@ -50,8 +50,12 @@ impl From<ExprParseError> for LoxErrorKind {
 }
 
 pub trait IntoLoxError: Sized {
+    // Required method
     fn error_kind(self) -> LoxErrorKind;
 
+    fn exit_code(&self) -> ExitCode;
+
+    // Provided method
     fn error(self, line: usize) -> LoxError {
         LoxError {
             line,

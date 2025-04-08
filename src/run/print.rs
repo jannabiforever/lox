@@ -1,3 +1,5 @@
+use std::io::Write;
+
 use crate::{parse::ExprAst, run::error::StmtParseError};
 
 use super::{Runtime, RuntimeError, StmtParser};
@@ -17,7 +19,7 @@ pub(crate) struct Print {
     pub(crate) expr: ExprAst,
 }
 
-impl Runtime {
+impl<W: Write> Runtime<W> {
     pub fn run_print(&self, print: Print) -> Result<(), RuntimeError> {
         let value = self.evaluate(&print.expr)?;
         println!("{}", value.pretty());

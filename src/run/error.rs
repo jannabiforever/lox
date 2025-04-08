@@ -1,3 +1,5 @@
+use std::process::ExitCode;
+
 use crate::{error::IntoLoxError, evaluate::EvaluateError, mac::impl_from, parse::ExprParseError};
 
 #[derive(Debug, Clone, thiserror::Error)]
@@ -14,6 +16,10 @@ impl_from!(RuntimeError: EvaluateError);
 impl IntoLoxError for RuntimeError {
     fn error_kind(self) -> crate::LoxErrorKind {
         crate::LoxErrorKind::Runtime(self)
+    }
+
+    fn exit_code(&self) -> ExitCode {
+        ExitCode::from(70)
     }
 }
 
@@ -52,5 +58,9 @@ impl_from!(StmtParseError: ExprParseError);
 impl IntoLoxError for StmtParseError {
     fn error_kind(self) -> crate::LoxErrorKind {
         crate::LoxErrorKind::StmtParse(self)
+    }
+
+    fn exit_code(&self) -> ExitCode {
+        ExitCode::from(65)
     }
 }
