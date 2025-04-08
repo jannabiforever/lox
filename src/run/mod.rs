@@ -1,6 +1,7 @@
 mod block;
 mod error;
 mod expression;
+mod for_stmt;
 mod if_stmt;
 mod print;
 mod var_decl;
@@ -12,6 +13,7 @@ use std::rc::Rc;
 pub(crate) use self::block::Block;
 pub(crate) use self::error::{RuntimeError, StmtParseError};
 pub(crate) use self::expression::Expression;
+pub(crate) use self::for_stmt::For;
 pub(crate) use self::if_stmt::If;
 pub(crate) use self::print::Print;
 pub(crate) use self::var_decl::VarDecl;
@@ -36,9 +38,10 @@ pub(crate) enum StmtAst {
     Block(Block),
     If(If),
     While(While),
+    For(For),
 }
 
-impl_from!(StmtAst: Expression, Print, VarDecl, Block, If, While);
+impl_from!(StmtAst: Expression, Print, VarDecl, Block, If, While, For);
 
 /// Parser for statement AST.
 /// Generic 'a is for the source's lifetime.
@@ -72,6 +75,7 @@ impl StmtParser<'_, '_> {
             tt!("{") => self.parse_block().map(Into::into),
             tt!("if") => self.parse_if().map(Into::into),
             tt!("while") => self.parse_while().map(Into::into),
+            tt!("for") => self.parse_for().map(Into::into),
             _ => self.parse_expression_stmt().map(Into::into),
         }
     }
@@ -90,6 +94,26 @@ impl StmtParser<'_, '_> {
             .expect(tt!(";"))
             .map_err(|unexpected_token| {
                 StmtParseError::ExpectedSemicolon(unexpected_token.src.to_string())
+            })?;
+
+        Ok(())
+    }
+
+    fn expect_opening_paren(&mut self) -> Result<(), StmtParseError> {
+        self.token_stream
+            .expect(tt!("("))
+            .map_err(|unexpected_token| {
+                StmtParseError::ExpectedOpeningParentheses(unexpected_token.src.to_string())
+            })?;
+
+        Ok(())
+    }
+
+    fn expect_closing_paren(&mut self) -> Result<(), StmtParseError> {
+        self.token_stream
+            .expect(tt!(")"))
+            .map_err(|unexpected_token| {
+                StmtParseError::ExpectedClosingParentheses(unexpected_token.src.to_string())
             })?;
 
         Ok(())
@@ -133,6 +157,7 @@ impl Runtime {
             StmtAst::Block(block) => self.run_block(block)?,
             StmtAst::If(if_stmt) => self.run_if(if_stmt)?,
             StmtAst::While(while_stmt) => self.run_while(while_stmt)?,
+            StmtAst::For(for_stmt) => self.run_for(for_stmt)?,
         }
 
         Ok(())

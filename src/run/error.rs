@@ -36,6 +36,9 @@ pub(crate) enum StmtParseError {
 
     #[error("Error: Expected ')', but got {0}")]
     ExpectedClosingParentheses(String),
+
+    #[error("Error: {0} cannot be for statement's initializer.")]
+    InvalidForStmtInitializer(String),
 }
 
 impl_from!(StmtParseError: ExprParseError);

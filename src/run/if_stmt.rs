@@ -12,22 +12,11 @@ pub struct If {
 impl StmtParser<'_, '_> {
     pub(super) fn parse_if(&mut self) -> Result<If, StmtParseError> {
         self.token_stream.next(); // Consume if.
-        self.token_stream
-            .expect(tt!("("))
-            .map_err(|unexpected_token| {
-                StmtParseError::ExpectedOpeningParentheses(unexpected_token.src.to_string())
-            })?;
-
+        self.expect_opening_paren()?;
         let condition = self.parse_following_expression()?;
-
-        self.token_stream
-            .expect(tt!(")"))
-            .map_err(|unexpected_token| {
-                StmtParseError::ExpectedClosingParentheses(unexpected_token.src.to_string())
-            })?;
+        self.expect_closing_paren()?;
 
         let body = Box::new(self.parse()?);
-
         let mut else_body = None;
         if self.token_stream.peek().token_type == tt!("else") {
             self.token_stream.next();

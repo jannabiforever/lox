@@ -1,4 +1,4 @@
-use crate::{parse::ExprAst, tokenize::tt};
+use crate::parse::ExprAst;
 
 use super::{Runtime, RuntimeError, StmtAst, StmtParseError, StmtParser};
 
@@ -11,20 +11,9 @@ pub struct While {
 impl StmtParser<'_, '_> {
     pub(super) fn parse_while(&mut self) -> Result<While, StmtParseError> {
         self.token_stream.next(); // Consume 'while'
-
-        self.token_stream
-            .expect(tt!("("))
-            .map_err(|unexpected_token| {
-                StmtParseError::ExpectedOpeningParentheses(unexpected_token.src.to_string())
-            })?;
-
+        self.expect_opening_paren()?;
         let condition = self.parse_following_expression()?;
-
-        self.token_stream
-            .expect(tt!(")"))
-            .map_err(|unexpected_token| {
-                StmtParseError::ExpectedClosingParentheses(unexpected_token.src.to_string())
-            })?;
+        self.expect_closing_paren()?;
 
         let body = Box::new(self.parse()?);
 
