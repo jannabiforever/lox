@@ -22,7 +22,7 @@ pub(crate) struct Print {
 impl<W: Write> Runtime<W> {
     pub fn run_print(&self, print: Print) -> Result<(), RuntimeError> {
         let value = self.evaluate(&print.expr)?;
-        println!("{}", value.pretty());
+        writeln!(self.stdout.borrow_mut(), "{}", value.pretty()).unwrap();
         Ok(())
     }
 }
