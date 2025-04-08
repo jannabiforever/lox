@@ -115,7 +115,7 @@ impl Evaluator {
             },
             BinaryOp::Or => |left, right| {
                 if left.is_truthy() {
-                    Ok(Literal::Boolean(true))
+                    Ok(left)
                 } else {
                     right.deref().clone()
                 }
