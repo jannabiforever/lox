@@ -29,7 +29,7 @@ use crate::error::LoxError;
 use crate::mac::impl_from;
 use crate::{error::IntoLoxError, literal::Literal, mac::tt, token::TokenStream};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ExprAst {
     Assign(Assign),
     Binary(Binary),

@@ -4,7 +4,7 @@ use crate::mac::tt;
 
 use super::{ExprAst, ExprParseError, ExprParser};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct FieldCall {
     pub object: Box<ExprAst>,
     pub field: String,

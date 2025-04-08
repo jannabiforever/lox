@@ -1,10 +1,17 @@
 use std::fmt;
 
-use crate::mac::tt;
+use std::{cell::RefCell, rc::Rc};
+
+use crate::statement::Runtime;
+use crate::{
+    env::{Environment, Evaluatable, EvaluateError},
+    literal::Literal,
+    mac::tt,
+};
 
 use super::{ExprAst, ExprParseError, ExprParser};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct FunctionCall {
     pub callee: Box<ExprAst>,
     pub arguments: Vec<ExprAst>,
@@ -65,5 +72,29 @@ impl ExprParser<'_, '_> {
             callee: Box::new(lhs),
             arguments,
         })
+    }
+}
+
+impl Evaluatable for FunctionCall {
+    fn eval(&self, env: Rc<RefCell<Environment>>) -> Result<Literal, EvaluateError> {
+        let callee = match self.callee.eval(env.clone())? {
+            Literal::RustFunction(f) if f.arguments.len() == self.arguments.len() => f,
+            rest => return Err(EvaluateError::InvalidCallTarget(rest.to_string())),
+        };
+
+        let arg_values = self
+            .arguments
+            .iter()
+            .map(|expr| expr.eval(env.clone()))
+            .collect::<Result<Vec<_>, _>>()?;
+
+        // Initialize the scope.
+        let stack_scope = Environment::from_parent(&env);
+        for (arg_key, arg_value) in callee.arguments.iter().zip(arg_values) {
+            stack_scope.borrow_mut().set(arg_key, arg_value);
+        }
+
+        // run body
+        todo!("run body")
     }
 }

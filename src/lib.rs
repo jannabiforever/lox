@@ -1,6 +1,7 @@
 mod env;
 mod error;
 mod expr;
+mod function;
 mod literal;
 mod mac;
 mod statement;

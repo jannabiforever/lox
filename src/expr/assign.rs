@@ -7,7 +7,7 @@ use crate::{
 
 use super::{binding_power::BindingPower, ExprAst, ExprParseError};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Assign {
     pub assignee: Box<ExprAst>,
     pub value: Box<ExprAst>,

@@ -4,7 +4,7 @@ use crate::expr::ExprAst;
 
 use super::{Runtime, RuntimeError, StmtAst, StmtParseError, StmtParser};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct While {
     condition: ExprAst,
     body: Box<StmtAst>,

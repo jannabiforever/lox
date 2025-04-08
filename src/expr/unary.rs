@@ -9,7 +9,7 @@ use crate::{
 
 use super::{binding_power::BindingPower, ExprAst, ExprParseError};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Unary {
     pub op: UnaryOp,
     pub right: Box<ExprAst>,

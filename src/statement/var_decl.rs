@@ -8,7 +8,7 @@ use crate::{
 
 use super::{Runtime, RuntimeError, StmtParser};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub(crate) struct VarDecl {
     pub(crate) var: ExprAst,
     pub(crate) value: Option<ExprAst>,

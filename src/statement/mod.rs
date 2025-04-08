@@ -23,14 +23,14 @@ pub(crate) use self::while_stmt::While;
 use crate::env::{Environment, Evaluatable};
 use crate::error::{IntoLoxError, LoxError};
 use crate::literal::Literal;
-use crate::mac::{impl_from, rc_rc, tt};
+use crate::mac::{impl_from, tt};
 use crate::{
     expr::{ExprAst, ExprParser},
     TokenStream,
 };
 
 /// Statement AST.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub(crate) enum StmtAst {
     Expression(Expression),
     Print(Print),
@@ -133,7 +133,7 @@ impl StmtParser<'_, '_> {
 /// updates during runtime.
 pub struct Runtime<W: Write> {
     stdout: Rc<RefCell<W>>,
-    env: Rc<RefCell<Environment>>,
+    pub(crate) env: Rc<RefCell<Environment>>,
 }
 
 impl<W: Write> Runtime<W> {
@@ -150,7 +150,7 @@ impl<W: Write> Runtime<W> {
 
     fn child_runtime(&self) -> Self {
         let child_env = Environment::from_parent(&self.env);
-        Self::from_env(self.stdout.clone(), rc_rc!(child_env))
+        Self::from_env(self.stdout.clone(), child_env)
     }
 
     pub fn run(&self, stmt: StmtAst) -> Result<(), RuntimeError> {

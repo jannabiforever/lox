@@ -4,7 +4,7 @@ use crate::{expr::ExprAst, mac::tt};
 
 use super::{Runtime, RuntimeError, StmtAst, StmtParseError, StmtParser};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct For {
     initializer: Option<Box<StmtAst>>,
     condition: Option<ExprAst>,

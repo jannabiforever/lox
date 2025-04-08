@@ -8,7 +8,7 @@ use crate::{
 
 use super::{ExprAst, ExprParseError};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Grouping {
     pub inner: Box<ExprAst>,
 }

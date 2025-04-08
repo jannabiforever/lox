@@ -4,7 +4,7 @@ use crate::{expr::ExprAst, mac::tt};
 
 use super::{Runtime, RuntimeError, StmtAst, StmtParseError, StmtParser};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct If {
     condition: ExprAst,
     body: Box<StmtAst>,

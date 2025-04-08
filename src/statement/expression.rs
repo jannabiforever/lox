@@ -4,7 +4,7 @@ use crate::expr::ExprAst;
 
 use super::{Runtime, RuntimeError, StmtParseError, StmtParser};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Expression {
     pub(crate) expr: ExprAst,
 }

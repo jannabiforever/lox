@@ -8,7 +8,7 @@ use crate::{
 
 use super::ExprParser;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Variable {
     pub(crate) name: String,
 }

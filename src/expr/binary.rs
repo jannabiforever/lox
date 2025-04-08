@@ -9,7 +9,7 @@ use crate::{
 
 use super::{binding_power::BindingPower, ExprAst, ExprParseError};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Binary {
     pub left: Box<ExprAst>,
     pub op: BinaryOp,

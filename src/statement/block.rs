@@ -4,7 +4,7 @@ use crate::mac::tt;
 
 use super::{Runtime, RuntimeError, StmtAst, StmtParseError, StmtParser};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Block {
     inner: Vec<StmtAst>,
 }

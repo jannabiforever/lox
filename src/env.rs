@@ -17,11 +17,11 @@ impl Environment {
     }
 
     /// New child environment instance.
-    pub fn from_parent(parent: &Rc<RefCell<Self>>) -> Self {
-        Self {
+    pub fn from_parent(parent: &Rc<RefCell<Self>>) -> Rc<RefCell<Self>> {
+        rc_rc!(Self {
             parent: Some(parent.clone()),
             scope: HashMap::new(),
-        }
+        })
     }
 
     pub fn get(&self, key: &str) -> Option<Literal> {
@@ -67,6 +67,9 @@ pub(crate) enum EvaluateError {
 
     #[error("Error: Cannot assign value into '{0}'.")]
     InvalidAssignmentTarget(String),
+
+    #[error("Error: Cannot call '{0}'")]
+    InvalidCallTarget(String),
 }
 
 impl IntoLoxError for EvaluateError {

@@ -2,6 +2,7 @@ use std::{cell::RefCell, cmp, fmt, ops, rc::Rc};
 
 use crate::{
     env::{Environment, Evaluatable, EvaluateError},
+    function::RustFunction,
     mac::impl_from,
 };
 
@@ -12,6 +13,7 @@ pub enum Literal {
     Nil,
     Number(Number),
     String(String),
+    RustFunction(RustFunction),
 }
 
 impl Literal {
@@ -53,6 +55,7 @@ impl fmt::Display for Literal {
             Literal::Number(n) => write!(f, "{}", n),
             Literal::String(s) => write!(f, "{}", s),
             Literal::Boolean(b) => write!(f, "{}", b),
+            Literal::RustFunction(fu) => write!(f, "{}", fu.name),
             Literal::Nil => write!(f, "nil"),
         }
     }
