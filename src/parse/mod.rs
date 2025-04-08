@@ -40,12 +40,6 @@ pub enum ExprAst {
     Variable(String),
 }
 
-impl Default for ExprAst {
-    fn default() -> Self {
-        Self::Literal(Literal::Nil)
-    }
-}
-
 impl_from!(
     ExprAst: Assign, Binary, Grouping, FieldCall, FunctionCall, Literal, Unary
 );

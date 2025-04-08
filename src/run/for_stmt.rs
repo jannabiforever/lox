@@ -46,7 +46,15 @@ impl StmtParser<'_, '_> {
         };
         self.expect_closing_paren()?;
 
-        let body = Box::new(self.parse()?);
+        let body = match self.parse()? {
+            allowed @ (StmtAst::Expression(_)
+            | StmtAst::For(_)
+            | StmtAst::If(_)
+            | StmtAst::Print(_)
+            | StmtAst::While(_)
+            | StmtAst::Block(_)) => Box::new(allowed),
+            rest => return Err(StmtParseError::InvalidForStmtBody(format!("{rest:?}"))),
+        };
 
         Ok(For {
             initializer,

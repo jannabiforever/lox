@@ -1,4 +1,5 @@
 use crate::{
+    literal::Literal,
     parse::{Assign, ExprAst},
     run::error::StmtParseError,
 };
@@ -8,7 +9,7 @@ use super::{Runtime, RuntimeError, StmtParser};
 #[derive(Debug, Clone)]
 pub(crate) struct VarDecl {
     pub(crate) var: ExprAst,
-    pub(crate) value: ExprAst,
+    pub(crate) value: Option<ExprAst>,
 }
 
 impl StmtParser<'_, '_> {
@@ -20,12 +21,12 @@ impl StmtParser<'_, '_> {
             // e.g. var x;
             ExprAst::Variable(_) => Ok(VarDecl {
                 var: following,
-                value: ExprAst::default(),
+                value: None,
             }),
             // e.g. var x = 1;
             ExprAst::Assign(Assign { assignee, value }) => Ok(VarDecl {
                 var: *assignee.clone(),
-                value: *value.clone(),
+                value: Some(*value.clone()),
             }),
             _ => Err(StmtParseError::InvalidVarDecl(following.to_string())),
         };
@@ -40,7 +41,10 @@ impl Runtime {
     pub(super) fn run_var_decl(&self, var_decl: VarDecl) -> Result<(), RuntimeError> {
         let VarDecl { var, value } = var_decl;
         let var = self.assignable_key(&var)?;
-        let value = self.evaluate(&value)?;
+        let value = match value {
+            Some(value) => self.evaluate(&value)?,
+            None => Literal::Nil,
+        };
         self.env.borrow_mut().set(&var, value);
         Ok(())
     }

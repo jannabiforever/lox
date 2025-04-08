@@ -39,6 +39,12 @@ pub(crate) enum StmtParseError {
 
     #[error("Error: {0} cannot be for statement's initializer.")]
     InvalidForStmtInitializer(String),
+
+    #[error("Error: {0} cannot be for statement's body.")]
+    InvalidForStmtBody(String),
+
+    #[error("Error: {0} cannot be while statement's body")]
+    InvalidWhileStmtBody(String),
 }
 
 impl_from!(StmtParseError: ExprParseError);

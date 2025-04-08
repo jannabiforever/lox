@@ -1,8 +1,9 @@
 use std::{cmp, fmt, ops};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub enum Literal {
     Boolean(bool),
+    #[default]
     Nil,
     Number(Number),
     String(String),
