@@ -1,6 +1,6 @@
 use std::io::Write;
 
-use crate::parse::ExprAst;
+use crate::expr::ExprAst;
 
 use super::{Runtime, RuntimeError, StmtParseError, StmtParser};
 

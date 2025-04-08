@@ -1,4 +1,4 @@
-use crate::{mac::tt, tokenize::TokenType};
+use crate::{mac::tt, token::TokenType};
 
 use super::{binary::BinaryOp, unary::UnaryOp};
 

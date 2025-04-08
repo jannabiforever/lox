@@ -1,9 +1,9 @@
 use std::io::Write;
 
 use crate::{
+    expr::{Assign, ExprAst},
     literal::Literal,
-    parse::{Assign, ExprAst},
-    run::error::StmtParseError,
+    statement::error::StmtParseError,
 };
 
 use super::{Runtime, RuntimeError, StmtParser};

@@ -1,10 +1,10 @@
 mod env;
 mod error;
+mod expr;
 mod literal;
 mod mac;
-mod parse;
-mod run;
-mod tokenize;
+mod statement;
+mod token;
 
 use std::{cell::RefCell, io::Write, process::ExitCode, rc::Rc};
 
@@ -13,12 +13,12 @@ use error::LoxResulT;
 
 use self::error::IntoLoxError;
 use self::mac::rc_rc;
-use self::tokenize::TokenStream;
+use self::token::TokenStream;
 
 /// tokenize without allowing error.
 macro_rules! tokenize {
     ($src:expr, $err_buf:ident) => {
-        match tokenize::Tokenizer::new($src)
+        match token::Tokenizer::new($src)
             .tokenize()
             .into_iter()
             .collect::<Result<Vec<_>, _>>()
@@ -35,7 +35,7 @@ macro_rules! tokenize {
 /// parse expression without allowing error.
 macro_rules! expr_parse {
     ($stream:expr, $err_buf:ident) => {
-        match parse::ExprParser::new(&mut $stream).parse_with_line() {
+        match expr::ExprParser::new(&mut $stream).parse_with_line() {
             Ok(ast) => ast,
             Err(err) => {
                 writeln!($err_buf, "{err}").unwrap();
@@ -48,7 +48,7 @@ macro_rules! expr_parse {
 /// parse statements without allowing error.
 macro_rules! stmt_parse {
     ($stream:expr, $err_buf:ident) => {
-        match run::StmtParser::new(&mut $stream).parse_all() {
+        match statement::StmtParser::new(&mut $stream).parse_all() {
             Ok(stmts) => stmts,
             Err(err) => {
                 writeln!($err_buf, "{err}").unwrap();
@@ -65,7 +65,7 @@ where
     W2: Write,
 {
     let mut exit_code = ExitCode::SUCCESS;
-    let tokens = tokenize::Tokenizer::new(src).tokenize();
+    let tokens = token::Tokenizer::new(src).tokenize();
 
     for token in tokens {
         if let Err(e) = token.write_to_buffer(ok_buf, err_buf) {
@@ -87,7 +87,7 @@ where
 
     let mut stream = TokenStream::new(&tokens);
 
-    if let Err(exit_code) = parse::ExprParser::new(&mut stream)
+    if let Err(exit_code) = expr::ExprParser::new(&mut stream)
         .parse_with_line()
         .write_to_buffer(ok_buf, err_buf)
     {
@@ -130,7 +130,7 @@ where
     let mut stream = TokenStream::new(&tokens);
     let stmts = stmt_parse!(stream, err_buf);
 
-    let runtime = run::Runtime::new(rc_rc!(ok_buf));
+    let runtime = statement::Runtime::new(rc_rc!(ok_buf));
     for stmt in stmts {
         if let Err(err) = runtime.run(stmt) {
             writeln!(err_buf, "{err}").unwrap();

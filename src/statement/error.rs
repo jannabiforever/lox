@@ -1,6 +1,6 @@
 use std::process::ExitCode;
 
-use crate::{env::EvaluateError, error::IntoLoxError, mac::impl_from, parse::ExprParseError};
+use crate::{env::EvaluateError, error::IntoLoxError, expr::ExprParseError, mac::impl_from};
 
 #[derive(Debug, Clone, thiserror::Error)]
 pub(crate) enum RuntimeError {

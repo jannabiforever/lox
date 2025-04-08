@@ -4,7 +4,7 @@ use crate::{
     env::{Environment, Evaluatable, EvaluateError},
     literal::Literal,
     mac::tt,
-    tokenize::TokenType,
+    token::TokenType,
 };
 
 use super::{binding_power::BindingPower, ExprAst, ExprParseError};

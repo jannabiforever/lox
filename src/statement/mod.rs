@@ -25,7 +25,7 @@ use crate::error::{IntoLoxError, LoxError};
 use crate::literal::Literal;
 use crate::mac::{impl_from, rc_rc, tt};
 use crate::{
-    parse::{ExprAst, ExprParser},
+    expr::{ExprAst, ExprParser},
     TokenStream,
 };
 

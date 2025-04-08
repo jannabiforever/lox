@@ -1,7 +1,7 @@
 use crate::{
+    expr::ExprParseError,
     literal::{Literal, Number},
     mac::tt,
-    parse::ExprParseError,
 };
 
 impl super::ExprParser<'_, '_> {
