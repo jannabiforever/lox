@@ -89,7 +89,7 @@ impl Evaluatable for FunctionCall {
             .collect::<Result<Vec<_>, _>>()?;
 
         // Initialize the scope.
-        let stack_scope = Env::from_parent(&env);
+        let stack_scope = Env::from_parent(env);
         for (arg_key, arg_value) in callee.arguments.iter().zip(arg_values) {
             stack_scope.borrow_mut().set(arg_key, arg_value);
         }
