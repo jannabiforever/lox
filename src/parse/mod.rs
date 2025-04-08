@@ -27,11 +27,7 @@ use self::binding_power::BindingPower;
 use crate::env::{Environment, Evaluatable, EvaluateError};
 use crate::error::LoxError;
 use crate::mac::impl_from;
-use crate::{
-    error::IntoLoxError,
-    literal::Literal,
-    tokenize::{tt, TokenStream},
-};
+use crate::{error::IntoLoxError, literal::Literal, mac::tt, tokenize::TokenStream};
 
 #[derive(Debug, Clone)]
 pub enum ExprAst {

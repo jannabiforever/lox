@@ -3,7 +3,8 @@ use std::{cell::RefCell, fmt, ops::Deref, rc::Rc, sync::LazyLock};
 use crate::{
     env::{Environment, Evaluatable, EvaluateError},
     literal::Literal,
-    tokenize::{tt, TokenType},
+    mac::tt,
+    tokenize::TokenType,
 };
 
 use super::{binding_power::BindingPower, ExprAst, ExprParseError};

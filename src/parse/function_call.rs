@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::tokenize::tt;
+use crate::mac::tt;
 
 use super::{ExprAst, ExprParseError, ExprParser};
 

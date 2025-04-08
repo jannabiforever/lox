@@ -1,6 +1,6 @@
 use std::io::Write;
 
-use crate::tokenize::tt;
+use crate::mac::tt;
 
 use super::{Runtime, RuntimeError, StmtAst, StmtParseError, StmtParser};
 

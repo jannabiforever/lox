@@ -1,6 +1,9 @@
 use regex::Regex;
 
-use crate::error::{IntoLoxError, LoxError};
+use crate::{
+    error::{IntoLoxError, LoxError},
+    mac::tt,
+};
 
 use super::{
     regex::{
@@ -8,7 +11,7 @@ use super::{
         WORD_REGEX,
     },
     token::Token,
-    tt, TokenType,
+    TokenType,
     TokenizeError::{self, *},
 };
 

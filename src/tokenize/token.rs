@@ -1,7 +1,5 @@
-use crate::literal::Number;
+use crate::{literal::Number, mac::tt};
 use std::fmt;
-
-use super::tt;
 
 #[derive(Debug)]
 pub(crate) struct Token<'a> {

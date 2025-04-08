@@ -23,10 +23,9 @@ pub(crate) use self::while_stmt::While;
 use crate::env::{Environment, Evaluatable};
 use crate::error::{IntoLoxError, LoxError};
 use crate::literal::Literal;
-use crate::mac::{impl_from, rc_rc};
+use crate::mac::{impl_from, rc_rc, tt};
 use crate::{
     parse::{ExprAst, ExprParser},
-    tokenize::tt,
     TokenStream,
 };
 
