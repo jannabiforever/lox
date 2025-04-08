@@ -1,6 +1,7 @@
 mod block;
 mod error;
 mod expression;
+mod if_stmt;
 mod print;
 mod var_decl;
 
@@ -10,6 +11,7 @@ use std::rc::Rc;
 pub(crate) use self::block::Block;
 pub(crate) use self::error::{RuntimeError, StmtParseError};
 pub(crate) use self::expression::Expression;
+pub(crate) use self::if_stmt::If;
 pub(crate) use self::print::Print;
 pub(crate) use self::var_decl::VarDecl;
 
@@ -30,9 +32,10 @@ pub(crate) enum StmtAst {
     Print(Print),
     VarDecl(VarDecl),
     Block(Block),
+    If(If),
 }
 
-impl_from!(StmtAst: Expression, Print, VarDecl, Block);
+impl_from!(StmtAst: Expression, Print, VarDecl, Block, If);
 
 /// Parser for statement AST.
 /// Generic 'a is for the source's lifetime.
@@ -64,6 +67,7 @@ impl StmtParser<'_, '_> {
             tt!("print") => self.parse_print().map(Into::into),
             tt!("var") => self.parse_var_decl().map(Into::into),
             tt!("{") => self.parse_block().map(Into::into),
+            tt!("if") => self.parse_if().map(Into::into),
             _ => self.parse_expression_stmt().map(Into::into),
         }
     }
@@ -123,6 +127,7 @@ impl Runtime {
             StmtAst::Expression(expr) => self.run_expression(expr)?,
             StmtAst::VarDecl(var_decl) => self.run_var_decl(var_decl)?,
             StmtAst::Block(block) => self.run_block(block)?,
+            StmtAst::If(if_stmt) => self.run_if(if_stmt)?,
         }
 
         Ok(())

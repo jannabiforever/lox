@@ -25,11 +25,17 @@ pub(crate) enum StmtParseError {
     #[error("Expected semicolon, but found {0}")]
     ExpectedSemicolon(String),
 
-    #[error("Expected assign or variable after 'var', but found {0}")]
+    #[error("Expected assign or variable after 'var', but got {0}")]
     InvalidVarDecl(String),
 
-    #[error("Error at end: Expected end of bracket")]
-    ExpectedEndOfBracket,
+    #[error("Error: Expected '}}', but got {0}")]
+    ExpectedEndOfBracket(String),
+
+    #[error("Error: Expected '(', but got {0}")]
+    ExpectedOpeningParentheses(String),
+
+    #[error("Error: Expected ')', but got {0}")]
+    ExpectedEndingParentheses(String),
 }
 
 impl_from!(StmtParseError: ExprParseError);

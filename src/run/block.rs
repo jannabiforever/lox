@@ -19,7 +19,9 @@ impl StmtParser<'_, '_> {
 
         self.token_stream
             .expect(tt!("}"))
-            .map_err(|_| StmtParseError::ExpectedEndOfBracket)?;
+            .map_err(|unexpected_token| {
+                StmtParseError::ExpectedEndOfBracket(unexpected_token.src.to_string())
+            })?;
 
         Ok(Block { inner })
     }
