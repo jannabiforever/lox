@@ -106,7 +106,26 @@ impl Evaluator {
                     .clone()
                     .map(|right| Literal::Boolean(left != right))
             },
-            _ => todo!("Implement other binary operations"),
+            BinaryOp::And => |left, right| {
+                if !left.is_truthy() {
+                    Ok(Literal::Boolean(false))
+                } else {
+                    right
+                        .deref()
+                        .clone()
+                        .map(|right| Literal::Boolean(right.is_truthy()))
+                }
+            },
+            BinaryOp::Or => |left, right| {
+                if left.is_truthy() {
+                    Ok(Literal::Boolean(true))
+                } else {
+                    right
+                        .deref()
+                        .clone()
+                        .map(|right| Literal::Boolean(right.is_truthy()))
+                }
+            },
         }
     }
 }
