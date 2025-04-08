@@ -149,7 +149,7 @@ impl<W: Write> Runtime<W> {
     }
 
     fn child_runtime(&self) -> Self {
-        let child_env = Env::from_parent(&self.env);
+        let child_env = Env::from_parent(self.env.clone());
         Self::from_env(self.stdout.clone(), child_env)
     }
 

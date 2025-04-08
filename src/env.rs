@@ -17,9 +17,9 @@ impl Env {
     }
 
     /// New child environment instance.
-    pub fn from_parent(parent: &Rc<RefCell<Self>>) -> Rc<RefCell<Self>> {
+    pub fn from_parent(parent: Rc<RefCell<Self>>) -> Rc<RefCell<Self>> {
         rc_rc!(Self {
-            parent: Some(parent.clone()),
+            parent: Some(parent),
             scope: HashMap::new(),
         })
     }
