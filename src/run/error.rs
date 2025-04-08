@@ -35,7 +35,7 @@ pub(crate) enum StmtParseError {
     ExpectedOpeningParentheses(String),
 
     #[error("Error: Expected ')', but got {0}")]
-    ExpectedEndingParentheses(String),
+    ExpectedClosingParentheses(String),
 }
 
 impl_from!(StmtParseError: ExprParseError);

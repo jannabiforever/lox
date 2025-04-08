@@ -4,6 +4,7 @@ mod expression;
 mod if_stmt;
 mod print;
 mod var_decl;
+mod while_stmt;
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -14,6 +15,7 @@ pub(crate) use self::expression::Expression;
 pub(crate) use self::if_stmt::If;
 pub(crate) use self::print::Print;
 pub(crate) use self::var_decl::VarDecl;
+pub(crate) use self::while_stmt::While;
 
 use crate::env::Environment;
 use crate::evaluate::Evaluator;
@@ -33,9 +35,10 @@ pub(crate) enum StmtAst {
     VarDecl(VarDecl),
     Block(Block),
     If(If),
+    While(While),
 }
 
-impl_from!(StmtAst: Expression, Print, VarDecl, Block, If);
+impl_from!(StmtAst: Expression, Print, VarDecl, Block, If, While);
 
 /// Parser for statement AST.
 /// Generic 'a is for the source's lifetime.
@@ -68,6 +71,7 @@ impl StmtParser<'_, '_> {
             tt!("var") => self.parse_var_decl().map(Into::into),
             tt!("{") => self.parse_block().map(Into::into),
             tt!("if") => self.parse_if().map(Into::into),
+            tt!("while") => self.parse_while().map(Into::into),
             _ => self.parse_expression_stmt().map(Into::into),
         }
     }
@@ -128,6 +132,7 @@ impl Runtime {
             StmtAst::VarDecl(var_decl) => self.run_var_decl(var_decl)?,
             StmtAst::Block(block) => self.run_block(block)?,
             StmtAst::If(if_stmt) => self.run_if(if_stmt)?,
+            StmtAst::While(while_stmt) => self.run_while(while_stmt)?,
         }
 
         Ok(())

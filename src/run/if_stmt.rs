@@ -23,7 +23,7 @@ impl StmtParser<'_, '_> {
         self.token_stream
             .expect(tt!(")"))
             .map_err(|unexpected_token| {
-                StmtParseError::ExpectedEndingParentheses(unexpected_token.src.to_string())
+                StmtParseError::ExpectedClosingParentheses(unexpected_token.src.to_string())
             })?;
 
         let body = Box::new(self.parse()?);
