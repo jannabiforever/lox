@@ -9,10 +9,10 @@ mod tokenize;
 
 use std::{cell::RefCell, io::Write, process::ExitCode, rc::Rc};
 
-use mac::rc_rc;
+use error::LoxResulT;
 
-use self::error::LoxError;
-use self::error::LoxErrorKind;
+use self::error::IntoLoxError;
+use self::mac::rc_rc;
 use self::tokenize::TokenStream;
 
 /// tokenize without allowing error.
@@ -21,12 +21,38 @@ macro_rules! tokenize {
         match tokenize::Tokenizer::new($src)
             .tokenize()
             .into_iter()
-            .collect::<Result<Vec<_>, LoxError>>()
+            .collect::<Result<Vec<_>, _>>()
         {
             Ok(tokens) => tokens,
             Err(err) => {
                 writeln!($err_buf, "{err}").unwrap();
-                return ExitCode::from(65);
+                return err.kind.exit_code();
+            }
+        }
+    };
+}
+
+/// parse expression without allowing error.
+macro_rules! expr_parse {
+    ($stream:expr, $err_buf:ident) => {
+        match parse::ExprParser::new(&mut $stream).parse_with_line() {
+            Ok(ast) => ast,
+            Err(err) => {
+                writeln!($err_buf, "{err}").unwrap();
+                return err.kind.exit_code();
+            }
+        }
+    };
+}
+
+/// parse statements without allowing error.
+macro_rules! stmt_parse {
+    ($stream:expr, $err_buf:ident) => {
+        match run::StmtParser::new(&mut $stream).parse_all() {
+            Ok(stmts) => stmts,
+            Err(err) => {
+                writeln!($err_buf, "{err}").unwrap();
+                return err.kind.exit_code();
             }
         }
     };
@@ -38,17 +64,11 @@ where
     W1: Write,
     W2: Write,
 {
-    let tokens = tokenize::Tokenizer::new(src).tokenize();
     let mut exit_code = ExitCode::SUCCESS;
+    let tokens = tokenize::Tokenizer::new(src).tokenize();
 
     for token in tokens {
-        match token.as_ref() {
-            Ok(token) => writeln!(ok_buf, "{token}").unwrap(),
-            Err(error_message) => {
-                writeln!(err_buf, "{error_message}").unwrap();
-                exit_code = ExitCode::from(65);
-            }
-        }
+        exit_code = token.write_to_buffer(ok_buf, err_buf);
     }
 
     exit_code
@@ -64,18 +84,10 @@ where
     let tokens = tokenize!(src, err_buf);
 
     let mut stream = TokenStream::new(&tokens);
-    let parsed = parse::ExprParser::new(&mut stream).parse_with_line();
 
-    match parsed {
-        Ok(ast) => {
-            writeln!(ok_buf, "{ast}").unwrap();
-            ExitCode::SUCCESS
-        }
-        Err(err) => {
-            writeln!(err_buf, "{err}").unwrap();
-            ExitCode::from(65)
-        }
-    }
+    parse::ExprParser::new(&mut stream)
+        .parse_with_line()
+        .write_to_buffer(ok_buf, err_buf)
 }
 
 /// Entry point for 'evaluate' command.
@@ -87,25 +99,14 @@ where
     let tokens = tokenize!(src, err_buf);
 
     let mut stream = TokenStream::new(&tokens);
-    let parsed = match parse::ExprParser::new(&mut stream).parse_with_line() {
-        Ok(ast) => ast,
-        Err(err) => {
-            writeln!(err_buf, "{err}").unwrap();
-            return ExitCode::from(65);
-        }
-    };
+    let parsed = expr_parse!(stream, err_buf);
 
     let evaluator = evaluate::Evaluator::new();
-    let result = evaluator.eval(&parsed);
-
-    // Pretty print for evaluate command.
-    let result = result.map(|res| res.pretty());
-
-    match result {
+    match evaluator.eval(&parsed).map(|res| res.pretty()) {
         Ok(result) => writeln!(ok_buf, "{result}").unwrap(),
-        Err(error_message) => {
-            writeln!(err_buf, "{error_message}").unwrap();
-            return ExitCode::from(70);
+        Err(err) => {
+            writeln!(err_buf, "{err}").unwrap();
+            return err.exit_code();
         }
     }
 
@@ -121,19 +122,13 @@ where
     let tokens = tokenize!(src, err_buf);
 
     let mut stream = TokenStream::new(&tokens);
-    let stmts = match run::StmtParser::new(&mut stream).parse_all() {
-        Ok(stmts) => stmts,
-        Err(err) => {
-            writeln!(err_buf, "{err}").unwrap();
-            return ExitCode::from(65);
-        }
-    };
+    let stmts = stmt_parse!(stream, err_buf);
 
     let runtime = run::Runtime::new(rc_rc!(ok_buf));
     for stmt in stmts {
         if let Err(err) = runtime.run(stmt) {
             writeln!(err_buf, "{err}").unwrap();
-            return ExitCode::from(70);
+            return err.exit_code();
         }
     }
 

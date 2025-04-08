@@ -20,12 +20,12 @@ pub(crate) use self::unary::{Unary, UnaryOp};
 
 use self::binding_power::BindingPower;
 
+use crate::error::LoxError;
 use crate::mac::impl_from;
 use crate::{
     error::IntoLoxError,
     literal::Literal,
     tokenize::{tt, TokenStream},
-    LoxError,
 };
 
 #[derive(Debug, Clone)]
@@ -68,8 +68,8 @@ impl<'a, 'b> ExprParser<'a, 'b> {
         Self { token_stream }
     }
 
-    pub(crate) fn parse_with_line(&mut self) -> Result<ExprAst, LoxError> {
-        self.parse().map_err(|e| e.error(self.line()))
+    pub(crate) fn parse_with_line(&mut self) -> Result<ExprAst, LoxError<ExprParseError>> {
+        self.parse().map_err(|e| e.error(self.token_stream.line()))
     }
 
     /// Parse within the lowest binding power.
@@ -137,9 +137,5 @@ impl<'a, 'b> ExprParser<'a, 'b> {
             self.parse_grouping()
                 .map(|grouping| grouping.map(Into::into))
         }
-    }
-
-    fn line(&self) -> usize {
-        self.token_stream.line()
     }
 }

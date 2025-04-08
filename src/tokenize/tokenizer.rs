@@ -29,7 +29,7 @@ impl<'a> Tokenizer<'a> {
 
     /// Wrap the result of `next_token` with the current line number,
     /// and collect them until eof is returned.
-    pub(crate) fn tokenize(&mut self) -> Vec<Result<Token<'a>, LoxError>> {
+    pub(crate) fn tokenize(&mut self) -> Vec<Result<Token<'a>, LoxError<TokenizeError>>> {
         let mut tokens = Vec::new();
 
         loop {
@@ -49,7 +49,7 @@ impl<'a> Tokenizer<'a> {
         tokens
     }
 
-    fn next_token_with_line(&mut self) -> Result<Token<'a>, LoxError> {
+    fn next_token_with_line(&mut self) -> Result<Token<'a>, LoxError<TokenizeError>> {
         self.next_token().map_err(|e| e.error(self.line))
     }
 

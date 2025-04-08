@@ -1,65 +1,42 @@
-use std::{fmt, process::ExitCode};
+use std::{fmt, io::Write, process::ExitCode};
 
-use crate::{
-    evaluate::EvaluateError,
-    parse::ExprParseError,
-    run::{RuntimeError, StmtParseError},
-    tokenize::TokenizeError,
-};
-
-#[derive(Debug, thiserror::Error)]
-pub(crate) struct LoxError {
-    pub(crate) line: usize,
-    pub(crate) kind: LoxErrorKind,
+pub(crate) trait LoxResulT {
+    fn write_to_buffer<W1: Write, W2: Write>(self, ok_buf: &mut W1, err_buf: &mut W2) -> ExitCode;
 }
 
-impl fmt::Display for LoxError {
+impl<T: fmt::Display, E: IntoLoxError> LoxResulT for Result<T, LoxError<E>> {
+    fn write_to_buffer<W1: Write, W2: Write>(self, ok_buf: &mut W1, err_buf: &mut W2) -> ExitCode {
+        match self {
+            Ok(result) => {
+                writeln!(ok_buf, "{result}").unwrap();
+                ExitCode::SUCCESS
+            }
+            Err(err) => {
+                writeln!(err_buf, "{err}").unwrap();
+                err.kind.exit_code()
+            }
+        }
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+pub(crate) struct LoxError<E: IntoLoxError> {
+    pub(crate) line: usize,
+    pub(crate) kind: E,
+}
+
+impl<E: IntoLoxError> fmt::Display for LoxError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "[line {}] {}", self.line, self.kind)
     }
 }
 
-#[derive(Debug, Clone, thiserror::Error)]
-pub(crate) enum LoxErrorKind {
-    #[error("{0}")]
-    Tokenize(TokenizeError),
-
-    #[error("{0}")]
-    ExprParse(ExprParseError),
-
-    #[error("{0}")]
-    Evaluate(EvaluateError),
-
-    #[error("{0}")]
-    StmtParse(StmtParseError),
-
-    #[error("{0}")]
-    Runtime(RuntimeError),
-}
-
-impl From<TokenizeError> for LoxErrorKind {
-    fn from(value: TokenizeError) -> Self {
-        Self::Tokenize(value)
-    }
-}
-
-impl From<ExprParseError> for LoxErrorKind {
-    fn from(value: ExprParseError) -> Self {
-        Self::ExprParse(value)
-    }
-}
-
-pub trait IntoLoxError: Sized {
+pub trait IntoLoxError: Sized + std::error::Error {
     // Required method
-    fn error_kind(self) -> LoxErrorKind;
-
     fn exit_code(&self) -> ExitCode;
 
     // Provided method
-    fn error(self, line: usize) -> LoxError {
-        LoxError {
-            line,
-            kind: self.error_kind(),
-        }
+    fn error(self, line: usize) -> LoxError<Self> {
+        LoxError { line, kind: self }
     }
 }

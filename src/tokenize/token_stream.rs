@@ -9,7 +9,7 @@ enum TokenStreamState<'a> {
 
 pub struct TokenStream<'a> {
     tokens: &'a [Token<'a>],
-    line: usize,
+    pub line: usize,
     state: TokenStreamState<'a>,
 }
 

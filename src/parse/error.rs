@@ -18,10 +18,6 @@ pub(crate) enum ExprParseError {
 }
 
 impl IntoLoxError for ExprParseError {
-    fn error_kind(self) -> crate::LoxErrorKind {
-        crate::LoxErrorKind::ExprParse(self)
-    }
-
     fn exit_code(&self) -> ExitCode {
         ExitCode::from(65)
     }

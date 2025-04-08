@@ -11,10 +11,6 @@ pub enum TokenizeError {
 }
 
 impl IntoLoxError for TokenizeError {
-    fn error_kind(self) -> crate::LoxErrorKind {
-        crate::LoxErrorKind::Tokenize(self)
-    }
-
     fn exit_code(&self) -> ExitCode {
         ExitCode::from(65)
     }

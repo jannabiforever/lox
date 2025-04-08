@@ -21,6 +21,7 @@ pub(crate) use self::var_decl::VarDecl;
 pub(crate) use self::while_stmt::While;
 
 use crate::env::Environment;
+use crate::error::{IntoLoxError, LoxError};
 use crate::evaluate::Evaluator;
 use crate::literal::Literal;
 use crate::mac::{impl_from, rc_rc};
@@ -59,17 +60,19 @@ impl<'a, 'b> StmtParser<'a, 'b> {
 
 impl StmtParser<'_, '_> {
     /// Parses whole source code into vector of AST.
-    pub fn parse_all(mut self) -> Result<Vec<StmtAst>, StmtParseError> {
+    pub(crate) fn parse_all(mut self) -> Result<Vec<StmtAst>, LoxError<StmtParseError>> {
         let mut statements = Vec::new();
         while !self.token_stream.expired() {
-            let stmt = self.parse()?;
+            let stmt = self
+                .parse()
+                .map_err(|err| err.error(self.token_stream.line()))?;
             statements.push(stmt);
         }
         Ok(statements)
     }
 
     /// Parses the following AST.
-    pub fn parse(&mut self) -> Result<StmtAst, StmtParseError> {
+    pub(crate) fn parse(&mut self) -> Result<StmtAst, StmtParseError> {
         match self.token_stream.peek().token_type {
             tt!("print") => self.parse_print().map(Into::into),
             tt!("var") => self.parse_var_decl().map(Into::into),
