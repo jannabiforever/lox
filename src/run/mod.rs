@@ -140,7 +140,7 @@ impl<W: Write> Runtime<W> {
     pub fn new(stdout: Rc<RefCell<W>>) -> Self {
         Self {
             stdout,
-            env: rc_rc!(Environment::new()),
+            env: Environment::new(),
         }
     }
 

@@ -1,6 +1,6 @@
 use std::{cell::RefCell, collections::HashMap, process::ExitCode, rc::Rc};
 
-use crate::{error::IntoLoxError, literal::Literal};
+use crate::{error::IntoLoxError, literal::Literal, rc_rc};
 
 pub(crate) struct Environment {
     pub(crate) parent: Option<Rc<RefCell<Environment>>>,
@@ -9,11 +9,11 @@ pub(crate) struct Environment {
 
 impl Environment {
     /// Creates a global environment,
-    pub fn new() -> Self {
-        Self {
+    pub fn new() -> Rc<RefCell<Self>> {
+        rc_rc!(Self {
             parent: None,
             scope: HashMap::new(),
-        }
+        })
     }
 
     /// New child environment instance.

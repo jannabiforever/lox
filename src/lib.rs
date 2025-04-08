@@ -108,10 +108,7 @@ where
     let mut stream = TokenStream::new(&tokens);
     let parsed = expr_parse!(stream, err_buf);
 
-    match parsed
-        .eval(rc_rc!(Environment::new()))
-        .map(|res| res.pretty())
-    {
+    match parsed.eval(Environment::new()).map(|res| res.pretty()) {
         Ok(result) => writeln!(ok_buf, "{result}").unwrap(),
         Err(err) => {
             writeln!(err_buf, "{err}").unwrap();
