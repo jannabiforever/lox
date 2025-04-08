@@ -2,12 +2,12 @@ use std::{cell::RefCell, collections::HashMap, process::ExitCode, rc::Rc};
 
 use crate::{error::IntoLoxError, literal::Literal, rc_rc};
 
-pub(crate) struct Environment {
-    pub(crate) parent: Option<Rc<RefCell<Environment>>>,
+pub(crate) struct Env {
+    pub(crate) parent: Option<Rc<RefCell<Env>>>,
     pub(crate) scope: HashMap<String, Literal>,
 }
 
-impl Environment {
+impl Env {
     /// Creates a global environment,
     pub fn new() -> Rc<RefCell<Self>> {
         rc_rc!(Self {
@@ -54,7 +54,7 @@ impl Environment {
 
 pub(crate) trait Evaluatable {
     // Required methods
-    fn eval(&self, env: Rc<RefCell<Environment>>) -> Result<Literal, EvaluateError>;
+    fn eval(&self, env: Rc<RefCell<Env>>) -> Result<Literal, EvaluateError>;
 }
 
 #[derive(Debug, thiserror::Error, Clone)]

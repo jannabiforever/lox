@@ -9,7 +9,7 @@ mod token;
 
 use std::{cell::RefCell, io::Write, process::ExitCode, rc::Rc};
 
-use env::{Environment, Evaluatable};
+use env::{Env, Evaluatable};
 use error::LoxResulT;
 
 use self::error::IntoLoxError;
@@ -109,7 +109,7 @@ where
     let mut stream = TokenStream::new(&tokens);
     let parsed = expr_parse!(stream, err_buf);
 
-    match parsed.eval(Environment::new()).map(|res| res.pretty()) {
+    match parsed.eval(Env::new()).map(|res| res.pretty()) {
         Ok(result) => writeln!(ok_buf, "{result}").unwrap(),
         Err(err) => {
             writeln!(err_buf, "{err}").unwrap();

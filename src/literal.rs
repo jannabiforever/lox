@@ -1,7 +1,7 @@
 use std::{cell::RefCell, cmp, fmt, ops, rc::Rc};
 
 use crate::{
-    env::{Environment, Evaluatable, EvaluateError},
+    env::{Env, Evaluatable, EvaluateError},
     function::RustFunction,
     mac::impl_from,
 };
@@ -36,7 +36,7 @@ impl Literal {
 }
 
 impl Evaluatable for Literal {
-    fn eval(&self, _: Rc<RefCell<Environment>>) -> Result<Literal, EvaluateError> {
+    fn eval(&self, _: Rc<RefCell<Env>>) -> Result<Literal, EvaluateError> {
         Ok(self.clone())
     }
 }

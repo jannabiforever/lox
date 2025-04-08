@@ -20,7 +20,7 @@ pub(crate) use self::print::Print;
 pub(crate) use self::var_decl::VarDecl;
 pub(crate) use self::while_stmt::While;
 
-use crate::env::{Environment, Evaluatable};
+use crate::env::{Env, Evaluatable};
 use crate::error::{IntoLoxError, LoxError};
 use crate::literal::Literal;
 use crate::mac::{impl_from, tt};
@@ -133,23 +133,23 @@ impl StmtParser<'_, '_> {
 /// updates during runtime.
 pub struct Runtime<W: Write> {
     stdout: Rc<RefCell<W>>,
-    pub(crate) env: Rc<RefCell<Environment>>,
+    pub(crate) env: Rc<RefCell<Env>>,
 }
 
 impl<W: Write> Runtime<W> {
     pub fn new(stdout: Rc<RefCell<W>>) -> Self {
         Self {
             stdout,
-            env: Environment::new(),
+            env: Env::new(),
         }
     }
 
-    pub fn from_env(stdout: Rc<RefCell<W>>, env: Rc<RefCell<Environment>>) -> Self {
+    pub fn from_env(stdout: Rc<RefCell<W>>, env: Rc<RefCell<Env>>) -> Self {
         Self { stdout, env }
     }
 
     fn child_runtime(&self) -> Self {
-        let child_env = Environment::from_parent(&self.env);
+        let child_env = Env::from_parent(&self.env);
         Self::from_env(self.stdout.clone(), child_env)
     }
 

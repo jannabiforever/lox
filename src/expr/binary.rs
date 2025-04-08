@@ -1,7 +1,7 @@
 use std::{cell::RefCell, fmt, ops::Deref, rc::Rc, sync::LazyLock};
 
 use crate::{
-    env::{Environment, Evaluatable, EvaluateError},
+    env::{Env, Evaluatable, EvaluateError},
     literal::Literal,
     mac::tt,
     token::TokenType,
@@ -216,7 +216,7 @@ impl super::ExprParser<'_, '_> {
 }
 
 impl Evaluatable for Binary {
-    fn eval(&self, env: Rc<RefCell<Environment>>) -> Result<Literal, EvaluateError> {
+    fn eval(&self, env: Rc<RefCell<Env>>) -> Result<Literal, EvaluateError> {
         let left = self.left.eval(env.clone())?;
         // Lazily evaluate the right side of the binary expression, for short-circuiting.
         let function = self.op.get_binary_function();

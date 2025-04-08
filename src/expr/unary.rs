@@ -1,7 +1,7 @@
 use std::{cell::RefCell, fmt, rc::Rc};
 
 use crate::{
-    env::{Environment, Evaluatable, EvaluateError},
+    env::{Env, Evaluatable, EvaluateError},
     literal::Literal,
     mac::tt,
     token::TokenType,
@@ -70,7 +70,7 @@ impl super::ExprParser<'_, '_> {
 }
 
 impl Evaluatable for Unary {
-    fn eval(&self, env: Rc<RefCell<Environment>>) -> Result<Literal, EvaluateError> {
+    fn eval(&self, env: Rc<RefCell<Env>>) -> Result<Literal, EvaluateError> {
         let right = self.right.eval(env.clone())?;
 
         match self.op {
