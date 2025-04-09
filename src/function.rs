@@ -103,8 +103,15 @@ impl Callable for LoxFunction {
     fn run_body<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
         for stmt in self.body.iter() {
             match stmt {
-                StmtAst::Return(Return { inner: value }) => return value.eval(env.clone()),
-                rest => rest.run(env.clone())?,
+                StmtAst::Return(Return { expr: inner }) => {
+                    let value = inner.eval(env)?;
+                    return Ok(value);
+                }
+                rest => {
+                    if let Some(value) = rest.run(env.clone())? {
+                        return Ok(value);
+                    }
+                }
             }
         }
 

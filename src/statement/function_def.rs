@@ -27,10 +27,10 @@ impl FunctionDef {
 }
 
 impl Runnable for FunctionDef {
-    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<(), RuntimeError> {
+    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
         let lox_function = self.into_lox_function();
         env.borrow_mut().set(&self.name, lox_function);
-        Ok(())
+        Ok(None)
     }
 }
 

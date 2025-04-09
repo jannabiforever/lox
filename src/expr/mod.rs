@@ -62,6 +62,15 @@ impl Evaluatable for ExprAst {
     }
 }
 
+impl Evaluatable for Option<ExprAst> {
+    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
+        self.as_ref()
+            .map(|expr| expr.eval(env))
+            .transpose()
+            .map(|s| s.unwrap_or_default())
+    }
+}
+
 impl fmt::Display for ExprAst {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {

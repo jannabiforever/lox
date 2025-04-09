@@ -1,6 +1,6 @@
 use std::{cell::RefCell, io::Write, rc::Rc};
 
-use crate::{env::Runnable, expr::ExprAst, Env, Evaluatable};
+use crate::{env::Runnable, expr::ExprAst, literal::LoxValue, Env, Evaluatable};
 
 use super::{RuntimeError, StmtParseError, StmtParser};
 
@@ -10,9 +10,9 @@ pub(crate) struct Expression {
 }
 
 impl Runnable for Expression {
-    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<(), RuntimeError> {
+    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
         self.expr.eval(env)?;
-        Ok(())
+        Ok(None)
     }
 }
 

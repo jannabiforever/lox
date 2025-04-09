@@ -3,7 +3,7 @@ use std::{cell::RefCell, io::Write, rc::Rc};
 use crate::{
     env::Runnable,
     expr::{Assign, ExprAst},
-    literal::Literal,
+    literal::{Literal, LoxValue},
     statement::error::StmtParseError,
     Env, Evaluatable,
 };
@@ -17,7 +17,7 @@ pub(crate) struct VarDecl {
 }
 
 impl Runnable for VarDecl {
-    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<(), RuntimeError> {
+    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
         let var = match &self.var {
             ExprAst::Variable(variable) => Ok(variable.name.clone()),
             rest => Err(RuntimeError::InvalidAssignmentTarget(rest.to_string())),
@@ -29,7 +29,7 @@ impl Runnable for VarDecl {
         };
 
         env.borrow_mut().set(&var, value);
-        Ok(())
+        Ok(None)
     }
 }
 

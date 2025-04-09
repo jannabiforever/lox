@@ -56,6 +56,10 @@ impl<W: Write> Env<W> {
             false
         }
     }
+
+    pub fn is_global(&self) -> bool {
+        matches!(self.parent, None)
+    }
 }
 
 pub(crate) trait Evaluatable {
@@ -65,7 +69,7 @@ pub(crate) trait Evaluatable {
 
 pub(crate) trait Runnable {
     // Required methods
-    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<(), RuntimeError>;
+    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError>;
 }
 
 #[derive(Debug, Clone, thiserror::Error)]

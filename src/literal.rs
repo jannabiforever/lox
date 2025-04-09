@@ -162,3 +162,9 @@ impl LoxValue {
         }
     }
 }
+
+impl Default for LoxValue {
+    fn default() -> Self {
+        LoxValue::Literal(Literal::default())
+    }
+}

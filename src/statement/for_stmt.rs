@@ -1,6 +1,6 @@
 use std::{cell::RefCell, io::Write, rc::Rc};
 
-use crate::{env::Runnable, expr::ExprAst, mac::tt, Env, Evaluatable};
+use crate::{env::Runnable, expr::ExprAst, literal::LoxValue, mac::tt, Env, Evaluatable};
 
 use super::{RuntimeError, StmtAst, StmtParseError, StmtParser};
 
@@ -13,7 +13,7 @@ pub struct For {
 }
 
 impl Runnable for For {
-    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<(), RuntimeError> {
+    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
         let For {
             initializer,
             condition,
@@ -22,7 +22,7 @@ impl Runnable for For {
         } = self;
 
         if let Some(init) = initializer {
-            init.run(env.clone())?
+            init.run(env.clone())?;
         }
 
         loop {
@@ -33,14 +33,16 @@ impl Runnable for For {
                 }
             }
 
-            body.run(env.clone())?;
+            if let Some(value) = body.run(env.clone())? {
+                return Ok(Some(value));
+            }
 
             if let Some(increment) = increment.as_ref() {
                 increment.eval(env.clone())?;
             }
         }
 
-        Ok(())
+        Ok(None)
     }
 }
 

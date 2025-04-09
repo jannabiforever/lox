@@ -1,6 +1,6 @@
 use std::{cell::RefCell, io::Write, rc::Rc};
 
-use crate::{env::Runnable, expr::ExprAst, Env, Evaluatable};
+use crate::{env::Runnable, expr::ExprAst, literal::LoxValue, Env, Evaluatable};
 
 use super::{RuntimeError, StmtAst, StmtParseError, StmtParser};
 
@@ -11,17 +11,19 @@ pub struct While {
 }
 
 impl Runnable for While {
-    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<(), RuntimeError> {
+    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
         let While { condition, body } = self;
 
         while condition
             .eval(env.clone())?
             .is_literal_and(|l| l.is_truthy())
         {
-            body.run(env.clone())?
+            if let Some(value) = body.run(env.clone())? {
+                return Ok(Some(value));
+            }
         }
 
-        Ok(())
+        Ok(None)
     }
 }
 

@@ -1,6 +1,6 @@
 use std::{cell::RefCell, io::Write, rc::Rc};
 
-use crate::{env::Runnable, expr::ExprAst, mac::tt, Env, Evaluatable};
+use crate::{env::Runnable, expr::ExprAst, literal::LoxValue, mac::tt, Env, Evaluatable};
 
 use super::{RuntimeError, StmtAst, StmtParseError, StmtParser};
 
@@ -12,7 +12,7 @@ pub struct If {
 }
 
 impl Runnable for If {
-    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<(), RuntimeError> {
+    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
         let If {
             condition,
             body,
@@ -22,12 +22,14 @@ impl Runnable for If {
         let condition_value = condition.eval(env.clone())?;
 
         if condition_value.is_literal_and(|l| l.is_truthy()) {
-            body.run(env.clone())?;
+            if let Some(value) = body.run(env.clone())? {
+                return Ok(Some(value));
+            }
         } else if let Some(else_body) = else_body {
             else_body.run(env.clone())?;
         }
 
-        Ok(())
+        Ok(None)
     }
 }
 

@@ -26,6 +26,7 @@ pub(crate) use self::while_stmt::While;
 
 use crate::env::{Env, Runnable, RuntimeError};
 use crate::error::{IntoLoxError, LoxError};
+use crate::literal::LoxValue;
 use crate::mac::{impl_from, tt};
 use crate::{
     expr::{ExprAst, ExprParser},
@@ -47,7 +48,7 @@ pub(crate) enum StmtAst {
 }
 
 impl Runnable for StmtAst {
-    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<(), RuntimeError> {
+    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
         match self {
             StmtAst::Print(print) => print.run(env),
             StmtAst::Expression(expression) => expression.run(env),
@@ -57,7 +58,7 @@ impl Runnable for StmtAst {
             StmtAst::While(while_stmt) => while_stmt.run(env),
             StmtAst::For(for_stmt) => for_stmt.run(env),
             StmtAst::FunctionDef(function_def) => function_def.run(env),
-            StmtAst::Return(_) => Err(RuntimeError::ReturnAtGlobal),
+            StmtAst::Return(return_stmt) => return_stmt.run(env),
         }
     }
 }
