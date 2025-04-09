@@ -1,4 +1,4 @@
-use std::{cell::RefCell, fmt, ops::Deref, rc::Rc, sync::LazyLock};
+use std::{cell::RefCell, fmt, rc::Rc};
 
 use crate::{
     env::{Env, Evaluatable, EvaluateError},
@@ -53,29 +53,27 @@ impl BinaryOp {
 
     /// Get the binary function for the given operator.
     /// LL stands for LazyLiteral.
-    fn get_binary_function<LL>(&self) -> fn(Literal, LL) -> Result<Literal, EvaluateError>
-    where
-        LL: Deref<Target = Result<Literal, EvaluateError>>,
-    {
+    fn get_binary_function(
+        &self,
+    ) -> fn(ExprAst, ExprAst, Rc<RefCell<Env>>) -> Result<Literal, EvaluateError> {
         match self {
-            BinaryOp::Star => |left, right| {
-                right.deref().clone().and_then(|right| match (left, right) {
+            BinaryOp::Star => {
+                |left, right, env| match (left.eval(env.clone())?, right.eval(env)?) {
                     (Literal::Number(left), Literal::Number(right)) => {
                         Ok(Literal::Number(left * right))
                     }
                     _ => Err(EvaluateError::OperandMustBe("numbers")),
-                })
+                }
+            }
+            BinaryOp::Slash => |left, right, env| match (left.eval(env.clone())?, right.eval(env)?)
+            {
+                (Literal::Number(left), Literal::Number(right)) => {
+                    Ok(Literal::Number(left / right))
+                }
+                _ => Err(EvaluateError::OperandMustBe("numbers")),
             },
-            BinaryOp::Slash => |left, right| {
-                right.deref().clone().and_then(|right| match (left, right) {
-                    (Literal::Number(left), Literal::Number(right)) => {
-                        Ok(Literal::Number(left / right))
-                    }
-                    _ => Err(EvaluateError::OperandMustBe("numbers")),
-                })
-            },
-            BinaryOp::Plus => |left, right| {
-                right.deref().clone().and_then(|right| match (left, right) {
+            BinaryOp::Plus => {
+                |left, right, env| match (left.eval(env.clone())?, right.eval(env)?) {
                     (Literal::Number(left), Literal::Number(right)) => {
                         Ok(Literal::Number(left + right))
                     }
@@ -83,72 +81,68 @@ impl BinaryOp {
                         Ok(Literal::String(format!("{}{}", left, right)))
                     }
                     _ => Err(EvaluateError::OperandMustBe("numbers or strings")),
-                })
+                }
+            }
+            BinaryOp::Minus => |left, right, env| match (left.eval(env.clone())?, right.eval(env)?)
+            {
+                (Literal::Number(left), Literal::Number(right)) => {
+                    Ok(Literal::Number(left - right))
+                }
+                _ => Err(EvaluateError::OperandMustBe("numbers")),
             },
-            BinaryOp::Minus => |left, right| {
-                right.deref().clone().and_then(|right| match (left, right) {
-                    (Literal::Number(left), Literal::Number(right)) => {
-                        Ok(Literal::Number(left - right))
-                    }
-                    _ => Err(EvaluateError::OperandMustBe("numbers")),
-                })
-            },
-            BinaryOp::Greater => |left, right| {
-                right.deref().clone().and_then(|right| match (left, right) {
+            BinaryOp::Greater => {
+                |left, right, env| match (left.eval(env.clone())?, right.eval(env)?) {
                     (Literal::Number(left), Literal::Number(right)) => {
                         Ok(Literal::Boolean(left > right))
                     }
                     _ => Err(EvaluateError::OperandMustBe("numbers")),
-                })
-            },
-            BinaryOp::GreaterEqual => |left, right| {
-                right.deref().clone().and_then(|right| match (left, right) {
+                }
+            }
+            BinaryOp::GreaterEqual => {
+                |left, right, env| match (left.eval(env.clone())?, right.eval(env)?) {
                     (Literal::Number(left), Literal::Number(right)) => {
                         Ok(Literal::Boolean(left >= right))
                     }
                     _ => Err(EvaluateError::OperandMustBe("numbers")),
-                })
-            },
-            BinaryOp::Less => |left, right| {
-                right.deref().clone().and_then(|right| match (left, right) {
+                }
+            }
+            BinaryOp::Less => {
+                |left, right, env| match (left.eval(env.clone())?, right.eval(env)?) {
                     (Literal::Number(left), Literal::Number(right)) => {
                         Ok(Literal::Boolean(left < right))
                     }
                     _ => Err(EvaluateError::OperandMustBe("numbers")),
-                })
-            },
-            BinaryOp::LessEqual => |left, right| {
-                right.deref().clone().and_then(|right| match (left, right) {
+                }
+            }
+            BinaryOp::LessEqual => {
+                |left, right, env| match (left.eval(env.clone())?, right.eval(env)?) {
                     (Literal::Number(left), Literal::Number(right)) => {
                         Ok(Literal::Boolean(left <= right))
                     }
                     _ => Err(EvaluateError::OperandMustBe("numbers")),
-                })
+                }
+            }
+            BinaryOp::EqualEqual => |left, right, env| {
+                let val = left.eval(env.clone())? == right.eval(env)?;
+                Ok(val.into())
             },
-            BinaryOp::EqualEqual => |left, right| {
-                right
-                    .deref()
-                    .clone()
-                    .map(|right| Literal::Boolean(left == right))
+            BinaryOp::BangEqual => |left, right, env| {
+                let val = left.eval(env.clone())? != right.eval(env)?;
+                Ok(val.into())
             },
-            BinaryOp::BangEqual => |left, right| {
-                right
-                    .deref()
-                    .clone()
-                    .map(|right| Literal::Boolean(left != right))
-            },
-            BinaryOp::And => |left, right| {
-                if !left.is_truthy() {
+            BinaryOp::And => |left, right, env| {
+                if !left.eval(env.clone())?.is_truthy() {
                     Ok(Literal::Boolean(false))
                 } else {
-                    right.deref().clone()
+                    right.eval(env)
                 }
             },
-            BinaryOp::Or => |left, right| {
+            BinaryOp::Or => |left, right, env| {
+                let left = left.eval(env.clone())?;
                 if left.is_truthy() {
                     Ok(left)
                 } else {
-                    right.deref().clone()
+                    right.eval(env)
                 }
             },
         }
@@ -217,11 +211,8 @@ impl super::ExprParser<'_, '_> {
 
 impl Evaluatable for Binary {
     fn eval(&self, env: Rc<RefCell<Env>>) -> Result<Literal, EvaluateError> {
-        let left = self.left.eval(env.clone())?;
-        // Lazily evaluate the right side of the binary expression, for short-circuiting.
-        let function = self.op.get_binary_function();
-        let right = LazyLock::new(|| self.right.eval(env.clone()));
-
-        function(left, right)
+        let Self { left, op, right } = self.clone();
+        let function = op.get_binary_function();
+        function(*left, *right, env)
     }
 }
