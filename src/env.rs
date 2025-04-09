@@ -21,7 +21,7 @@ impl<W: Write> Env<W> {
     /// New child environment instance.
     pub fn from_parent(parent: Rc<RefCell<Self>>) -> Rc<RefCell<Self>> {
         rc_rc!(Self {
-            stdout: todo!(),
+            stdout: parent.borrow().stdout.clone(),
             parent: Some(parent.clone()),
             scope: HashMap::new(),
         })
