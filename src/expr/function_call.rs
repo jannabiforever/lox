@@ -3,6 +3,7 @@ use std::fmt;
 use std::io::Write;
 use std::{cell::RefCell, rc::Rc};
 
+use crate::function::Callable;
 use crate::literal::LoxValue;
 use crate::{
     env::{Env, Evaluatable, RuntimeError},
@@ -86,7 +87,7 @@ impl Evaluatable for FunctionCall {
                     .map(|expr| expr.eval(env.clone()))
                     .collect::<Result<Vec<_>, _>>()?;
 
-                Ok(rf.call(arguments))
+                rf.call(arguments, env.clone())
             }
             _ => Err(RuntimeError::InvalidNumberOfArguments),
         }
