@@ -1,6 +1,6 @@
 use std::{cell::RefCell, collections::HashMap, io::Write, process::ExitCode, rc::Rc};
 
-use crate::{error::IntoLoxError, literal::LoxValue, rc_rc, statement::RuntimeError};
+use crate::{error::IntoLoxError, literal::LoxValue, mac::impl_from, rc_rc};
 
 pub(crate) struct Env<W: Write> {
     pub(crate) stdout: Rc<RefCell<W>>,
@@ -84,4 +84,21 @@ impl IntoLoxError for EvaluateError {
 pub(crate) trait Runnable {
     // Required methods
     fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<(), RuntimeError>;
+}
+
+#[derive(Debug, Clone, thiserror::Error)]
+pub(crate) enum RuntimeError {
+    #[error("{0}")]
+    EvaluateError(EvaluateError),
+
+    #[error("Error: Cannot assign value into '{0}'.")]
+    InvalidAssignmentTarget(String),
+}
+
+impl_from!(RuntimeError: EvaluateError);
+
+impl IntoLoxError for RuntimeError {
+    fn exit_code(&self) -> ExitCode {
+        ExitCode::from(70)
+    }
 }

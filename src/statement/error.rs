@@ -1,23 +1,6 @@
 use std::process::ExitCode;
 
-use crate::{env::EvaluateError, error::IntoLoxError, expr::ExprParseError, mac::impl_from};
-
-#[derive(Debug, Clone, thiserror::Error)]
-pub(crate) enum RuntimeError {
-    #[error("{0}")]
-    EvaluateError(EvaluateError),
-
-    #[error("Error: Cannot assign value into '{0}'.")]
-    InvalidAssignmentTarget(String),
-}
-
-impl_from!(RuntimeError: EvaluateError);
-
-impl IntoLoxError for RuntimeError {
-    fn exit_code(&self) -> ExitCode {
-        ExitCode::from(70)
-    }
-}
+use crate::{error::IntoLoxError, expr::ExprParseError, mac::impl_from};
 
 #[derive(Debug, Clone, thiserror::Error)]
 pub(crate) enum StmtParseError {

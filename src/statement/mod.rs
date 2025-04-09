@@ -12,7 +12,7 @@ use std::io::Write;
 use std::rc::Rc;
 
 pub(crate) use self::block::Block;
-pub(crate) use self::error::{RuntimeError, StmtParseError};
+pub(crate) use self::error::StmtParseError;
 pub(crate) use self::expression::Expression;
 pub(crate) use self::for_stmt::For;
 pub(crate) use self::if_stmt::If;
@@ -20,7 +20,7 @@ pub(crate) use self::print::Print;
 pub(crate) use self::var_decl::VarDecl;
 pub(crate) use self::while_stmt::While;
 
-use crate::env::{Env, Runnable};
+use crate::env::{Env, Runnable, RuntimeError};
 use crate::error::{IntoLoxError, LoxError};
 use crate::mac::{impl_from, tt};
 use crate::{
