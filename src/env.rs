@@ -1,6 +1,6 @@
 use std::{cell::RefCell, collections::HashMap, io::Write, process::ExitCode, rc::Rc};
 
-use crate::{error::IntoLoxError, literal::LoxValue, mac::impl_from, rc_rc};
+use crate::{error::IntoLoxError, function::CLOCK, literal::LoxValue, mac::impl_from, rc_rc};
 
 pub(crate) struct Env<W: Write> {
     pub(crate) stdout: Rc<RefCell<W>>,
@@ -11,11 +11,14 @@ pub(crate) struct Env<W: Write> {
 impl<W: Write> Env<W> {
     /// Creates a global environment,
     pub fn new(stdout: W) -> Rc<RefCell<Self>> {
-        rc_rc!(Self {
+        let env = rc_rc!(Self {
             stdout: rc_rc!(stdout),
             parent: None,
-            scope: HashMap::new(),
-        })
+            scope: HashMap::new()
+        });
+
+        env.borrow_mut().set("clock", CLOCK.clone());
+        env
     }
 
     /// New child environment instance.
@@ -73,6 +76,9 @@ pub(crate) enum EvaluateError {
 
     #[error("Error: Cannot call '{0}'")]
     InvalidCallTarget(String),
+
+    #[error("Error: Invalid number of arguments")]
+    InvalidNumberOfArguments,
 }
 
 impl IntoLoxError for EvaluateError {

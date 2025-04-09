@@ -53,7 +53,7 @@ impl Evaluatable for ExprAst {
             Self::Assign(v) => v.eval(env),
             Self::Binary(v) => v.eval(env),
             Self::FieldCall(_) => todo!(),
-            Self::FunctionCall(_) => todo!(),
+            Self::FunctionCall(v) => v.eval(env),
             Self::Grouping(v) => v.eval(env),
             Self::Literal(v) => v.eval(env),
             Self::Unary(v) => v.eval(env),

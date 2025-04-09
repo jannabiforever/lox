@@ -78,8 +78,17 @@ impl ExprParser<'_, '_> {
 impl Evaluatable for FunctionCall {
     fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, EvaluateError> {
         match self.callee.eval(env.clone())? {
-            LoxValue::Literal(l) => return Err(EvaluateError::InvalidCallTarget(l.to_string())),
-            LoxValue::RustFunction(_) => todo!("call rust function"),
+            LoxValue::Literal(l) => Err(EvaluateError::InvalidCallTarget(l.to_string())),
+            LoxValue::RustFunction(rf) if rf.arity() == self.arguments.len() => {
+                let arguments = self
+                    .arguments
+                    .iter()
+                    .map(|expr| expr.eval(env.clone()))
+                    .collect::<Result<Vec<_>, _>>()?;
+
+                Ok(rf.call(arguments))
+            }
+            _ => Err(EvaluateError::InvalidNumberOfArguments),
         }
     }
 }

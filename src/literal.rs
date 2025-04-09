@@ -72,6 +72,12 @@ impl std::str::FromStr for Number {
     }
 }
 
+impl From<f64> for Number {
+    fn from(value: f64) -> Self {
+        Self(value)
+    }
+}
+
 impl fmt::Display for Number {
     /// In Lox, a number should be always displayed with a decimal point.
     /// If the number is an integer, it should be displayed with a ".0" suffix.
