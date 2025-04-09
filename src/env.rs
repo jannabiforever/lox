@@ -1,6 +1,6 @@
 use std::{cell::RefCell, collections::HashMap, io::Write, process::ExitCode, rc::Rc};
 
-use crate::{error::IntoLoxError, function::CLOCK, literal::LoxValue, mac::impl_from, rc_rc};
+use crate::{error::IntoLoxError, function::CLOCK, literal::LoxValue, rc_rc};
 
 pub(crate) struct Env<W: Write> {
     pub(crate) stdout: Rc<RefCell<W>>,
@@ -60,31 +60,7 @@ impl<W: Write> Env<W> {
 
 pub(crate) trait Evaluatable {
     // Required methods
-    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, EvaluateError>;
-}
-
-#[derive(Debug, thiserror::Error, Clone)]
-pub(crate) enum EvaluateError {
-    #[error("Error: Operand must be {0}")]
-    OperandMustBe(&'static str),
-
-    #[error("Error: Undefined variable '{0}'.")]
-    UndefinedVariable(String),
-
-    #[error("Error: Cannot assign value into '{0}'.")]
-    InvalidAssignmentTarget(String),
-
-    #[error("Error: Cannot call '{0}'")]
-    InvalidCallTarget(String),
-
-    #[error("Error: Invalid number of arguments")]
-    InvalidNumberOfArguments,
-}
-
-impl IntoLoxError for EvaluateError {
-    fn exit_code(&self) -> ExitCode {
-        ExitCode::from(70)
-    }
+    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError>;
 }
 
 pub(crate) trait Runnable {
@@ -94,14 +70,21 @@ pub(crate) trait Runnable {
 
 #[derive(Debug, Clone, thiserror::Error)]
 pub(crate) enum RuntimeError {
-    #[error("{0}")]
-    EvaluateError(EvaluateError),
+    #[error("Error: Operand must be {0}")]
+    OperandMustBe(&'static str),
+
+    #[error("Error: Undefined variable '{0}'.")]
+    UndefinedVariable(String),
+
+    #[error("Error: Cannot call '{0}'")]
+    InvalidCallTarget(String),
+
+    #[error("Error: Invalid number of arguments")]
+    InvalidNumberOfArguments,
 
     #[error("Error: Cannot assign value into '{0}'.")]
     InvalidAssignmentTarget(String),
 }
-
-impl_from!(RuntimeError: EvaluateError);
 
 impl IntoLoxError for RuntimeError {
     fn exit_code(&self) -> ExitCode {

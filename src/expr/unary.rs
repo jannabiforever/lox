@@ -1,7 +1,7 @@
 use std::{cell::RefCell, fmt, io::Write, rc::Rc};
 
 use crate::{
-    env::{Env, Evaluatable, EvaluateError},
+    env::{Env, Evaluatable, RuntimeError},
     literal::{Literal, LoxValue},
     mac::tt,
     token::TokenType,
@@ -70,7 +70,7 @@ impl super::ExprParser<'_, '_> {
 }
 
 impl Evaluatable for Unary {
-    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, EvaluateError> {
+    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
         let right = self.right.eval(env.clone())?;
 
         match self.op {
@@ -78,7 +78,7 @@ impl Evaluatable for Unary {
                 if let LoxValue::Literal(Literal::Number(num)) = right {
                     Ok(Literal::Number(-num).into())
                 } else {
-                    Err(EvaluateError::OperandMustBe("number"))
+                    Err(RuntimeError::OperandMustBe("number"))
                 }
             }
             UnaryOp::Bang => {

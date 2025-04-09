@@ -25,7 +25,7 @@ pub(crate) use self::variable::Variable;
 
 use self::binding_power::BindingPower;
 
-use crate::env::{Env, Evaluatable, EvaluateError};
+use crate::env::{Env, Evaluatable, RuntimeError};
 use crate::error::LoxError;
 use crate::literal::LoxValue;
 use crate::mac::impl_from;
@@ -48,7 +48,7 @@ impl_from!(
 );
 
 impl Evaluatable for ExprAst {
-    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, EvaluateError> {
+    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
         match self {
             Self::Assign(v) => v.eval(env),
             Self::Binary(v) => v.eval(env),

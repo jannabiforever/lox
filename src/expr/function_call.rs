@@ -5,7 +5,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::literal::LoxValue;
 use crate::{
-    env::{Env, Evaluatable, EvaluateError},
+    env::{Env, Evaluatable, RuntimeError},
     mac::tt,
 };
 
@@ -76,9 +76,9 @@ impl ExprParser<'_, '_> {
 }
 
 impl Evaluatable for FunctionCall {
-    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, EvaluateError> {
+    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
         match self.callee.eval(env.clone())? {
-            LoxValue::Literal(l) => Err(EvaluateError::InvalidCallTarget(l.to_string())),
+            LoxValue::Literal(l) => Err(RuntimeError::InvalidCallTarget(l.to_string())),
             LoxValue::RustFunction(rf) if rf.arity() == self.arguments.len() => {
                 let arguments = self
                     .arguments
@@ -88,7 +88,7 @@ impl Evaluatable for FunctionCall {
 
                 Ok(rf.call(arguments))
             }
-            _ => Err(EvaluateError::InvalidNumberOfArguments),
+            _ => Err(RuntimeError::InvalidNumberOfArguments),
         }
     }
 }

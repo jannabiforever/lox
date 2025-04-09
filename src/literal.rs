@@ -1,7 +1,7 @@
 use std::{cell::RefCell, cmp, fmt, io::Write, ops, rc::Rc};
 
 use crate::{
-    env::{Env, Evaluatable, EvaluateError},
+    env::{Env, Evaluatable, RuntimeError},
     function::RustFunction,
     mac::impl_from,
 };
@@ -35,7 +35,7 @@ impl Literal {
 }
 
 impl Evaluatable for Literal {
-    fn eval<W: Write>(&self, _: Rc<RefCell<Env<W>>>) -> Result<LoxValue, EvaluateError> {
+    fn eval<W: Write>(&self, _: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
         Ok(self.clone().into())
     }
 }

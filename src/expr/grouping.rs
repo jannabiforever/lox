@@ -1,7 +1,7 @@
 use std::{cell::RefCell, fmt, io::Write, rc::Rc};
 
 use crate::{
-    env::{Env, Evaluatable, EvaluateError},
+    env::{Env, Evaluatable, RuntimeError},
     literal::LoxValue,
     mac::tt,
 };
@@ -45,7 +45,7 @@ impl super::ExprParser<'_, '_> {
 }
 
 impl Evaluatable for Grouping {
-    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, EvaluateError> {
+    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
         self.inner.eval(env)
     }
 }
