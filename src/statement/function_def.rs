@@ -70,6 +70,9 @@ impl StmtParser<'_, '_> {
             }
         }
         self.expect_closing_paren()?;
+        if self.token_stream.peek().token_type != tt!("{") {
+            return Err(StmtParseError::ExpectedBodyOfFunction);
+        }
         let body = self.parse_block()?.inner;
 
         Ok(FunctionDef {

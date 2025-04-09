@@ -36,6 +36,9 @@ pub(crate) enum StmtParseError {
 
     #[error("Error at {0}: Invalid construction for function def")]
     InvalidFunctionArgument(String),
+
+    #[error("Error: Expected {{ for function body")]
+    ExpectedBodyOfFunction,
 }
 
 impl_from!(StmtParseError: ExprParseError);
