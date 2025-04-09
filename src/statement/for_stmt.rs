@@ -88,7 +88,8 @@ impl StmtParser<'_, '_> {
             | StmtAst::If(_)
             | StmtAst::Print(_)
             | StmtAst::While(_)
-            | StmtAst::Block(_)) => Box::new(allowed),
+            | StmtAst::Block(_)
+            | StmtAst::Return(_)) => Box::new(allowed),
             rest => return Err(StmtParseError::InvalidForStmtBody(format!("{rest:?}"))),
         };
 
