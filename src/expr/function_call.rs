@@ -2,7 +2,6 @@ use std::fmt;
 
 use std::{cell::RefCell, rc::Rc};
 
-use crate::statement::Runtime;
 use crate::{
     env::{Env, Evaluatable, EvaluateError},
     literal::Literal,
@@ -78,7 +77,7 @@ impl ExprParser<'_, '_> {
 impl Evaluatable for FunctionCall {
     fn eval(&self, env: Rc<RefCell<Env>>) -> Result<Literal, EvaluateError> {
         let callee = match self.callee.eval(env.clone())? {
-            Literal::RustFunction(f) if f.arguments.len() == self.arguments.len() => f,
+            Literal::RustFunction(f) if f.arity() == self.arguments.len() => f,
             rest => return Err(EvaluateError::InvalidCallTarget(rest.to_string())),
         };
 
