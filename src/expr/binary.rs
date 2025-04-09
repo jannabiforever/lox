@@ -53,6 +53,7 @@ impl BinaryOp {
 
     /// Get the binary function for the given operator.
     /// LL stands for LazyLiteral.
+    #[allow(clippy::type_complexity)]
     fn get_binary_function(
         &self,
     ) -> fn(ExprAst, ExprAst, Rc<RefCell<Env>>) -> Result<Literal, EvaluateError> {

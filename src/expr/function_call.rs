@@ -76,24 +76,6 @@ impl ExprParser<'_, '_> {
 
 impl Evaluatable for FunctionCall {
     fn eval(&self, env: Rc<RefCell<Env>>) -> Result<Literal, EvaluateError> {
-        let callee = match self.callee.eval(env.clone())? {
-            Literal::RustFunction(f) if f.arity() == self.arguments.len() => f,
-            rest => return Err(EvaluateError::InvalidCallTarget(rest.to_string())),
-        };
-
-        let arg_values = self
-            .arguments
-            .iter()
-            .map(|expr| expr.eval(env.clone()))
-            .collect::<Result<Vec<_>, _>>()?;
-
-        // Initialize the scope.
-        let stack_scope = Env::from_parent(env);
-        for (arg_key, arg_value) in callee.arguments.iter().zip(arg_values) {
-            stack_scope.borrow_mut().set(arg_key, arg_value);
-        }
-
-        // run body
-        todo!("run body")
+        todo!()
     }
 }
