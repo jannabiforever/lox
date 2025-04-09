@@ -1,5 +1,6 @@
 use std::{
     cell::RefCell,
+    fmt,
     io::Write,
     rc::Rc,
     time::{SystemTime, UNIX_EPOCH},
@@ -54,6 +55,12 @@ pub(crate) struct RustFunction {
     pub(crate) arguments: Vec<&'static str>,
 }
 
+impl fmt::Display for RustFunction {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<fn {}>", self.name)
+    }
+}
+
 pub(crate) static CLOCK: LoxValue = LoxValue::RustFunction(RustFunction {
     name: "clock",
     arguments: vec![],
@@ -102,5 +109,11 @@ impl Callable for LoxFunction {
         }
 
         Ok(LoxValue::Literal(Literal::Nil))
+    }
+}
+
+impl fmt::Display for LoxFunction {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<fn {}>", self.name)
     }
 }

@@ -149,7 +149,8 @@ impl LoxValue {
     pub fn pretty(&self) -> String {
         match self {
             Self::Literal(literal) => literal.pretty(),
-            _ => todo!("Implement pretty print."),
+            Self::LoxFunction(lf) => lf.to_string(),
+            Self::RustFunction(rf) => rf.to_string(),
         }
     }
 
