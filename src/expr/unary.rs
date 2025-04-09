@@ -1,4 +1,4 @@
-use std::{cell::RefCell, fmt, rc::Rc};
+use std::{cell::RefCell, fmt, io::Write, rc::Rc};
 
 use crate::{
     env::{Env, Evaluatable, EvaluateError},
@@ -70,7 +70,7 @@ impl super::ExprParser<'_, '_> {
 }
 
 impl Evaluatable for Unary {
-    fn eval(&self, env: Rc<RefCell<Env>>) -> Result<LoxValue, EvaluateError> {
+    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, EvaluateError> {
         let right = self.right.eval(env.clone())?;
 
         match self.op {

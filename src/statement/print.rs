@@ -1,8 +1,21 @@
-use std::io::Write;
+use std::{cell::RefCell, io::Write, rc::Rc};
 
-use crate::{expr::ExprAst, statement::error::StmtParseError};
+use crate::{env::Runnable, expr::ExprAst, statement::error::StmtParseError, Env, Evaluatable};
 
-use super::{Runtime, RuntimeError, StmtParser};
+use super::{RuntimeError, StmtParser};
+
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct Print {
+    pub(crate) expr: ExprAst,
+}
+
+impl Runnable for Print {
+    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<(), RuntimeError> {
+        let value = self.expr.eval(env.clone())?;
+        writeln!(env.borrow().stdout.borrow_mut(), "{}", value.pretty()).unwrap();
+        Ok(())
+    }
+}
 
 impl StmtParser<'_, '_> {
     pub(super) fn parse_print(&mut self) -> Result<Print, StmtParseError> {
@@ -11,18 +24,5 @@ impl StmtParser<'_, '_> {
         self.expect_semicolon()?;
 
         Ok(Print { expr })
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub(crate) struct Print {
-    pub(crate) expr: ExprAst,
-}
-
-impl<W: Write> Runtime<W> {
-    pub fn run_print(&self, print: Print) -> Result<(), RuntimeError> {
-        let value = self.evaluate(&print.expr)?;
-        writeln!(self.stdout.borrow_mut(), "{}", value.pretty()).unwrap();
-        Ok(())
     }
 }

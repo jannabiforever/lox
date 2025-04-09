@@ -1,8 +1,8 @@
-use std::io::Write;
+use std::{cell::RefCell, io::Write, rc::Rc};
 
-use crate::{expr::ExprAst, mac::tt};
+use crate::{env::Runnable, expr::ExprAst, mac::tt, Env, Evaluatable};
 
-use super::{Runtime, RuntimeError, StmtAst, StmtParseError, StmtParser};
+use super::{RuntimeError, StmtAst, StmtParseError, StmtParser};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct For {
@@ -10,6 +10,38 @@ pub struct For {
     condition: Option<ExprAst>,
     increment: Option<ExprAst>,
     body: Box<StmtAst>,
+}
+
+impl Runnable for For {
+    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<(), RuntimeError> {
+        let For {
+            initializer,
+            condition,
+            increment,
+            body,
+        } = self;
+
+        if let Some(init) = initializer {
+            init.run(env.clone())?
+        }
+
+        loop {
+            if let Some(condition) = condition.as_ref() {
+                let value = condition.eval(env.clone())?;
+                if !value.is_literal_and(|l| l.is_truthy()) {
+                    break;
+                }
+            }
+
+            body.run(env.clone())?;
+
+            if let Some(increment) = increment.as_ref() {
+                increment.eval(env.clone())?;
+            }
+        }
+
+        Ok(())
+    }
 }
 
 impl StmtParser<'_, '_> {
@@ -64,37 +96,5 @@ impl StmtParser<'_, '_> {
             increment,
             body,
         })
-    }
-}
-
-impl<W: Write> Runtime<W> {
-    pub(super) fn run_for(&self, for_stmt: For) -> Result<(), RuntimeError> {
-        let For {
-            initializer,
-            condition,
-            increment,
-            body,
-        } = for_stmt;
-
-        if let Some(init) = initializer {
-            self.run(*init)?;
-        }
-
-        loop {
-            if let Some(condition) = condition.as_ref() {
-                let value = self.evaluate(condition)?;
-                if !value.is_literal_and(|l| l.is_truthy()) {
-                    break;
-                }
-            }
-
-            self.run(*body.clone())?;
-
-            if let Some(increment) = increment.as_ref() {
-                self.evaluate(increment)?;
-            }
-        }
-
-        Ok(())
     }
 }

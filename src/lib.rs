@@ -9,7 +9,7 @@ mod token;
 
 use std::{io::Write, process::ExitCode};
 
-use env::{Env, Evaluatable};
+use env::{Env, Evaluatable, Runnable};
 use error::LoxResult;
 
 use self::error::IntoLoxError;
@@ -109,7 +109,11 @@ where
     let mut stream = TokenStream::new(&tokens);
     let parsed = expr_parse!(stream, err_buf);
 
-    match parsed.eval(Env::new()).map(|res| res.pretty()) {
+    // Since 'evaluate' command doesn't actually print anything while evaluating,
+    // we can set env.stdout to be some black buffer.
+    let empty_env = Env::new(Vec::new());
+
+    match parsed.eval(empty_env).map(|res| res.pretty()) {
         Ok(result) => writeln!(ok_buf, "{result}").unwrap(),
         Err(err) => {
             writeln!(err_buf, "{err}").unwrap();
@@ -131,9 +135,9 @@ where
     let mut stream = TokenStream::new(&tokens);
     let stmts = stmt_parse!(stream, err_buf);
 
-    let runtime = statement::Runtime::new(rc_rc!(ok_buf));
+    let env = Env::new(ok_buf);
     for stmt in stmts {
-        if let Err(err) = runtime.run(stmt) {
+        if let Err(err) = stmt.run(env.clone()) {
             writeln!(err_buf, "{err}").unwrap();
             return err.exit_code();
         }

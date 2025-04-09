@@ -1,4 +1,4 @@
-use std::{cell::RefCell, cmp, fmt, ops, rc::Rc};
+use std::{cell::RefCell, cmp, fmt, io::Write, ops, rc::Rc};
 
 use crate::{
     env::{Env, Evaluatable, EvaluateError},
@@ -35,7 +35,7 @@ impl Literal {
 }
 
 impl Evaluatable for Literal {
-    fn eval(&self, _: Rc<RefCell<Env>>) -> Result<LoxValue, EvaluateError> {
+    fn eval<W: Write>(&self, _: Rc<RefCell<Env<W>>>) -> Result<LoxValue, EvaluateError> {
         Ok(self.clone().into())
     }
 }

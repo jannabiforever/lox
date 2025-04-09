@@ -1,4 +1,4 @@
-use std::{cell::RefCell, fmt, rc::Rc};
+use std::{cell::RefCell, fmt, io::Write, rc::Rc};
 
 use crate::{
     env::{Env, Evaluatable, EvaluateError},
@@ -32,7 +32,7 @@ impl super::ExprParser<'_, '_> {
 }
 
 impl Evaluatable for Assign {
-    fn eval(&self, env: Rc<RefCell<Env>>) -> Result<LoxValue, EvaluateError> {
+    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, EvaluateError> {
         let name = match *self.assignee.clone() {
             ExprAst::Variable(var) => var.name,
             rest => return Err(EvaluateError::InvalidAssignmentTarget(rest.to_string())),

@@ -1,16 +1,18 @@
-use std::{cell::RefCell, collections::HashMap, process::ExitCode, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, io::Write, process::ExitCode, rc::Rc};
 
 use crate::{error::IntoLoxError, literal::LoxValue, rc_rc, statement::RuntimeError};
 
-pub(crate) struct Env {
-    pub(crate) parent: Option<Rc<RefCell<Env>>>,
+pub(crate) struct Env<W: Write> {
+    pub(crate) stdout: Rc<RefCell<W>>,
+    pub(crate) parent: Option<Rc<RefCell<Env<W>>>>,
     pub(crate) scope: HashMap<String, LoxValue>,
 }
 
-impl Env {
+impl<W: Write> Env<W> {
     /// Creates a global environment,
-    pub fn new() -> Rc<RefCell<Self>> {
+    pub fn new(stdout: W) -> Rc<RefCell<Self>> {
         rc_rc!(Self {
+            stdout: rc_rc!(stdout),
             parent: None,
             scope: HashMap::new(),
         })
@@ -19,7 +21,8 @@ impl Env {
     /// New child environment instance.
     pub fn from_parent(parent: Rc<RefCell<Self>>) -> Rc<RefCell<Self>> {
         rc_rc!(Self {
-            parent: Some(parent),
+            stdout: todo!(),
+            parent: Some(parent.clone()),
             scope: HashMap::new(),
         })
     }
@@ -54,7 +57,7 @@ impl Env {
 
 pub(crate) trait Evaluatable {
     // Required methods
-    fn eval(&self, env: Rc<RefCell<Env>>) -> Result<LoxValue, EvaluateError>;
+    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, EvaluateError>;
 }
 
 #[derive(Debug, thiserror::Error, Clone)]
@@ -80,5 +83,5 @@ impl IntoLoxError for EvaluateError {
 
 pub(crate) trait Runnable {
     // Required methods
-    fn run(&self, env: Rc<RefCell<Env>>) -> Result<LoxValue, RuntimeError>;
+    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<(), RuntimeError>;
 }

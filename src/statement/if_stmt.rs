@@ -1,14 +1,34 @@
-use std::io::Write;
+use std::{cell::RefCell, io::Write, rc::Rc};
 
-use crate::{expr::ExprAst, mac::tt};
+use crate::{env::Runnable, expr::ExprAst, mac::tt, Env, Evaluatable};
 
-use super::{Runtime, RuntimeError, StmtAst, StmtParseError, StmtParser};
+use super::{RuntimeError, StmtAst, StmtParseError, StmtParser};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct If {
     condition: ExprAst,
     body: Box<StmtAst>,
     else_body: Option<Box<StmtAst>>,
+}
+
+impl Runnable for If {
+    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<(), RuntimeError> {
+        let If {
+            condition,
+            body,
+            else_body,
+        } = self;
+
+        let condition_value = condition.eval(env.clone())?;
+
+        if condition_value.is_literal_and(|l| l.is_truthy()) {
+            body.run(env.clone())?;
+        } else if let Some(else_body) = else_body {
+            else_body.run(env.clone())?;
+        }
+
+        Ok(())
+    }
 }
 
 impl StmtParser<'_, '_> {
@@ -30,25 +50,5 @@ impl StmtParser<'_, '_> {
             body,
             else_body,
         })
-    }
-}
-
-impl<W: Write> Runtime<W> {
-    pub(super) fn run_if(&self, if_stmt: If) -> Result<(), RuntimeError> {
-        let If {
-            condition,
-            body,
-            else_body,
-        } = if_stmt;
-
-        let condition_value = self.evaluate(&condition)?;
-
-        if condition_value.is_literal_and(|l| l.is_truthy()) {
-            self.run(*body)?;
-        } else if let Some(else_body) = else_body {
-            self.run(*else_body)?;
-        }
-
-        Ok(())
     }
 }

@@ -1,4 +1,4 @@
-use std::{cell::RefCell, fmt, rc::Rc};
+use std::{cell::RefCell, fmt, io::Write, rc::Rc};
 
 use crate::{
     env::{Env, Evaluatable, EvaluateError},
@@ -54,9 +54,9 @@ impl BinaryOp {
     /// Get the binary function for the given operator.
     /// LL stands for LazyLiteral.
     #[allow(clippy::type_complexity)]
-    fn get_binary_function(
+    fn get_binary_function<W: Write>(
         &self,
-    ) -> fn(ExprAst, ExprAst, Rc<RefCell<Env>>) -> Result<Literal, EvaluateError> {
+    ) -> fn(ExprAst, ExprAst, Rc<RefCell<Env<W>>>) -> Result<Literal, EvaluateError> {
         match self {
             BinaryOp::Star => {
                 |left, right, env| match (left.eval(env.clone())?, right.eval(env)?) {
@@ -229,7 +229,7 @@ impl super::ExprParser<'_, '_> {
 }
 
 impl Evaluatable for Binary {
-    fn eval(&self, env: Rc<RefCell<Env>>) -> Result<LoxValue, EvaluateError> {
+    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, EvaluateError> {
         let Self { left, op, right } = self.clone();
         let function = op.get_binary_function();
         Ok(function(*left, *right, env)?.into())

@@ -11,6 +11,7 @@ mod variable;
 
 use std::cell::RefCell;
 use std::fmt;
+use std::io::Write;
 use std::rc::Rc;
 
 pub(crate) use self::assign::Assign;
@@ -47,7 +48,7 @@ impl_from!(
 );
 
 impl Evaluatable for ExprAst {
-    fn eval(&self, env: Rc<RefCell<Env>>) -> Result<LoxValue, EvaluateError> {
+    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, EvaluateError> {
         match self {
             Self::Assign(v) => v.eval(env),
             Self::Binary(v) => v.eval(env),

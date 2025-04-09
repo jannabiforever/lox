@@ -1,12 +1,19 @@
-use std::io::Write;
+use std::{cell::RefCell, io::Write, rc::Rc};
 
-use crate::expr::ExprAst;
+use crate::{env::Runnable, expr::ExprAst, Env, Evaluatable};
 
-use super::{Runtime, RuntimeError, StmtParseError, StmtParser};
+use super::{RuntimeError, StmtParseError, StmtParser};
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Expression {
     pub(crate) expr: ExprAst,
+}
+
+impl Runnable for Expression {
+    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<(), RuntimeError> {
+        self.expr.eval(env)?;
+        Ok(())
+    }
 }
 
 impl StmtParser<'_, '_> {
@@ -14,11 +21,5 @@ impl StmtParser<'_, '_> {
         let expr = self.parse_following_expression()?;
         self.expect_semicolon()?;
         Ok(Expression { expr })
-    }
-}
-
-impl<W: Write> Runtime<W> {
-    pub(super) fn run_expression(&self, expr: Expression) -> Result<(), RuntimeError> {
-        self.evaluate(&expr.expr).map(|_| ())
     }
 }

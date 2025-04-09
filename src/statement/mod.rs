@@ -20,9 +20,8 @@ pub(crate) use self::print::Print;
 pub(crate) use self::var_decl::VarDecl;
 pub(crate) use self::while_stmt::While;
 
-use crate::env::{Env, Evaluatable};
+use crate::env::{Env, Runnable};
 use crate::error::{IntoLoxError, LoxError};
-use crate::literal::LoxValue;
 use crate::mac::{impl_from, tt};
 use crate::{
     expr::{ExprAst, ExprParser},
@@ -39,6 +38,20 @@ pub(crate) enum StmtAst {
     If(If),
     While(While),
     For(For),
+}
+
+impl Runnable for StmtAst {
+    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<(), RuntimeError> {
+        match self {
+            StmtAst::Print(print) => print.run(env),
+            StmtAst::Expression(expression) => expression.run(env),
+            StmtAst::VarDecl(var_decl) => var_decl.run(env),
+            StmtAst::Block(block) => block.run(env),
+            StmtAst::If(if_stmt) => if_stmt.run(env),
+            StmtAst::While(while_stmt) => while_stmt.run(env),
+            StmtAst::For(for_stmt) => for_stmt.run(env),
+        }
+    }
 }
 
 impl_from!(StmtAst: Expression, Print, VarDecl, Block, If, While, For);
@@ -119,55 +132,5 @@ impl StmtParser<'_, '_> {
             })?;
 
         Ok(())
-    }
-}
-
-/// Lox Runtime.
-///
-/// Represents the runtime environment for the interpreter.
-///
-/// The `Runtime` struct holds a reference to the current scope's environment,
-/// which is shared across the execution of the program. Environment
-/// contains variables and their associated values, and it is managed using
-/// reference counting and interior mutability to allow for safe and flexible
-/// updates during runtime.
-pub struct Runtime<W: Write> {
-    stdout: Rc<RefCell<W>>,
-    pub(crate) env: Rc<RefCell<Env>>,
-}
-
-impl<W: Write> Runtime<W> {
-    pub fn new(stdout: Rc<RefCell<W>>) -> Self {
-        Self {
-            stdout,
-            env: Env::new(),
-        }
-    }
-
-    pub fn from_env(stdout: Rc<RefCell<W>>, env: Rc<RefCell<Env>>) -> Self {
-        Self { stdout, env }
-    }
-
-    fn child_runtime(&self) -> Self {
-        let child_env = Env::from_parent(self.env.clone());
-        Self::from_env(self.stdout.clone(), child_env)
-    }
-
-    pub fn run(&self, stmt: StmtAst) -> Result<(), RuntimeError> {
-        match stmt {
-            StmtAst::Print(print) => self.run_print(print)?,
-            StmtAst::Expression(expr) => self.run_expression(expr)?,
-            StmtAst::VarDecl(var_decl) => var_decl.run(self.env.clone())?,
-            StmtAst::Block(block) => self.run_block(block)?,
-            StmtAst::If(if_stmt) => self.run_if(if_stmt)?,
-            StmtAst::While(while_stmt) => self.run_while(while_stmt)?,
-            StmtAst::For(for_stmt) => self.run_for(for_stmt)?,
-        }
-
-        Ok(())
-    }
-
-    fn evaluate(&self, expr: &ExprAst) -> Result<LoxValue, RuntimeError> {
-        expr.eval(self.env.clone()).map_err(Into::into)
     }
 }

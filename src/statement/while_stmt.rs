@@ -1,8 +1,8 @@
 use std::{cell::RefCell, io::Write, rc::Rc};
 
-use crate::{expr::ExprAst, Env};
+use crate::{env::Runnable, expr::ExprAst, Env, Evaluatable};
 
-use super::{Runtime, RuntimeError, StmtAst, StmtParseError, StmtParser};
+use super::{RuntimeError, StmtAst, StmtParseError, StmtParser};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct While {
@@ -10,9 +10,18 @@ pub struct While {
     body: Box<StmtAst>,
 }
 
-impl While {
-    pub fn run(&self, env: Rc<RefCell<Env>>) -> Result<(), RuntimeError> {
-        todo!()
+impl Runnable for While {
+    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<(), RuntimeError> {
+        let While { condition, body } = self;
+
+        while condition
+            .eval(env.clone())?
+            .is_literal_and(|l| l.is_truthy())
+        {
+            body.run(env.clone())?
+        }
+
+        Ok(())
     }
 }
 
@@ -34,17 +43,5 @@ impl StmtParser<'_, '_> {
         };
 
         Ok(While { condition, body })
-    }
-}
-
-impl<W: Write> Runtime<W> {
-    pub(super) fn run_while(&self, while_stmt: While) -> Result<(), RuntimeError> {
-        let While { condition, body } = while_stmt;
-
-        while self.evaluate(&condition)?.is_literal_and(|l| l.is_truthy()) {
-            self.run(*body.clone())?;
-        }
-
-        Ok(())
     }
 }

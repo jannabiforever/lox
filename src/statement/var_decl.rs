@@ -1,6 +1,7 @@
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, io::Write, rc::Rc};
 
 use crate::{
+    env::Runnable,
     expr::{Assign, ExprAst},
     literal::Literal,
     statement::error::StmtParseError,
@@ -15,8 +16,8 @@ pub(crate) struct VarDecl {
     pub(crate) value: Option<ExprAst>,
 }
 
-impl VarDecl {
-    pub fn run(&self, env: Rc<RefCell<Env>>) -> Result<(), RuntimeError> {
+impl Runnable for VarDecl {
+    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<(), RuntimeError> {
         let var = match &self.var {
             ExprAst::Variable(variable) => Ok(variable.name.clone()),
             rest => Err(RuntimeError::InvalidAssignmentTarget(rest.to_string())),

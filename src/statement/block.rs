@@ -1,12 +1,22 @@
-use std::io::Write;
+use std::{cell::RefCell, io::Write, rc::Rc};
 
-use crate::mac::tt;
+use crate::{env::Runnable, mac::tt, Env};
 
-use super::{Runtime, RuntimeError, StmtAst, StmtParseError, StmtParser};
+use super::{RuntimeError, StmtAst, StmtParseError, StmtParser};
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Block {
     inner: Vec<StmtAst>,
+}
+
+impl Runnable for Block {
+    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<(), RuntimeError> {
+        let new_env = Env::from_parent(env);
+        for stmt in &self.inner {
+            stmt.run(new_env.clone())?;
+        }
+        Ok(())
+    }
 }
 
 impl StmtParser<'_, '_> {
@@ -26,15 +36,5 @@ impl StmtParser<'_, '_> {
             })?;
 
         Ok(Block { inner })
-    }
-}
-
-impl<W: Write> Runtime<W> {
-    pub(super) fn run_block(&self, block: Block) -> Result<(), RuntimeError> {
-        let runtime = self.child_runtime();
-        for stmt in block.inner {
-            runtime.run(stmt)?;
-        }
-        Ok(())
     }
 }

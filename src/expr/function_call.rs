@@ -1,5 +1,6 @@
 use std::fmt;
 
+use std::io::Write;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::literal::LoxValue;
@@ -75,7 +76,7 @@ impl ExprParser<'_, '_> {
 }
 
 impl Evaluatable for FunctionCall {
-    fn eval(&self, env: Rc<RefCell<Env>>) -> Result<LoxValue, EvaluateError> {
+    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, EvaluateError> {
         match self.callee.eval(env.clone())? {
             LoxValue::Literal(l) => return Err(EvaluateError::InvalidCallTarget(l.to_string())),
             LoxValue::RustFunction(_) => todo!("call rust function"),
