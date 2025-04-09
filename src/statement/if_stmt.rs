@@ -26,7 +26,9 @@ impl Runnable for If {
                 return Ok(Some(value));
             }
         } else if let Some(else_body) = else_body {
-            else_body.run(env.clone())?;
+            if let Some(value) = else_body.run(env.clone())? {
+                return Ok(Some(value));
+            }
         }
 
         Ok(None)
