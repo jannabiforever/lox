@@ -2,7 +2,7 @@ use std::{cell::RefCell, fmt, rc::Rc};
 
 use crate::{
     env::{Env, Evaluatable, EvaluateError},
-    literal::Literal,
+    literal::LoxValue,
     mac::tt,
 };
 
@@ -36,7 +36,7 @@ impl ExprParser<'_, '_> {
 }
 
 impl Evaluatable for Variable {
-    fn eval(&self, env: Rc<RefCell<Env>>) -> Result<Literal, EvaluateError> {
+    fn eval(&self, env: Rc<RefCell<Env>>) -> Result<LoxValue, EvaluateError> {
         let name = &self.name;
         if let Some(value) = env.borrow().get(name) {
             Ok(value.clone())

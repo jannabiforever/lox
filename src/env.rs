@@ -1,10 +1,10 @@
 use std::{cell::RefCell, collections::HashMap, process::ExitCode, rc::Rc};
 
-use crate::{error::IntoLoxError, literal::Literal, rc_rc};
+use crate::{error::IntoLoxError, literal::LoxValue, rc_rc, statement::RuntimeError};
 
 pub(crate) struct Env {
     pub(crate) parent: Option<Rc<RefCell<Env>>>,
-    pub(crate) scope: HashMap<String, Literal>,
+    pub(crate) scope: HashMap<String, LoxValue>,
 }
 
 impl Env {
@@ -24,7 +24,7 @@ impl Env {
         })
     }
 
-    pub fn get(&self, key: &str) -> Option<Literal> {
+    pub fn get(&self, key: &str) -> Option<LoxValue> {
         if let Some(value) = self.scope.get(key) {
             Some(value.clone())
         } else if let Some(parent_env) = &self.parent {
@@ -35,12 +35,12 @@ impl Env {
     }
 
     /// Initializes the key-value pair at current scope.
-    pub fn set(&mut self, key: &str, value: Literal) {
+    pub fn set(&mut self, key: &str, value: LoxValue) {
         self.scope.insert(key.to_string(), value);
     }
 
     /// Updates the value stored in the hashmap. If fails, returns false.
-    pub fn update(&mut self, key: &str, value: Literal) -> bool {
+    pub fn update(&mut self, key: &str, value: LoxValue) -> bool {
         if let Some(existing_value) = self.scope.get_mut(key) {
             *existing_value = value.clone();
             true
@@ -54,7 +54,7 @@ impl Env {
 
 pub(crate) trait Evaluatable {
     // Required methods
-    fn eval(&self, env: Rc<RefCell<Env>>) -> Result<Literal, EvaluateError>;
+    fn eval(&self, env: Rc<RefCell<Env>>) -> Result<LoxValue, EvaluateError>;
 }
 
 #[derive(Debug, thiserror::Error, Clone)]
@@ -76,4 +76,9 @@ impl IntoLoxError for EvaluateError {
     fn exit_code(&self) -> ExitCode {
         ExitCode::from(65)
     }
+}
+
+pub(crate) trait Runnable {
+    // Required methods
+    fn run(&self, env: Rc<RefCell<Env>>) -> Result<LoxValue, RuntimeError>;
 }

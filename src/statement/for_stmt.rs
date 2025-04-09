@@ -83,7 +83,7 @@ impl<W: Write> Runtime<W> {
         loop {
             if let Some(condition) = condition.as_ref() {
                 let value = self.evaluate(condition)?;
-                if !value.is_truthy() {
+                if !value.is_literal_and(|l| l.is_truthy()) {
                     break;
                 }
             }

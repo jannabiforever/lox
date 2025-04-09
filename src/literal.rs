@@ -13,7 +13,6 @@ pub enum Literal {
     Nil,
     Number(Number),
     String(String),
-    RustFunction(RustFunction),
 }
 
 impl Literal {
@@ -36,8 +35,8 @@ impl Literal {
 }
 
 impl Evaluatable for Literal {
-    fn eval(&self, _: Rc<RefCell<Env>>) -> Result<Literal, EvaluateError> {
-        Ok(self.clone())
+    fn eval(&self, _: Rc<RefCell<Env>>) -> Result<LoxValue, EvaluateError> {
+        Ok(self.clone().into())
     }
 }
 
@@ -55,7 +54,6 @@ impl fmt::Display for Literal {
             Literal::Number(n) => write!(f, "{}", n),
             Literal::String(s) => write!(f, "{}", s),
             Literal::Boolean(b) => write!(f, "{}", b),
-            Literal::RustFunction(fu) => write!(f, "{}", fu.name),
             Literal::Nil => write!(f, "nil"),
         }
     }
@@ -129,5 +127,31 @@ impl ops::Sub for Number {
 impl cmp::PartialOrd for Number {
     fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
         self.0.partial_cmp(&other.0)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) enum LoxValue {
+    Literal(Literal),
+    RustFunction(RustFunction),
+    // LoxFunction(LoxFunction),
+}
+
+impl_from!(LoxValue: Literal, RustFunction);
+
+impl LoxValue {
+    pub fn pretty(&self) -> String {
+        match self {
+            Self::Literal(literal) => literal.pretty(),
+            _ => todo!("Implement pretty print."),
+        }
+    }
+
+    pub fn is_literal_and<F: Fn(&Literal) -> bool>(&self, f: F) -> bool {
+        if let Self::Literal(l) = self {
+            f(l)
+        } else {
+            false
+        }
     }
 }

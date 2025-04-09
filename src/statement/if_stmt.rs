@@ -43,7 +43,7 @@ impl<W: Write> Runtime<W> {
 
         let condition_value = self.evaluate(&condition)?;
 
-        if condition_value.is_truthy() {
+        if condition_value.is_literal_and(|l| l.is_truthy()) {
             self.run(*body)?;
         } else if let Some(else_body) = else_body {
             self.run(*else_body)?;

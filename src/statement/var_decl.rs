@@ -1,17 +1,35 @@
-use std::io::Write;
+use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     expr::{Assign, ExprAst},
     literal::Literal,
     statement::error::StmtParseError,
+    Env, Evaluatable,
 };
 
-use super::{Runtime, RuntimeError, StmtParser};
+use super::{RuntimeError, StmtParser};
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct VarDecl {
     pub(crate) var: ExprAst,
     pub(crate) value: Option<ExprAst>,
+}
+
+impl VarDecl {
+    pub fn run(&self, env: Rc<RefCell<Env>>) -> Result<(), RuntimeError> {
+        let var = match &self.var {
+            ExprAst::Variable(variable) => Ok(variable.name.clone()),
+            rest => Err(RuntimeError::InvalidAssignmentTarget(rest.to_string())),
+        }?;
+
+        let value = match self.value.as_ref() {
+            Some(value) => value.eval(env.clone())?,
+            None => Literal::Nil.into(),
+        };
+
+        env.borrow_mut().set(&var, value);
+        Ok(())
+    }
 }
 
 impl StmtParser<'_, '_> {
@@ -36,18 +54,5 @@ impl StmtParser<'_, '_> {
         self.expect_semicolon()?;
 
         result
-    }
-}
-
-impl<W: Write> Runtime<W> {
-    pub(super) fn run_var_decl(&self, var_decl: VarDecl) -> Result<(), RuntimeError> {
-        let VarDecl { var, value } = var_decl;
-        let var = self.assignable_key(&var)?;
-        let value = match value {
-            Some(value) => self.evaluate(&value)?,
-            None => Literal::Nil,
-        };
-        self.env.borrow_mut().set(&var, value);
-        Ok(())
     }
 }

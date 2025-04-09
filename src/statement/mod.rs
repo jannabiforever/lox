@@ -22,7 +22,7 @@ pub(crate) use self::while_stmt::While;
 
 use crate::env::{Env, Evaluatable};
 use crate::error::{IntoLoxError, LoxError};
-use crate::literal::Literal;
+use crate::literal::LoxValue;
 use crate::mac::{impl_from, tt};
 use crate::{
     expr::{ExprAst, ExprParser},
@@ -157,7 +157,7 @@ impl<W: Write> Runtime<W> {
         match stmt {
             StmtAst::Print(print) => self.run_print(print)?,
             StmtAst::Expression(expr) => self.run_expression(expr)?,
-            StmtAst::VarDecl(var_decl) => self.run_var_decl(var_decl)?,
+            StmtAst::VarDecl(var_decl) => var_decl.run(self.env.clone())?,
             StmtAst::Block(block) => self.run_block(block)?,
             StmtAst::If(if_stmt) => self.run_if(if_stmt)?,
             StmtAst::While(while_stmt) => self.run_while(while_stmt)?,
@@ -167,14 +167,7 @@ impl<W: Write> Runtime<W> {
         Ok(())
     }
 
-    fn evaluate(&self, expr: &ExprAst) -> Result<Literal, RuntimeError> {
+    fn evaluate(&self, expr: &ExprAst) -> Result<LoxValue, RuntimeError> {
         expr.eval(self.env.clone()).map_err(Into::into)
-    }
-
-    fn assignable_key(&self, expr: &ExprAst) -> Result<String, RuntimeError> {
-        match expr {
-            ExprAst::Variable(variable) => Ok(variable.name.clone()),
-            rest => Err(RuntimeError::InvalidAssignmentTarget(rest.to_string())),
-        }
     }
 }

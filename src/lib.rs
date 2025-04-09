@@ -7,10 +7,10 @@ mod mac;
 mod statement;
 mod token;
 
-use std::{cell::RefCell, io::Write, process::ExitCode, rc::Rc};
+use std::{io::Write, process::ExitCode};
 
 use env::{Env, Evaluatable};
-use error::LoxResulT;
+use error::LoxResult;
 
 use self::error::IntoLoxError;
 use self::mac::rc_rc;

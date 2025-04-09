@@ -1,6 +1,6 @@
-use std::io::Write;
+use std::{cell::RefCell, io::Write, rc::Rc};
 
-use crate::expr::ExprAst;
+use crate::{expr::ExprAst, Env};
 
 use super::{Runtime, RuntimeError, StmtAst, StmtParseError, StmtParser};
 
@@ -8,6 +8,12 @@ use super::{Runtime, RuntimeError, StmtAst, StmtParseError, StmtParser};
 pub struct While {
     condition: ExprAst,
     body: Box<StmtAst>,
+}
+
+impl While {
+    pub fn run(&self, env: Rc<RefCell<Env>>) -> Result<(), RuntimeError> {
+        todo!()
+    }
 }
 
 impl StmtParser<'_, '_> {
@@ -35,7 +41,7 @@ impl<W: Write> Runtime<W> {
     pub(super) fn run_while(&self, while_stmt: While) -> Result<(), RuntimeError> {
         let While { condition, body } = while_stmt;
 
-        while self.evaluate(&condition)?.is_truthy() {
+        while self.evaluate(&condition)?.is_literal_and(|l| l.is_truthy()) {
             self.run(*body.clone())?;
         }
 

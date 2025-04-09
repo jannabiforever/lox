@@ -26,6 +26,7 @@ use self::binding_power::BindingPower;
 
 use crate::env::{Env, Evaluatable, EvaluateError};
 use crate::error::LoxError;
+use crate::literal::LoxValue;
 use crate::mac::impl_from;
 use crate::{error::IntoLoxError, literal::Literal, mac::tt, token::TokenStream};
 
@@ -46,7 +47,7 @@ impl_from!(
 );
 
 impl Evaluatable for ExprAst {
-    fn eval(&self, env: Rc<RefCell<Env>>) -> Result<Literal, EvaluateError> {
+    fn eval(&self, env: Rc<RefCell<Env>>) -> Result<LoxValue, EvaluateError> {
         match self {
             Self::Assign(v) => v.eval(env),
             Self::Binary(v) => v.eval(env),

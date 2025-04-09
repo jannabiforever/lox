@@ -2,7 +2,7 @@ use std::{cell::RefCell, fmt, rc::Rc};
 
 use crate::{
     env::{Env, Evaluatable, EvaluateError},
-    literal::Literal,
+    literal::LoxValue,
 };
 
 use super::{binding_power::BindingPower, ExprAst, ExprParseError};
@@ -32,7 +32,7 @@ impl super::ExprParser<'_, '_> {
 }
 
 impl Evaluatable for Assign {
-    fn eval(&self, env: Rc<RefCell<Env>>) -> Result<Literal, EvaluateError> {
+    fn eval(&self, env: Rc<RefCell<Env>>) -> Result<LoxValue, EvaluateError> {
         let name = match *self.assignee.clone() {
             ExprAst::Variable(var) => var.name,
             rest => return Err(EvaluateError::InvalidAssignmentTarget(rest.to_string())),

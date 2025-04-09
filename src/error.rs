@@ -1,6 +1,6 @@
 use std::{fmt, io::Write, process::ExitCode};
 
-pub(crate) trait LoxResulT {
+pub(crate) trait LoxResult {
     fn write_to_buffer<W1: Write, W2: Write>(
         self,
         ok_buf: &mut W1,
@@ -8,7 +8,7 @@ pub(crate) trait LoxResulT {
     ) -> Result<(), ExitCode>;
 }
 
-impl<T: fmt::Display, E: IntoLoxError> LoxResulT for Result<T, LoxError<E>> {
+impl<T: fmt::Display, E: IntoLoxError> LoxResult for Result<T, LoxError<E>> {
     fn write_to_buffer<W1: Write, W2: Write>(
         self,
         ok_buf: &mut W1,

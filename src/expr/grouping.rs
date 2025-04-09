@@ -2,7 +2,7 @@ use std::{cell::RefCell, fmt, rc::Rc};
 
 use crate::{
     env::{Env, Evaluatable, EvaluateError},
-    literal::Literal,
+    literal::LoxValue,
     mac::tt,
 };
 
@@ -45,7 +45,7 @@ impl super::ExprParser<'_, '_> {
 }
 
 impl Evaluatable for Grouping {
-    fn eval(&self, env: Rc<RefCell<Env>>) -> Result<Literal, EvaluateError> {
+    fn eval(&self, env: Rc<RefCell<Env>>) -> Result<LoxValue, EvaluateError> {
         self.inner.eval(env)
     }
 }

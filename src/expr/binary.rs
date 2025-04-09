@@ -2,7 +2,7 @@ use std::{cell::RefCell, fmt, rc::Rc};
 
 use crate::{
     env::{Env, Evaluatable, EvaluateError},
-    literal::Literal,
+    literal::{Literal, LoxValue},
     mac::tt,
     token::TokenType,
 };
@@ -60,66 +60,75 @@ impl BinaryOp {
         match self {
             BinaryOp::Star => {
                 |left, right, env| match (left.eval(env.clone())?, right.eval(env)?) {
-                    (Literal::Number(left), Literal::Number(right)) => {
-                        Ok(Literal::Number(left * right))
-                    }
+                    (
+                        LoxValue::Literal(Literal::Number(left)),
+                        LoxValue::Literal(Literal::Number(right)),
+                    ) => Ok(Literal::Number(left * right)),
                     _ => Err(EvaluateError::OperandMustBe("numbers")),
                 }
             }
             BinaryOp::Slash => |left, right, env| match (left.eval(env.clone())?, right.eval(env)?)
             {
-                (Literal::Number(left), Literal::Number(right)) => {
-                    Ok(Literal::Number(left / right))
-                }
+                (
+                    LoxValue::Literal(Literal::Number(left)),
+                    LoxValue::Literal(Literal::Number(right)),
+                ) => Ok(Literal::Number(left / right)),
                 _ => Err(EvaluateError::OperandMustBe("numbers")),
             },
             BinaryOp::Plus => {
                 |left, right, env| match (left.eval(env.clone())?, right.eval(env)?) {
-                    (Literal::Number(left), Literal::Number(right)) => {
-                        Ok(Literal::Number(left + right))
-                    }
-                    (Literal::String(left), Literal::String(right)) => {
-                        Ok(Literal::String(format!("{}{}", left, right)))
-                    }
+                    (
+                        LoxValue::Literal(Literal::Number(left)),
+                        LoxValue::Literal(Literal::Number(right)),
+                    ) => Ok(Literal::Number(left + right)),
+                    (
+                        LoxValue::Literal(Literal::String(left)),
+                        LoxValue::Literal(Literal::String(right)),
+                    ) => Ok(Literal::String(format!("{}{}", left, right))),
                     _ => Err(EvaluateError::OperandMustBe("numbers or strings")),
                 }
             }
             BinaryOp::Minus => |left, right, env| match (left.eval(env.clone())?, right.eval(env)?)
             {
-                (Literal::Number(left), Literal::Number(right)) => {
-                    Ok(Literal::Number(left - right))
-                }
+                (
+                    LoxValue::Literal(Literal::Number(left)),
+                    LoxValue::Literal(Literal::Number(right)),
+                ) => Ok(Literal::Number(left - right)),
                 _ => Err(EvaluateError::OperandMustBe("numbers")),
             },
             BinaryOp::Greater => {
                 |left, right, env| match (left.eval(env.clone())?, right.eval(env)?) {
-                    (Literal::Number(left), Literal::Number(right)) => {
-                        Ok(Literal::Boolean(left > right))
-                    }
+                    (
+                        LoxValue::Literal(Literal::Number(left)),
+                        LoxValue::Literal(Literal::Number(right)),
+                    ) => Ok(Literal::Boolean(left > right)),
                     _ => Err(EvaluateError::OperandMustBe("numbers")),
                 }
             }
             BinaryOp::GreaterEqual => {
                 |left, right, env| match (left.eval(env.clone())?, right.eval(env)?) {
-                    (Literal::Number(left), Literal::Number(right)) => {
-                        Ok(Literal::Boolean(left >= right))
-                    }
+                    (
+                        LoxValue::Literal(Literal::Number(left)),
+                        LoxValue::Literal(Literal::Number(right)),
+                    ) => Ok(Literal::Boolean(left >= right)),
                     _ => Err(EvaluateError::OperandMustBe("numbers")),
                 }
             }
             BinaryOp::Less => {
                 |left, right, env| match (left.eval(env.clone())?, right.eval(env)?) {
-                    (Literal::Number(left), Literal::Number(right)) => {
-                        Ok(Literal::Boolean(left < right))
-                    }
+                    (
+                        LoxValue::Literal(Literal::Number(left)),
+                        LoxValue::Literal(Literal::Number(right)),
+                    ) => Ok(Literal::Boolean(left < right)),
                     _ => Err(EvaluateError::OperandMustBe("numbers")),
                 }
             }
             BinaryOp::LessEqual => {
                 |left, right, env| match (left.eval(env.clone())?, right.eval(env)?) {
-                    (Literal::Number(left), Literal::Number(right)) => {
-                        Ok(Literal::Boolean(left <= right))
-                    }
+                    (
+                        LoxValue::Literal(Literal::Number(left)),
+                        LoxValue::Literal(Literal::Number(right)),
+                    ) => Ok(Literal::Boolean(left <= right)),
                     _ => Err(EvaluateError::OperandMustBe("numbers")),
                 }
             }
@@ -132,18 +141,27 @@ impl BinaryOp {
                 Ok(val.into())
             },
             BinaryOp::And => |left, right, env| {
-                if !left.eval(env.clone())?.is_truthy() {
+                if !left.eval(env.clone())?.is_literal_and(|l| l.is_truthy()) {
                     Ok(Literal::Boolean(false))
                 } else {
-                    right.eval(env)
+                    match right.eval(env)? {
+                        LoxValue::Literal(l) => Ok(l),
+                        LoxValue::RustFunction(_) => todo!("Error?"),
+                    }
                 }
             },
             BinaryOp::Or => |left, right, env| {
                 let left = left.eval(env.clone())?;
-                if left.is_truthy() {
-                    Ok(left)
+                if left.is_literal_and(|l| l.is_truthy()) {
+                    match left {
+                        LoxValue::Literal(l) => Ok(l),
+                        LoxValue::RustFunction(_) => todo!("Error?"),
+                    }
                 } else {
-                    right.eval(env)
+                    match right.eval(env)? {
+                        LoxValue::Literal(l) => Ok(l),
+                        LoxValue::RustFunction(_) => todo!("Error?"),
+                    }
                 }
             },
         }
@@ -211,9 +229,9 @@ impl super::ExprParser<'_, '_> {
 }
 
 impl Evaluatable for Binary {
-    fn eval(&self, env: Rc<RefCell<Env>>) -> Result<Literal, EvaluateError> {
+    fn eval(&self, env: Rc<RefCell<Env>>) -> Result<LoxValue, EvaluateError> {
         let Self { left, op, right } = self.clone();
         let function = op.get_binary_function();
-        function(*left, *right, env)
+        Ok(function(*left, *right, env)?.into())
     }
 }
