@@ -2,8 +2,10 @@ mod block;
 mod error;
 mod expression;
 mod for_stmt;
+mod function_def;
 mod if_stmt;
 mod print;
+mod return_stmt;
 mod var_decl;
 mod while_stmt;
 
@@ -15,8 +17,10 @@ pub(crate) use self::block::Block;
 pub(crate) use self::error::StmtParseError;
 pub(crate) use self::expression::Expression;
 pub(crate) use self::for_stmt::For;
+pub(crate) use self::function_def::FunctionDef;
 pub(crate) use self::if_stmt::If;
 pub(crate) use self::print::Print;
+pub(crate) use self::return_stmt::Return;
 pub(crate) use self::var_decl::VarDecl;
 pub(crate) use self::while_stmt::While;
 
@@ -38,6 +42,8 @@ pub(crate) enum StmtAst {
     If(If),
     While(While),
     For(For),
+    FunctionDef(FunctionDef),
+    Return(Return),
 }
 
 impl Runnable for StmtAst {
@@ -50,11 +56,13 @@ impl Runnable for StmtAst {
             StmtAst::If(if_stmt) => if_stmt.run(env),
             StmtAst::While(while_stmt) => while_stmt.run(env),
             StmtAst::For(for_stmt) => for_stmt.run(env),
+            StmtAst::FunctionDef(function_def) => function_def.run(env),
+            StmtAst::Return(_) => Err(RuntimeError::ReturnAtGlobal),
         }
     }
 }
 
-impl_from!(StmtAst: Expression, Print, VarDecl, Block, If, While, For);
+impl_from!(StmtAst: Expression, Print, VarDecl, Block, If, While, For, FunctionDef, Return);
 
 /// Parser for statement AST.
 /// Generic 'a is for the source's lifetime.
@@ -91,6 +99,8 @@ impl StmtParser<'_, '_> {
             tt!("if") => self.parse_if().map(Into::into),
             tt!("while") => self.parse_while().map(Into::into),
             tt!("for") => self.parse_for().map(Into::into),
+            tt!("fun") => self.parse_function_def().map(Into::into),
+            tt!("return") => self.parse_return().map(Into::into),
             _ => self.parse_expression_stmt().map(Into::into),
         }
     }

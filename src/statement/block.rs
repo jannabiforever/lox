@@ -6,7 +6,7 @@ use super::{RuntimeError, StmtAst, StmtParseError, StmtParser};
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Block {
-    inner: Vec<StmtAst>,
+    pub(crate) inner: Vec<StmtAst>,
 }
 
 impl Runnable for Block {

@@ -1,0 +1,87 @@
+use std::{cell::RefCell, io::Write, rc::Rc};
+
+use crate::{
+    env::RuntimeError, function::LoxFunction, literal::LoxValue, mac::tt, token::Token, Env,
+    Runnable,
+};
+
+use super::{StmtAst, StmtParseError, StmtParser};
+
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct FunctionDef {
+    name: String,
+    arguments: Vec<String>,
+    body: Vec<StmtAst>,
+}
+
+impl FunctionDef {
+    fn into_lox_function(&self) -> LoxValue {
+        let lox_function = LoxFunction {
+            name: self.name.clone(),
+            arguments: self.arguments.clone(),
+            body: self.body.clone(),
+        };
+
+        lox_function.into()
+    }
+}
+
+impl Runnable for FunctionDef {
+    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<(), RuntimeError> {
+        let lox_function = self.into_lox_function();
+        env.borrow_mut().set(&self.name, lox_function);
+        Ok(())
+    }
+}
+
+impl StmtParser<'_, '_> {
+    pub(super) fn parse_function_def(&mut self) -> Result<FunctionDef, StmtParseError> {
+        self.token_stream.next(); // Consume 'fun'.
+        let name = self.expect_identifier()?;
+
+        let mut arguments = Vec::new();
+        self.expect_opening_paren()?;
+        loop {
+            match self.token_stream.peek().token_type {
+                tt!(")") => break,
+                _ => {
+                    let argument_name = self.expect_identifier()?;
+                    arguments.push(argument_name);
+
+                    match self.token_stream.peek() {
+                        Token {
+                            token_type: tt!(")"),
+                            ..
+                        } => break,
+                        Token {
+                            token_type: tt!(","),
+                            ..
+                        } => continue,
+                        rest => {
+                            return Err(StmtParseError::InvalidFunctionArgument(
+                                rest.src.to_string(),
+                            ))
+                        }
+                    }
+                }
+            }
+        }
+        self.expect_closing_paren()?;
+        let body = self.parse_block()?.inner;
+
+        Ok(FunctionDef {
+            name,
+            arguments,
+            body,
+        })
+    }
+
+    fn expect_identifier(&mut self) -> Result<String, StmtParseError> {
+        match self.token_stream.expect(tt!("identifier")) {
+            Ok(token) => Ok(token.src.to_string()),
+            Err(unexpected_token) => Err(StmtParseError::ExpectedIdent(
+                unexpected_token.src.to_string(),
+            )),
+        }
+    }
+}

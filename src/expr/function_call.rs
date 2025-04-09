@@ -80,7 +80,7 @@ impl Evaluatable for FunctionCall {
     fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
         match self.callee.eval(env.clone())? {
             LoxValue::Literal(l) => Err(RuntimeError::InvalidCallTarget(l.to_string())),
-            LoxValue::RustFunction(rf) if rf.arity() == self.arguments.len() => {
+            LoxValue::RustFunction(rf) => {
                 let arguments = self
                     .arguments
                     .iter()
@@ -89,7 +89,15 @@ impl Evaluatable for FunctionCall {
 
                 rf.call(arguments, env.clone())
             }
-            _ => Err(RuntimeError::InvalidNumberOfArguments),
+            LoxValue::LoxFunction(lf) => {
+                let arguments = self
+                    .arguments
+                    .iter()
+                    .map(|expr| expr.eval(env.clone()))
+                    .collect::<Result<Vec<_>, _>>()?;
+
+                lf.call(arguments, env.clone())
+            }
         }
     }
 }

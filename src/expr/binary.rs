@@ -146,7 +146,7 @@ impl BinaryOp {
                 } else {
                     match right.eval(env)? {
                         LoxValue::Literal(l) => Ok(l),
-                        LoxValue::RustFunction(_) => todo!("Error?"),
+                        _ => todo!("Error?"),
                     }
                 }
             },
@@ -155,12 +155,12 @@ impl BinaryOp {
                 if left.is_literal_and(|l| l.is_truthy()) {
                     match left {
                         LoxValue::Literal(l) => Ok(l),
-                        LoxValue::RustFunction(_) => todo!("Error?"),
+                        _ => todo!("Error?"),
                     }
                 } else {
                     match right.eval(env)? {
                         LoxValue::Literal(l) => Ok(l),
-                        LoxValue::RustFunction(_) => todo!("Error?"),
+                        _ => todo!("Error?"),
                     }
                 }
             },

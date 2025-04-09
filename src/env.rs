@@ -84,6 +84,9 @@ pub(crate) enum RuntimeError {
 
     #[error("Error: Cannot assign value into '{0}'.")]
     InvalidAssignmentTarget(String),
+
+    #[error("Error: Cannot return at global scope.")]
+    ReturnAtGlobal,
 }
 
 impl IntoLoxError for RuntimeError {

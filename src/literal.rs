@@ -2,7 +2,7 @@ use std::{cell::RefCell, cmp, fmt, io::Write, ops, rc::Rc};
 
 use crate::{
     env::{Env, Evaluatable, RuntimeError},
-    function::RustFunction,
+    function::{LoxFunction, RustFunction},
     mac::impl_from,
 };
 
@@ -140,10 +140,10 @@ impl cmp::PartialOrd for Number {
 pub(crate) enum LoxValue {
     Literal(Literal),
     RustFunction(RustFunction),
-    // LoxFunction(LoxFunction),
+    LoxFunction(LoxFunction),
 }
 
-impl_from!(LoxValue: Literal, RustFunction);
+impl_from!(LoxValue: Literal, RustFunction, LoxFunction);
 
 impl LoxValue {
     pub fn pretty(&self) -> String {

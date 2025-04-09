@@ -30,6 +30,12 @@ pub(crate) enum StmtParseError {
 
     #[error("Error: {0} cannot be while statement's body")]
     InvalidWhileStmtBody(String),
+
+    #[error("Error: Expected an identifier, but got {0}.")]
+    ExpectedIdent(String),
+
+    #[error("Error at {0}: Invalid construction for function def")]
+    InvalidFunctionArgument(String),
 }
 
 impl_from!(StmtParseError: ExprParseError);
