@@ -83,7 +83,7 @@ pub(crate) enum EvaluateError {
 
 impl IntoLoxError for EvaluateError {
     fn exit_code(&self) -> ExitCode {
-        ExitCode::from(65)
+        ExitCode::from(70)
     }
 }
 
