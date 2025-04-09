@@ -56,7 +56,10 @@ impl StmtParser<'_, '_> {
                         Token {
                             token_type: tt!(","),
                             ..
-                        } => continue,
+                        } => {
+                            self.token_stream.next();
+                            continue;
+                        }
                         rest => {
                             return Err(StmtParseError::InvalidFunctionArgument(
                                 rest.src.to_string(),
