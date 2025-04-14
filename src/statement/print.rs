@@ -14,7 +14,7 @@ pub(crate) struct Print {
 impl Runnable for Print {
     fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
         let value = self.expr.eval(env.clone())?;
-        writeln!(env.borrow().stdout.borrow_mut(), "{}", value.pretty()).unwrap();
+        writeln!(env.borrow().stdout.borrow_mut(), "{value}").unwrap();
         Ok(None)
     }
 }

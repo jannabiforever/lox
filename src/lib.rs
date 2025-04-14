@@ -109,7 +109,7 @@ pub fn lox_evaluate<W1: Write, W2: Write>(
     // we can set env.stdout to be some blank buffer.
     let empty_env = Env::new(Vec::new());
 
-    match parsed.eval(empty_env).map(|res| res.pretty()) {
+    match parsed.eval(empty_env).map(|res| res.to_string()) {
         Ok(result) => writeln!(ok_buf, "{result}").unwrap(),
         Err(err) => {
             writeln!(err_buf, "{err}").unwrap();

@@ -146,14 +146,6 @@ pub(crate) enum LoxValue {
 impl_from!(LoxValue: Literal, RustFunction, LoxFunction);
 
 impl LoxValue {
-    pub fn pretty(&self) -> String {
-        match self {
-            Self::Literal(literal) => literal.pretty(),
-            Self::LoxFunction(lf) => lf.to_string(),
-            Self::RustFunction(rf) => rf.to_string(),
-        }
-    }
-
     pub fn is_literal_and<F: Fn(&Literal) -> bool>(&self, f: F) -> bool {
         if let Self::Literal(l) = self {
             f(l)
@@ -166,5 +158,16 @@ impl LoxValue {
 impl Default for LoxValue {
     fn default() -> Self {
         LoxValue::Literal(Literal::default())
+    }
+}
+
+impl fmt::Display for LoxValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            // trim ".0" when treating as lox value.
+            Self::Literal(l) => write!(f, "{}", l.pretty()),
+            Self::LoxFunction(lf) => write!(f, "{lf}"),
+            Self::RustFunction(rf) => write!(f, "{rf}"),
+        }
     }
 }
