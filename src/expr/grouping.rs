@@ -24,8 +24,7 @@ impl super::ExprParser<'_, '_> {
     pub(super) fn parse_grouping(&mut self) -> Option<Result<Grouping, ExprParseError>> {
         match self.token_stream.peek().token_type {
             tt!("(") => {
-                // Consume '('.
-                self.token_stream.next();
+                self.token_stream.next(); // Consume '('.
 
                 let inner = match self.parse() {
                     Ok(inner) => Box::new(inner),
