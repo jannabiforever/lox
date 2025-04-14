@@ -113,11 +113,13 @@ impl<'a, 'b> ExprParser<'a, 'b> {
         loop {
             let token_type = self.token_stream.peek().token_type;
 
-            // Note: this line might indicate that peeked token is ';' or ')' or '}' or eof or etc...
-            // In that case, [`BindingPower::from_token_type`] returns [`Bindingpower::None`], the lowest binding power,
+            // Note: this line might indicate that peeked token is ';' or ')' or '}' or eof
+            // or etc... In that case, [`BindingPower::from_token_type`] returns
+            // [`Bindingpower::None`], the lowest binding power,
             // so it is guaranteed that the loop will break.
             //
-            // We need to break the loop and not consume the peeked token, so it can be consumed by the stmt parser later.
+            // We need to break the loop and not consume the peeked token, so it can be
+            // consumed by the stmt parser later.
             if BindingPower::from_token_type(token_type).0 <= bp {
                 break;
             }
@@ -144,8 +146,8 @@ impl<'a, 'b> ExprParser<'a, 'b> {
         Ok(left)
     }
 
-    /// For the start of an expression, only literal, grouping, and unary are allowed.
-    /// e.g. `42`, `(42)`, `!42`, `-42`
+    /// For the start of an expression, only literal, grouping, and unary are
+    /// allowed. e.g. `42`, `(42)`, `!42`, `-42`
     fn parse_start_of_expr_ast(&mut self) -> Result<ExprAst, ExprParseError> {
         if let Some(end_node) = self.try_parse_end_node() {
             end_node

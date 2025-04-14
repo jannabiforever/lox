@@ -13,7 +13,8 @@ use codecrafters_interpreter::lox_tokenize;
 #[non_exhaustive]
 #[derive(Debug, Parser)]
 struct Cli {
-    /// The command to run
+    /// The command to run aj flsdjf lkasflkdsjflskj dsk jlas flkdsfslkf sklj
+    /// laks aslkfj skljf slakjf klsajf sakljf slk jslakfj aslkfj alkl
     #[clap(subcommand)]
     command: LoxCommand,
 }

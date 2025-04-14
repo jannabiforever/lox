@@ -42,8 +42,9 @@ impl BindingPower {
         // Note: - is both unary and binary operator.
         // So be careful when getting the binding power of -.
         // for most cases, it is a binary operator, because - as an unary operator,
-        // is might be handled for the first expression node by [`ExprParser::try_parse_start_of_expr_ast`].
-        // So check for the binary operator first.
+        // is might be handled for the first expression node by
+        // [`ExprParser::try_parse_start_of_expr_ast`]. So check for the binary
+        // operator first.
         if let Some(op) = BinaryOp::from_token_type(token_type) {
             op.into()
         } else if let Some(op) = UnaryOp::from_token_type(token_type) {

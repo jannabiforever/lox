@@ -66,7 +66,8 @@ impl<'a> Tokenizer<'a> {
             Token::string(self.line, src)
         } else if self.consume_match(&UNTERMINATED_STRING_REGEX).is_some() {
             // It is confirmed that the string doesn't have a closing quote,
-            // which is not determined by [`UNTERMINATED_STRING_REGEX`], but by [`RAW_STRING_REGEX`] above.
+            // which is not determined by [`UNTERMINATED_STRING_REGEX`], but by
+            // [`RAW_STRING_REGEX`] above.
             return Err(UnterminatedString);
         } else if let Some(src) = self.consume_match(&NUMBER_REGEX) {
             Token::number(self.line, src)
