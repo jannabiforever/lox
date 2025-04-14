@@ -1,15 +1,7 @@
-use std::cell::RefCell;
-use std::io::Write;
-use std::rc::Rc;
+use std::{cell::RefCell, io::Write, rc::Rc};
 
-use super::RuntimeError;
-use super::StmtAst;
-use super::StmtParseError;
-use super::StmtParser;
-use crate::env::Runnable;
-use crate::literal::LoxValue;
-use crate::mac::tt;
-use crate::Env;
+use super::{RuntimeError, StmtAst, StmtParseError, StmtParser};
+use crate::{env::Runnable, literal::LoxValue, mac::tt, Env};
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Block {

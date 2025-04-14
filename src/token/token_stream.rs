@@ -1,5 +1,4 @@
-use super::Token;
-use super::TokenType;
+use super::{Token, TokenType};
 
 enum TokenStreamState<'a> {
     /// Index of the next token to be returned.

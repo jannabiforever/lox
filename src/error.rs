@@ -1,6 +1,4 @@
-use std::fmt;
-use std::io::Write;
-use std::process::ExitCode;
+use std::{fmt, io::Write, process::ExitCode};
 
 pub(crate) trait LoxResult {
     fn write_to_buffer<W1: Write, W2: Write>(

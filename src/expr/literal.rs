@@ -1,7 +1,8 @@
-use crate::expr::ExprParseError;
-use crate::literal::Literal;
-use crate::literal::Number;
-use crate::mac::tt;
+use crate::{
+    expr::ExprParseError,
+    literal::{Literal, Number},
+    mac::tt,
+};
 
 impl super::ExprParser<'_, '_> {
     pub(super) fn parse_literal(&mut self) -> Option<Result<Literal, ExprParseError>> {

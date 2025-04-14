@@ -1,18 +1,20 @@
 use regex::Regex;
 
-use super::regex::COMMENT_REGEX;
-use super::regex::NUMBER_REGEX;
-use super::regex::RAW_STRING_REGEX;
-use super::regex::UNTERMINATED_STRING_REGEX;
-use super::regex::WHITESPACE_REGEX;
-use super::regex::WORD_REGEX;
-use super::token::Token;
-use super::TokenType;
-use super::TokenizeError::*;
-use super::TokenizeError::{self};
-use crate::error::IntoLoxError;
-use crate::error::LoxError;
-use crate::mac::tt;
+use super::{
+    regex::{
+        COMMENT_REGEX, NUMBER_REGEX, RAW_STRING_REGEX, UNTERMINATED_STRING_REGEX, WHITESPACE_REGEX,
+        WORD_REGEX,
+    },
+    token::Token,
+    TokenType,
+    TokenizeError::{
+        *, {self},
+    },
+};
+use crate::{
+    error::{IntoLoxError, LoxError},
+    mac::tt,
+};
 
 pub(crate) struct Tokenizer<'a> {
     src: &'a str,

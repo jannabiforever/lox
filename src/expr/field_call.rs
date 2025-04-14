@@ -1,8 +1,6 @@
 use std::fmt;
 
-use super::ExprAst;
-use super::ExprParseError;
-use super::ExprParser;
+use super::{ExprAst, ExprParseError, ExprParser};
 use crate::mac::tt;
 
 #[derive(Debug, Clone, PartialEq)]

@@ -1,18 +1,12 @@
-use std::cell::RefCell;
-use std::fmt;
-use std::io::Write;
-use std::rc::Rc;
+use std::{cell::RefCell, fmt, io::Write, rc::Rc};
 
-use super::binding_power::BindingPower;
-use super::ExprAst;
-use super::ExprParseError;
-use crate::env::Env;
-use crate::env::Evaluatable;
-use crate::env::RuntimeError;
-use crate::literal::Literal;
-use crate::literal::LoxValue;
-use crate::mac::tt;
-use crate::token::TokenType;
+use super::{binding_power::BindingPower, ExprAst, ExprParseError};
+use crate::{
+    env::{Env, Evaluatable, RuntimeError},
+    literal::{Literal, LoxValue},
+    mac::tt,
+    token::TokenType,
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Binary {

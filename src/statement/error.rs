@@ -1,8 +1,6 @@
 use std::process::ExitCode;
 
-use crate::error::IntoLoxError;
-use crate::expr::ExprParseError;
-use crate::mac::impl_from;
+use crate::{error::IntoLoxError, expr::ExprParseError, mac::impl_from};
 
 #[derive(Debug, Clone, thiserror::Error)]
 pub(crate) enum StmtParseError {

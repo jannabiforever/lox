@@ -1,7 +1,5 @@
-use super::binary::BinaryOp;
-use super::unary::UnaryOp;
-use crate::mac::tt;
-use crate::token::TokenType;
+use super::{binary::BinaryOp, unary::UnaryOp};
+use crate::{mac::tt, token::TokenType};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, PartialOrd, Ord)]
 pub enum BindingPower {

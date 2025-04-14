@@ -1,15 +1,10 @@
-use std::cell::RefCell;
-use std::fmt;
-use std::io::Write;
-use std::rc::Rc;
+use std::{cell::RefCell, fmt, io::Write, rc::Rc};
 
-use super::binding_power::BindingPower;
-use super::ExprAst;
-use super::ExprParseError;
-use crate::env::Env;
-use crate::env::Evaluatable;
-use crate::env::RuntimeError;
-use crate::literal::LoxValue;
+use super::{binding_power::BindingPower, ExprAst, ExprParseError};
+use crate::{
+    env::{Env, Evaluatable, RuntimeError},
+    literal::LoxValue,
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Assign {

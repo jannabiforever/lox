@@ -1,14 +1,7 @@
-use std::fs;
-use std::io;
-use std::path::PathBuf;
-use std::process::ExitCode;
+use std::{fs, io, path::PathBuf, process::ExitCode};
 
-use clap::Parser;
-use clap::Subcommand;
-use codecrafters_interpreter::lox_evaluate;
-use codecrafters_interpreter::lox_parse;
-use codecrafters_interpreter::lox_run;
-use codecrafters_interpreter::lox_tokenize;
+use clap::{Parser, Subcommand};
+use codecrafters_interpreter::{lox_evaluate, lox_parse, lox_run, lox_tokenize};
 
 #[non_exhaustive]
 #[derive(Debug, Parser)]

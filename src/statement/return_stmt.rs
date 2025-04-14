@@ -1,16 +1,9 @@
-use std::cell::RefCell;
-use std::io::Write;
-use std::rc::Rc;
+use std::{cell::RefCell, io::Write, rc::Rc};
 
-use super::StmtParseError;
-use super::StmtParser;
-use crate::env::RuntimeError;
-use crate::expr::ExprAst;
-use crate::literal::LoxValue;
-use crate::mac::tt;
-use crate::Env;
-use crate::Evaluatable;
-use crate::Runnable;
+use super::{StmtParseError, StmtParser};
+use crate::{
+    env::RuntimeError, expr::ExprAst, literal::LoxValue, mac::tt, Env, Evaluatable, Runnable,
+};
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct Return {

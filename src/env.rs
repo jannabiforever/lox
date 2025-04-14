@@ -1,13 +1,6 @@
-use std::cell::RefCell;
-use std::collections::HashMap;
-use std::io::Write;
-use std::process::ExitCode;
-use std::rc::Rc;
+use std::{cell::RefCell, collections::HashMap, io::Write, process::ExitCode, rc::Rc};
 
-use crate::error::IntoLoxError;
-use crate::function::CLOCK;
-use crate::literal::LoxValue;
-use crate::rc_rc;
+use crate::{error::IntoLoxError, function::CLOCK, literal::LoxValue, rc_rc};
 
 /// Environment, which holds every variable-value bindings and reference to
 /// global stdout.

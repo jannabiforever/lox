@@ -9,30 +9,20 @@ mod literal;
 mod unary;
 mod variable;
 
-use std::cell::RefCell;
-use std::fmt;
-use std::io::Write;
-use std::rc::Rc;
+use std::{cell::RefCell, fmt, io::Write, rc::Rc};
 
-pub(crate) use self::assign::Assign;
-pub(crate) use self::binary::Binary;
 use self::binding_power::BindingPower;
-pub(crate) use self::error::ExprParseError;
-pub(crate) use self::field_call::FieldCall;
-pub(crate) use self::function_call::FunctionCall;
-pub(crate) use self::grouping::Grouping;
-pub(crate) use self::unary::Unary;
-pub(crate) use self::variable::Variable;
-use crate::env::Env;
-use crate::env::Evaluatable;
-use crate::env::RuntimeError;
-use crate::error::IntoLoxError;
-use crate::error::LoxError;
-use crate::literal::Literal;
-use crate::literal::LoxValue;
-use crate::mac::impl_from;
-use crate::mac::tt;
-use crate::token::TokenStream;
+pub(crate) use self::{
+    assign::Assign, binary::Binary, error::ExprParseError, field_call::FieldCall,
+    function_call::FunctionCall, grouping::Grouping, unary::Unary, variable::Variable,
+};
+use crate::{
+    env::{Env, Evaluatable, RuntimeError},
+    error::{IntoLoxError, LoxError},
+    literal::{Literal, LoxValue},
+    mac::{impl_from, tt},
+    token::TokenStream,
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ExprAst {

@@ -9,31 +9,21 @@ mod return_stmt;
 mod var_decl;
 mod while_stmt;
 
-use std::cell::RefCell;
-use std::io::Write;
-use std::rc::Rc;
+use std::{cell::RefCell, io::Write, rc::Rc};
 
-pub(crate) use self::block::Block;
-pub(crate) use self::error::StmtParseError;
-pub(crate) use self::expression::Expression;
-pub(crate) use self::for_stmt::For;
-pub(crate) use self::function_def::FunctionDef;
-pub(crate) use self::if_stmt::If;
-pub(crate) use self::print::Print;
-pub(crate) use self::return_stmt::Return;
-pub(crate) use self::var_decl::VarDecl;
-pub(crate) use self::while_stmt::While;
-use crate::env::Env;
-use crate::env::Runnable;
-use crate::env::RuntimeError;
-use crate::error::IntoLoxError;
-use crate::error::LoxError;
-use crate::expr::ExprAst;
-use crate::expr::ExprParser;
-use crate::literal::LoxValue;
-use crate::mac::impl_from;
-use crate::mac::tt;
-use crate::TokenStream;
+pub(crate) use self::{
+    block::Block, error::StmtParseError, expression::Expression, for_stmt::For,
+    function_def::FunctionDef, if_stmt::If, print::Print, return_stmt::Return, var_decl::VarDecl,
+    while_stmt::While,
+};
+use crate::{
+    env::{Env, Runnable, RuntimeError},
+    error::{IntoLoxError, LoxError},
+    expr::{ExprAst, ExprParser},
+    literal::LoxValue,
+    mac::{impl_from, tt},
+    TokenStream,
+};
 
 /// Statement AST.
 #[derive(Debug, Clone, PartialEq)]
