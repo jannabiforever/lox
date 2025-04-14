@@ -1,5 +1,6 @@
-use regex::Regex;
 use std::sync::LazyLock;
+
+use regex::Regex;
 
 pub(super) static NUMBER_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"^\d+(\.\d+)?").unwrap());

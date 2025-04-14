@@ -1,16 +1,17 @@
+use std::cell::RefCell;
 use std::fmt;
-
 use std::io::Write;
-use std::{cell::RefCell, rc::Rc};
+use std::rc::Rc;
 
+use super::ExprAst;
+use super::ExprParseError;
+use super::ExprParser;
+use crate::env::Env;
+use crate::env::Evaluatable;
+use crate::env::RuntimeError;
 use crate::function::Callable;
 use crate::literal::LoxValue;
-use crate::{
-    env::{Env, Evaluatable, RuntimeError},
-    mac::tt,
-};
-
-use super::{ExprAst, ExprParseError, ExprParser};
+use crate::mac::tt;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct FunctionCall {
@@ -78,26 +79,16 @@ impl ExprParser<'_, '_> {
 
 impl Evaluatable for FunctionCall {
     fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
+        let arguments = self
+            .arguments
+            .iter()
+            .map(|expr| expr.eval(env.clone()))
+            .collect::<Result<Vec<_>, _>>()?;
+
         match self.callee.eval(env.clone())? {
             LoxValue::Literal(l) => Err(RuntimeError::InvalidCallTarget(l.to_string())),
-            LoxValue::RustFunction(rf) => {
-                let arguments = self
-                    .arguments
-                    .iter()
-                    .map(|expr| expr.eval(env.clone()))
-                    .collect::<Result<Vec<_>, _>>()?;
-
-                rf.call(arguments, env.clone())
-            }
-            LoxValue::LoxFunction(lf) => {
-                let arguments = self
-                    .arguments
-                    .iter()
-                    .map(|expr| expr.eval(env.clone()))
-                    .collect::<Result<Vec<_>, _>>()?;
-
-                lf.call(arguments, env.clone())
-            }
+            LoxValue::RustFunction(rf) => rf.call(arguments, env.clone()),
+            LoxValue::LoxFunction(lf) => lf.call(arguments, env.clone()),
         }
     }
 }

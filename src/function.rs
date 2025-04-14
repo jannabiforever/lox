@@ -1,17 +1,19 @@
-use std::{
-    cell::RefCell,
-    fmt,
-    io::Write,
-    rc::Rc,
-    time::{SystemTime, UNIX_EPOCH},
-};
+use std::cell::RefCell;
+use std::fmt;
+use std::io::Write;
+use std::rc::Rc;
+use std::time::SystemTime;
+use std::time::UNIX_EPOCH;
 
-use crate::{
-    env::RuntimeError,
-    literal::{Literal, LoxValue, Number},
-    statement::{Return, StmtAst},
-    Env, Evaluatable, Runnable,
-};
+use crate::env::RuntimeError;
+use crate::literal::Literal;
+use crate::literal::LoxValue;
+use crate::literal::Number;
+use crate::statement::Return;
+use crate::statement::StmtAst;
+use crate::Env;
+use crate::Evaluatable;
+use crate::Runnable;
 
 pub(crate) trait Callable {
     // Required methods

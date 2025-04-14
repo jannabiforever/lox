@@ -23,15 +23,17 @@ pub(crate) use self::print::Print;
 pub(crate) use self::return_stmt::Return;
 pub(crate) use self::var_decl::VarDecl;
 pub(crate) use self::while_stmt::While;
-
-use crate::env::{Env, Runnable, RuntimeError};
-use crate::error::{IntoLoxError, LoxError};
+use crate::env::Env;
+use crate::env::Runnable;
+use crate::env::RuntimeError;
+use crate::error::IntoLoxError;
+use crate::error::LoxError;
+use crate::expr::ExprAst;
+use crate::expr::ExprParser;
 use crate::literal::LoxValue;
-use crate::mac::{impl_from, tt};
-use crate::{
-    expr::{ExprAst, ExprParser},
-    TokenStream,
-};
+use crate::mac::impl_from;
+use crate::mac::tt;
+use crate::TokenStream;
 
 /// Statement AST.
 #[derive(Debug, Clone, PartialEq)]

@@ -7,14 +7,16 @@ mod mac;
 mod statement;
 mod token;
 
-use std::{io::Write, process::ExitCode};
+use std::io::Write;
+use std::process::ExitCode;
 
-use self::{
-    env::{Env, Evaluatable, Runnable},
-    error::{IntoLoxError, LoxResult},
-    mac::rc_rc,
-    token::TokenStream,
-};
+use self::env::Env;
+use self::env::Evaluatable;
+use self::env::Runnable;
+use self::error::IntoLoxError;
+use self::error::LoxResult;
+use self::mac::rc_rc;
+use self::token::TokenStream;
 
 /// tokenize without allowing error.
 macro_rules! tokenize {

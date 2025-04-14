@@ -1,8 +1,9 @@
 use std::fmt;
 
+use super::ExprAst;
+use super::ExprParseError;
+use super::ExprParser;
 use crate::mac::tt;
-
-use super::{ExprAst, ExprParseError, ExprParser};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct FieldCall {

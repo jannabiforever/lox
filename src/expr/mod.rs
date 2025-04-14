@@ -16,20 +16,23 @@ use std::rc::Rc;
 
 pub(crate) use self::assign::Assign;
 pub(crate) use self::binary::Binary;
+use self::binding_power::BindingPower;
 pub(crate) use self::error::ExprParseError;
 pub(crate) use self::field_call::FieldCall;
 pub(crate) use self::function_call::FunctionCall;
 pub(crate) use self::grouping::Grouping;
 pub(crate) use self::unary::Unary;
 pub(crate) use self::variable::Variable;
-
-use self::binding_power::BindingPower;
-
-use crate::env::{Env, Evaluatable, RuntimeError};
+use crate::env::Env;
+use crate::env::Evaluatable;
+use crate::env::RuntimeError;
+use crate::error::IntoLoxError;
 use crate::error::LoxError;
+use crate::literal::Literal;
 use crate::literal::LoxValue;
 use crate::mac::impl_from;
-use crate::{error::IntoLoxError, literal::Literal, mac::tt, token::TokenStream};
+use crate::mac::tt;
+use crate::token::TokenStream;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ExprAst {

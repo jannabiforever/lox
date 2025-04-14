@@ -1,10 +1,16 @@
-use std::{cell::RefCell, cmp, fmt, io::Write, ops, rc::Rc};
+use std::cell::RefCell;
+use std::cmp;
+use std::fmt;
+use std::io::Write;
+use std::ops;
+use std::rc::Rc;
 
-use crate::{
-    env::{Env, Evaluatable, RuntimeError},
-    function::{LoxFunction, RustFunction},
-    mac::impl_from,
-};
+use crate::env::Env;
+use crate::env::Evaluatable;
+use crate::env::RuntimeError;
+use crate::function::LoxFunction;
+use crate::function::RustFunction;
+use crate::mac::impl_from;
 
 #[derive(Debug, Clone, PartialEq, Default)]
 pub enum Literal {

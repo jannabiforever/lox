@@ -1,11 +1,17 @@
-use std::{cell::RefCell, io::Write, rc::Rc};
+use std::cell::RefCell;
+use std::io::Write;
+use std::rc::Rc;
 
-use crate::{
-    env::RuntimeError, function::LoxFunction, literal::LoxValue, mac::tt, token::Token, Env,
-    Runnable,
-};
-
-use super::{StmtAst, StmtParseError, StmtParser};
+use super::StmtAst;
+use super::StmtParseError;
+use super::StmtParser;
+use crate::env::RuntimeError;
+use crate::function::LoxFunction;
+use crate::literal::LoxValue;
+use crate::mac::tt;
+use crate::token::Token;
+use crate::Env;
+use crate::Runnable;
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct FunctionDef {

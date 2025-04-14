@@ -1,12 +1,15 @@
-use std::{cell::RefCell, fmt, io::Write, rc::Rc};
+use std::cell::RefCell;
+use std::fmt;
+use std::io::Write;
+use std::rc::Rc;
 
-use crate::{
-    env::{Env, Evaluatable, RuntimeError},
-    literal::LoxValue,
-    mac::tt,
-};
-
-use super::{ExprAst, ExprParseError};
+use super::ExprAst;
+use super::ExprParseError;
+use crate::env::Env;
+use crate::env::Evaluatable;
+use crate::env::RuntimeError;
+use crate::literal::LoxValue;
+use crate::mac::tt;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Grouping {

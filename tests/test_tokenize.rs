@@ -1,5 +1,6 @@
-use codecrafters_interpreter::lox_tokenize;
 use std::process::ExitCode;
+
+use codecrafters_interpreter::lox_tokenize;
 
 macro_rules! tokenize_test {
     ($src:expr, exit_code = $exit_code:expr, stdout = $stdout:expr, stderr = $stderr:expr) => {

@@ -1,5 +1,6 @@
-use codecrafters_interpreter::lox_parse;
 use std::process::ExitCode;
+
+use codecrafters_interpreter::lox_parse;
 
 macro_rules! parse_test {
     ($src:expr, exit_code = $exit_code:expr, stdout = $stdout:expr, stderr = $stderr:expr) => {
