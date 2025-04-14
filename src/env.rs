@@ -2,6 +2,8 @@ use std::{cell::RefCell, collections::HashMap, io::Write, process::ExitCode, rc:
 
 use crate::{error::IntoLoxError, function::CLOCK, literal::LoxValue, rc_rc};
 
+/// Environment, which holds every variable-value bindings and reference to
+/// global stdout.
 pub(crate) struct Env<W: Write> {
     pub(crate) stdout: Rc<RefCell<W>>,
     pub(crate) parent: Option<Rc<RefCell<Env<W>>>>,
@@ -30,10 +32,13 @@ impl<W: Write> Env<W> {
         })
     }
 
+    /// Get value with given key. It loops through all parent scopes.
     pub fn get(&self, key: &str) -> Option<LoxValue> {
         if let Some(value) = self.scope.get(key) {
+            // This value had been defined in current scope.
             Some(value.clone())
         } else if let Some(parent_env) = &self.parent {
+            // This value had been defined in one of its parents' scope.
             parent_env.borrow().get(key)
         } else {
             None
@@ -57,16 +62,19 @@ impl<W: Write> Env<W> {
         }
     }
 
+    #[inline]
     pub fn is_global(&self) -> bool {
         matches!(self.parent, None)
     }
 }
 
+/// Trait for eval expressions.
 pub(crate) trait Evaluatable {
     // Required methods
     fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError>;
 }
 
+/// Trait for run statements.
 pub(crate) trait Runnable {
     // Required methods
     fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError>;
