@@ -19,6 +19,8 @@ pub(crate) trait Callable {
     fn run_body<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError>;
 
     // Provided methods
+
+    /// call and get the result.
     fn call<W: Write>(
         &self,
         arguments: Vec<LoxValue>,
@@ -36,6 +38,8 @@ pub(crate) trait Callable {
         self.argument_names().len()
     }
 
+    /// Create new scope with having current env as own parent, and assign
+    /// given function arguments into this env.
     fn stack_scope<W: Write>(
         &self,
         arguments: Vec<LoxValue>,
