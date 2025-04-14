@@ -9,12 +9,12 @@ mod token;
 
 use std::{io::Write, process::ExitCode};
 
-use env::{Env, Evaluatable, Runnable};
-use error::LoxResult;
-
-use self::error::IntoLoxError;
-use self::mac::rc_rc;
-use self::token::TokenStream;
+use self::{
+    env::{Env, Evaluatable, Runnable},
+    error::{IntoLoxError, LoxResult},
+    mac::rc_rc,
+    token::TokenStream,
+};
 
 /// tokenize without allowing error.
 macro_rules! tokenize {
@@ -60,11 +60,11 @@ macro_rules! stmt_parse {
 }
 
 /// Entry point for 'tokenize' command.
-pub fn lox_tokenize<W1, W2>(src: &str, ok_buf: &mut W1, err_buf: &mut W2) -> ExitCode
-where
-    W1: Write,
-    W2: Write,
-{
+pub fn lox_tokenize<W1: Write, W2: Write>(
+    src: &str,
+    ok_buf: &mut W1,
+    err_buf: &mut W2,
+) -> ExitCode {
     let mut exit_code = ExitCode::SUCCESS;
     let tokens = token::Tokenizer::new(src).tokenize();
 
@@ -78,11 +78,7 @@ where
 }
 
 /// Entry point for 'parse' command.
-pub fn lox_parse<W1, W2>(src: &str, ok_buf: &mut W1, err_buf: &mut W2) -> ExitCode
-where
-    W1: Write,
-    W2: Write,
-{
+pub fn lox_parse<W1: Write, W2: Write>(src: &str, ok_buf: &mut W1, err_buf: &mut W2) -> ExitCode {
     // Try tokenizing. If fails, don't parse.
     let tokens = tokenize!(src, err_buf);
 
@@ -99,18 +95,18 @@ where
 }
 
 /// Entry point for 'evaluate' command.
-pub fn lox_evaluate<W1, W2>(src: &str, ok_buf: &mut W1, err_buf: &mut W2) -> ExitCode
-where
-    W1: Write,
-    W2: Write,
-{
+pub fn lox_evaluate<W1: Write, W2: Write>(
+    src: &str,
+    ok_buf: &mut W1,
+    err_buf: &mut W2,
+) -> ExitCode {
     let tokens = tokenize!(src, err_buf);
 
     let mut stream = TokenStream::new(&tokens);
     let parsed = expr_parse!(stream, err_buf);
 
     // Since 'evaluate' command doesn't actually print anything while evaluating,
-    // we can set env.stdout to be some black buffer.
+    // we can set env.stdout to be some blank buffer.
     let empty_env = Env::new(Vec::new());
 
     match parsed.eval(empty_env).map(|res| res.pretty()) {
@@ -125,11 +121,7 @@ where
 }
 
 /// Entry point for 'run' command.
-pub fn lox_run<W1, W2>(src: &str, ok_buf: &mut W1, err_buf: &mut W2) -> ExitCode
-where
-    W1: Write,
-    W2: Write,
-{
+pub fn lox_run<W1: Write, W2: Write>(src: &str, ok_buf: &mut W1, err_buf: &mut W2) -> ExitCode {
     let tokens = tokenize!(src, err_buf);
 
     let mut stream = TokenStream::new(&tokens);
