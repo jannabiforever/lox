@@ -3,6 +3,7 @@ use std::{cell::RefCell, fmt, io::Write, rc::Rc};
 use super::ExprParser;
 use crate::{
     env::{Env, Evaluatable, RuntimeError},
+    error::{IntoLoxError, LoxError},
     literal::LoxValue,
     mac::tt,
     token::Token,
@@ -32,11 +33,11 @@ impl<'a> ExprParser<'a, '_> {
 }
 
 impl Evaluatable for Variable<'_> {
-    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
+    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, LoxError<RuntimeError>> {
         if let Some(value) = env.borrow().get(self.var.src) {
             Ok(value.clone())
         } else {
-            Err(RuntimeError::UndefinedVariable(self.var.src.to_string()))
+            Err(RuntimeError::UndefinedVariable(self.var.src.to_string()).error_at(self.line()))
         }
     }
 

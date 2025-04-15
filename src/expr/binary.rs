@@ -3,6 +3,7 @@ use std::{cell::RefCell, fmt, io::Write, rc::Rc};
 use super::{binding_power::BindingPower, ExprAst, ExprParseError, ExprParser};
 use crate::{
     env::{Env, Evaluatable, RuntimeError},
+    error::{IntoLoxError, LoxError},
     literal::{Literal, LoxValue},
     mac::tt,
     token::TokenType,
@@ -55,7 +56,7 @@ impl BinaryOp {
     #[allow(clippy::type_complexity)]
     fn get_binary_function<W: Write>(
         &self,
-    ) -> fn(ExprAst, ExprAst, Rc<RefCell<Env<W>>>) -> Result<Literal, RuntimeError> {
+    ) -> fn(ExprAst, ExprAst, Rc<RefCell<Env<W>>>) -> Result<Literal, LoxError<RuntimeError>> {
         match self {
             BinaryOp::Star => {
                 |left, right, env| match (left.eval(env.clone())?, right.eval(env)?) {
@@ -63,7 +64,10 @@ impl BinaryOp {
                         LoxValue::Literal(Literal::Number(left)),
                         LoxValue::Literal(Literal::Number(right)),
                     ) => Ok(Literal::Number(left * right)),
-                    _ => Err(RuntimeError::OperandMustBe("numbers")),
+                    (_, LoxValue::Literal(Literal::Number(_))) => {
+                        Err(RuntimeError::OperandMustBe("numbers").error_at(left.line()))
+                    }
+                    _ => Err(RuntimeError::OperandMustBe("numbers").error_at(right.line())),
                 }
             }
             BinaryOp::Slash => |left, right, env| match (left.eval(env.clone())?, right.eval(env)?)
@@ -72,7 +76,10 @@ impl BinaryOp {
                     LoxValue::Literal(Literal::Number(left)),
                     LoxValue::Literal(Literal::Number(right)),
                 ) => Ok(Literal::Number(left / right)),
-                _ => Err(RuntimeError::OperandMustBe("numbers")),
+                (_, LoxValue::Literal(Literal::Number(_))) => {
+                    Err(RuntimeError::OperandMustBe("numbers").error_at(left.line()))
+                }
+                _ => Err(RuntimeError::OperandMustBe("numbers").error_at(right.line())),
             },
             BinaryOp::Plus => {
                 |left, right, env| match (left.eval(env.clone())?, right.eval(env)?) {
@@ -84,7 +91,10 @@ impl BinaryOp {
                         LoxValue::Literal(Literal::String(left)),
                         LoxValue::Literal(Literal::String(right)),
                     ) => Ok(Literal::String(format!("{}{}", left, right))),
-                    _ => Err(RuntimeError::OperandMustBe("numbers or strings")),
+                    _ => {
+                        Err(RuntimeError::OperandMustBe("numbers or strings")
+                            .error_at(right.line()))
+                    }
                 }
             }
             BinaryOp::Minus => |left, right, env| match (left.eval(env.clone())?, right.eval(env)?)
@@ -93,7 +103,10 @@ impl BinaryOp {
                     LoxValue::Literal(Literal::Number(left)),
                     LoxValue::Literal(Literal::Number(right)),
                 ) => Ok(Literal::Number(left - right)),
-                _ => Err(RuntimeError::OperandMustBe("numbers")),
+                (_, LoxValue::Literal(Literal::Number(_))) => {
+                    Err(RuntimeError::OperandMustBe("numbers").error_at(left.line()))
+                }
+                _ => Err(RuntimeError::OperandMustBe("numbers").error_at(right.line())),
             },
             BinaryOp::Greater => {
                 |left, right, env| match (left.eval(env.clone())?, right.eval(env)?) {
@@ -101,7 +114,10 @@ impl BinaryOp {
                         LoxValue::Literal(Literal::Number(left)),
                         LoxValue::Literal(Literal::Number(right)),
                     ) => Ok(Literal::Boolean(left > right)),
-                    _ => Err(RuntimeError::OperandMustBe("numbers")),
+                    (_, LoxValue::Literal(Literal::Number(_))) => {
+                        Err(RuntimeError::OperandMustBe("numbers").error_at(left.line()))
+                    }
+                    _ => Err(RuntimeError::OperandMustBe("numbers").error_at(right.line())),
                 }
             }
             BinaryOp::GreaterEqual => {
@@ -110,7 +126,10 @@ impl BinaryOp {
                         LoxValue::Literal(Literal::Number(left)),
                         LoxValue::Literal(Literal::Number(right)),
                     ) => Ok(Literal::Boolean(left >= right)),
-                    _ => Err(RuntimeError::OperandMustBe("numbers")),
+                    (_, LoxValue::Literal(Literal::Number(_))) => {
+                        Err(RuntimeError::OperandMustBe("numbers").error_at(left.line()))
+                    }
+                    _ => Err(RuntimeError::OperandMustBe("numbers").error_at(right.line())),
                 }
             }
             BinaryOp::Less => {
@@ -119,7 +138,10 @@ impl BinaryOp {
                         LoxValue::Literal(Literal::Number(left)),
                         LoxValue::Literal(Literal::Number(right)),
                     ) => Ok(Literal::Boolean(left < right)),
-                    _ => Err(RuntimeError::OperandMustBe("numbers")),
+                    (_, LoxValue::Literal(Literal::Number(_))) => {
+                        Err(RuntimeError::OperandMustBe("numbers").error_at(left.line()))
+                    }
+                    _ => Err(RuntimeError::OperandMustBe("numbers").error_at(right.line())),
                 }
             }
             BinaryOp::LessEqual => {
@@ -128,7 +150,10 @@ impl BinaryOp {
                         LoxValue::Literal(Literal::Number(left)),
                         LoxValue::Literal(Literal::Number(right)),
                     ) => Ok(Literal::Boolean(left <= right)),
-                    _ => Err(RuntimeError::OperandMustBe("numbers")),
+                    (_, LoxValue::Literal(Literal::Number(_))) => {
+                        Err(RuntimeError::OperandMustBe("numbers").error_at(left.line()))
+                    }
+                    _ => Err(RuntimeError::OperandMustBe("numbers").error_at(right.line())),
                 }
             }
             BinaryOp::EqualEqual => |left, right, env| {
@@ -228,10 +253,10 @@ impl<'a> ExprParser<'a, '_> {
 }
 
 impl Evaluatable for Binary<'_> {
-    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
+    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, LoxError<RuntimeError>> {
         let Self { left, op, right } = self.clone();
         let function = op.get_binary_function();
-        Ok(function(*left, *right, env)?.into())
+        function(*left, *right, env).map(Into::into)
     }
 
     fn line(&self) -> usize {

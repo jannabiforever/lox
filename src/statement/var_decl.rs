@@ -3,6 +3,7 @@ use std::{cell::RefCell, io::Write, rc::Rc};
 use super::{RuntimeError, StmtParser};
 use crate::{
     env::Runnable,
+    error::{IntoLoxError, LoxError},
     expr::{Assign, ExprAst},
     literal::{Literal, LoxValue},
     statement::error::StmtParseError,
@@ -16,10 +17,15 @@ pub(crate) struct VarDecl<'a> {
 }
 
 impl Runnable for VarDecl<'_> {
-    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
+    fn run<W: Write>(
+        &self,
+        env: Rc<RefCell<Env<W>>>,
+    ) -> Result<Option<LoxValue>, LoxError<RuntimeError>> {
         let var = match &self.var {
             ExprAst::Variable(variable) => Ok(variable.var.clone()),
-            rest => Err(RuntimeError::InvalidAssignmentTarget(rest.to_string())),
+            rest => {
+                Err(RuntimeError::InvalidAssignmentTarget(rest.to_string()).error_at(self.line()))
+            }
         }?;
 
         let value = match self.value.as_ref() {

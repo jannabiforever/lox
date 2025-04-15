@@ -76,39 +76,24 @@ impl<W: Write> Env<W> {
 /// Trait for eval expressions.
 pub(crate) trait Evaluatable {
     // Required methods
-    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError>;
+    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, LoxError<RuntimeError>>;
 
     /// Every evaluatable could return Err(RuntimeError).
     /// To report errors generously, we need to know where.
     fn line(&self) -> usize;
-
-    // Provided methods
-    fn eval_lox<W: Write>(
-        &self,
-        env: Rc<RefCell<Env<W>>>,
-    ) -> Result<LoxValue, LoxError<RuntimeError>> {
-        let line = self.line();
-        self.eval(env).map_err(|err| err.error(line))
-    }
 }
 
 /// Trait for run statements.
 pub(crate) trait Runnable {
     // Required methods
-    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError>;
+    fn run<W: Write>(
+        &self,
+        env: Rc<RefCell<Env<W>>>,
+    ) -> Result<Option<LoxValue>, LoxError<RuntimeError>>;
 
     /// Every runnable could return Err(RuntimeError).
     /// To report errors generously, we need to know where.
     fn line(&self) -> usize;
-
-    // Provided methods
-    fn run_lox<W: Write>(
-        &self,
-        env: Rc<RefCell<Env<W>>>,
-    ) -> Result<Option<LoxValue>, LoxError<RuntimeError>> {
-        let line = self.line();
-        self.run(env).map_err(|err| err.error(line))
-    }
 }
 
 #[derive(Debug, Clone, thiserror::Error)]

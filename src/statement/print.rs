@@ -2,8 +2,8 @@ use std::{cell::RefCell, io::Write, rc::Rc};
 
 use super::{RuntimeError, StmtParser};
 use crate::{
-    env::Runnable, expr::ExprAst, literal::LoxValue, statement::error::StmtParseError, Env,
-    Evaluatable,
+    env::Runnable, error::LoxError, expr::ExprAst, literal::LoxValue,
+    statement::error::StmtParseError, Env, Evaluatable,
 };
 
 #[derive(Debug, Clone, PartialEq)]
@@ -12,7 +12,10 @@ pub(crate) struct Print<'a> {
 }
 
 impl Runnable for Print<'_> {
-    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
+    fn run<W: Write>(
+        &self,
+        env: Rc<RefCell<Env<W>>>,
+    ) -> Result<Option<LoxValue>, LoxError<RuntimeError>> {
         let value = self.expr.eval(env.clone())?;
         writeln!(env.borrow().stdout.borrow_mut(), "{value}").unwrap();
         Ok(None)

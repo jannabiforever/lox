@@ -1,7 +1,9 @@
 use std::{cell::RefCell, io::Write, rc::Rc};
 
 use super::{StmtAst, StmtParseError, StmtParser};
-use crate::{env::RuntimeError, literal::LoxValue, mac::tt, token::Token, Env, Runnable};
+use crate::{
+    env::RuntimeError, error::LoxError, literal::LoxValue, mac::tt, token::Token, Env, Runnable,
+};
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct FunctionDef<'a> {
@@ -19,7 +21,10 @@ impl FunctionDef<'_> {
 }
 
 impl Runnable for FunctionDef<'_> {
-    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
+    fn run<W: Write>(
+        &self,
+        env: Rc<RefCell<Env<W>>>,
+    ) -> Result<Option<LoxValue>, LoxError<RuntimeError>> {
         let lox_function = self.into_lox_function();
         env.borrow_mut().set(&self.name, lox_function);
         Ok(None)

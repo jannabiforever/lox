@@ -1,7 +1,9 @@
 use std::{cell::RefCell, io::Write, rc::Rc};
 
 use super::{RuntimeError, StmtAst, StmtParseError, StmtParser};
-use crate::{env::Runnable, expr::ExprAst, literal::LoxValue, mac::tt, Env, Evaluatable};
+use crate::{
+    env::Runnable, error::LoxError, expr::ExprAst, literal::LoxValue, mac::tt, Env, Evaluatable,
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct If<'a> {
@@ -11,7 +13,10 @@ pub struct If<'a> {
 }
 
 impl Runnable for If<'_> {
-    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
+    fn run<W: Write>(
+        &self,
+        env: Rc<RefCell<Env<W>>>,
+    ) -> Result<Option<LoxValue>, LoxError<RuntimeError>> {
         let If {
             condition,
             body,

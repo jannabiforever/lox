@@ -1,7 +1,7 @@
 use std::{cell::RefCell, io::Write, rc::Rc};
 
 use super::{RuntimeError, StmtAst, StmtParseError, StmtParser};
-use crate::{env::Runnable, expr::ExprAst, literal::LoxValue, Env, Evaluatable};
+use crate::{env::Runnable, error::LoxError, expr::ExprAst, literal::LoxValue, Env, Evaluatable};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct While<'a> {
@@ -10,7 +10,10 @@ pub struct While<'a> {
 }
 
 impl Runnable for While<'_> {
-    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
+    fn run<W: Write>(
+        &self,
+        env: Rc<RefCell<Env<W>>>,
+    ) -> Result<Option<LoxValue>, LoxError<RuntimeError>> {
         let While { condition, body } = self;
 
         while condition

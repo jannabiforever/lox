@@ -3,6 +3,7 @@ use std::{cell::RefCell, fmt, io::Write, rc::Rc};
 use super::ExprParser;
 use crate::{
     env::RuntimeError,
+    error::LoxError,
     expr::ExprParseError,
     literal::{Literal, LoxValue, Number},
     mac::tt,
@@ -22,7 +23,7 @@ impl fmt::Display for LiteralExpr<'_> {
 }
 
 impl Evaluatable for LiteralExpr<'_> {
-    fn eval<W: Write>(&self, _: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
+    fn eval<W: Write>(&self, _: Rc<RefCell<Env<W>>>) -> Result<LoxValue, LoxError<RuntimeError>> {
         let value = match self.token.token_type {
             tt!("nil") => Literal::Nil,
             tt!("true") => Literal::Boolean(true),

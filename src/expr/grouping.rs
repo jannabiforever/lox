@@ -3,6 +3,7 @@ use std::{cell::RefCell, fmt, io::Write, rc::Rc};
 use super::{ExprAst, ExprParseError};
 use crate::{
     env::{Env, Evaluatable, RuntimeError},
+    error::LoxError,
     literal::LoxValue,
     mac::tt,
 };
@@ -43,7 +44,7 @@ impl<'a> super::ExprParser<'a, '_> {
 }
 
 impl Evaluatable for Grouping<'_> {
-    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
+    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, LoxError<RuntimeError>> {
         self.inner.eval(env)
     }
 

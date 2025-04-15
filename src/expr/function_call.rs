@@ -3,6 +3,7 @@ use std::{cell::RefCell, fmt, io::Write, rc::Rc};
 use super::{ExprAst, ExprParseError, ExprParser};
 use crate::{
     env::{Env, Evaluatable, RuntimeError},
+    error::{IntoLoxError, LoxError},
     function::Callable,
     literal::LoxValue,
     mac::tt,
@@ -73,7 +74,7 @@ impl<'a> ExprParser<'a, '_> {
 }
 
 impl Evaluatable for FunctionCall<'_> {
-    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
+    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, LoxError<RuntimeError>> {
         let arguments = self
             .arguments
             .iter()
@@ -81,8 +82,12 @@ impl Evaluatable for FunctionCall<'_> {
             .collect::<Result<Vec<_>, _>>()?;
 
         match self.callee.eval(env.clone())? {
-            LoxValue::Literal(l) => Err(RuntimeError::InvalidCallTarget(l.to_string())),
-            LoxValue::RustFunction(rf) => rf.call(arguments, env.clone()),
+            LoxValue::Literal(l) => {
+                Err(RuntimeError::InvalidCallTarget(l.to_string()).error_at(self.line()))
+            }
+            LoxValue::RustFunction(rf) => rf
+                .call(arguments, env.clone())
+                .map_err(|err| err.error_at(self.line())),
             // LoxValue::LoxFunction(lf) => lf.call(arguments, env.clone()),
         }
     }

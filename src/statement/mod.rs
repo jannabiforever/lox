@@ -40,7 +40,10 @@ pub(crate) enum StmtAst<'a> {
 }
 
 impl Runnable for StmtAst<'_> {
-    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
+    fn run<W: Write>(
+        &self,
+        env: Rc<RefCell<Env<W>>>,
+    ) -> Result<Option<LoxValue>, LoxError<RuntimeError>> {
         match self {
             Self::Print(print) => print.run(env),
             Self::Expression(expression) => expression.run(env),
@@ -91,7 +94,7 @@ impl<'a> StmtParser<'a, '_> {
         while !self.token_stream.expired() {
             let stmt = self
                 .parse()
-                .map_err(|err| err.error(self.token_stream.line()))?;
+                .map_err(|err| err.error_at(self.token_stream.line()))?;
             statements.push(stmt);
         }
         Ok(statements)

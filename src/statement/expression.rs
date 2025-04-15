@@ -1,7 +1,7 @@
 use std::{cell::RefCell, io::Write, rc::Rc};
 
 use super::{RuntimeError, StmtParseError, StmtParser};
-use crate::{env::Runnable, expr::ExprAst, literal::LoxValue, Env, Evaluatable};
+use crate::{env::Runnable, error::LoxError, expr::ExprAst, literal::LoxValue, Env, Evaluatable};
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Expression<'a> {
@@ -9,7 +9,10 @@ pub(crate) struct Expression<'a> {
 }
 
 impl Runnable for Expression<'_> {
-    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
+    fn run<W: Write>(
+        &self,
+        env: Rc<RefCell<Env<W>>>,
+    ) -> Result<Option<LoxValue>, LoxError<RuntimeError>> {
         self.expr.eval(env)?;
         Ok(None)
     }

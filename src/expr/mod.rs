@@ -41,7 +41,7 @@ impl_from!(
 );
 
 impl Evaluatable for ExprAst<'_> {
-    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
+    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, LoxError<RuntimeError>> {
         match self {
             Self::Assign(v) => v.eval(env),
             Self::Binary(v) => v.eval(env),
@@ -94,7 +94,7 @@ impl<'a, 'mr> ExprParser<'a, 'mr> {
 
     pub(crate) fn parse_with_line(&mut self) -> Result<ExprAst<'a>, LoxError<ExprParseError>> {
         let line = self.token_stream.line();
-        self.parse().map_err(|e| e.error(line))
+        self.parse().map_err(|e| e.error_at(line))
     }
 
     /// Parse within the lowest binding power.

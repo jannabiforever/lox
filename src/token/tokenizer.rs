@@ -54,7 +54,7 @@ impl<'a> Tokenizer<'a> {
     }
 
     fn next_token_with_line(&mut self) -> Result<Token<'a>, LoxError<TokenizeError>> {
-        self.next_token().map_err(|e| e.error(self.line))
+        self.next_token().map_err(|e| e.error_at(self.line))
     }
 
     fn next_token(&mut self) -> Result<Token<'a>, TokenizeError> {

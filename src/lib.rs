@@ -110,7 +110,7 @@ pub fn lox_evaluate<W1: Write, W2: Write>(
     let empty_env = Env::new(Vec::new());
 
     if let Err(exit_code) = parsed
-        .eval_lox(empty_env)
+        .eval(empty_env)
         .map(|res| res.to_string())
         .write_to_buffer(ok_buf, err_buf)
     {
@@ -130,7 +130,7 @@ pub fn lox_run<W1: Write, W2: Write>(src: &str, ok_buf: &mut W1, err_buf: &mut W
     let env = Env::new(ok_buf);
     for stmt in stmts {
         if let Err(exit_code) = stmt
-            .run_lox(env.clone())
+            .run(env.clone())
             .map(|res| format!("{res:?}"))
             .write_to_buffer(&mut Vec::new(), err_buf)
         {

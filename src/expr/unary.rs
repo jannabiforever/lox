@@ -3,6 +3,7 @@ use std::{cell::RefCell, fmt, io::Write, rc::Rc};
 use super::{binding_power::BindingPower, ExprAst, ExprParseError, ExprParser};
 use crate::{
     env::{Env, Evaluatable, RuntimeError},
+    error::{IntoLoxError, LoxError},
     literal::{Literal, LoxValue},
     mac::tt,
     token::TokenType,
@@ -69,7 +70,7 @@ impl<'a> ExprParser<'a, '_> {
 }
 
 impl Evaluatable for Unary<'_> {
-    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
+    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, LoxError<RuntimeError>> {
         let right = self.right.eval(env.clone())?;
 
         match self.op {
@@ -77,7 +78,7 @@ impl Evaluatable for Unary<'_> {
                 if let LoxValue::Literal(Literal::Number(num)) = right {
                     Ok(Literal::Number(-num).into())
                 } else {
-                    Err(RuntimeError::OperandMustBe("number"))
+                    Err(RuntimeError::OperandMustBe("number").error_at(self.line()))
                 }
             }
             UnaryOp::Bang => {

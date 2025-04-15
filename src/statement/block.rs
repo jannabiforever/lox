@@ -1,7 +1,7 @@
 use std::{cell::RefCell, io::Write, rc::Rc};
 
 use super::{RuntimeError, StmtAst, StmtParseError, StmtParser};
-use crate::{env::Runnable, literal::LoxValue, mac::tt, Env};
+use crate::{env::Runnable, error::LoxError, literal::LoxValue, mac::tt, Env};
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Block<'a> {
@@ -11,7 +11,10 @@ pub(crate) struct Block<'a> {
 }
 
 impl Runnable for Block<'_> {
-    fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
+    fn run<W: Write>(
+        &self,
+        env: Rc<RefCell<Env<W>>>,
+    ) -> Result<Option<LoxValue>, LoxError<RuntimeError>> {
         let new_env = Env::from_parent(env);
         for stmt in &self.inner {
             if let Some(value) = stmt.run(new_env.clone())? {
