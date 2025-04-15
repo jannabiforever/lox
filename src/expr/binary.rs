@@ -1,6 +1,6 @@
 use std::{cell::RefCell, fmt, io::Write, rc::Rc};
 
-use super::{binding_power::BindingPower, ExprAst, ExprParseError};
+use super::{binding_power::BindingPower, ExprAst, ExprParseError, ExprParser};
 use crate::{
     env::{Env, Evaluatable, RuntimeError},
     literal::{Literal, LoxValue},
@@ -192,7 +192,7 @@ impl fmt::Display for Binary<'_> {
     }
 }
 
-impl<'a> super::ExprParser<'a, '_> {
+impl<'a> ExprParser<'a, '_> {
     /// If following token is a binary operator,
     /// parse the right operand and return the binary expression,
     /// consuming the operator and the right operand.

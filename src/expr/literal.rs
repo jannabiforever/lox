@@ -1,37 +1,51 @@
+use std::{cell::RefCell, fmt, io::Write, rc::Rc};
+
+use super::ExprParser;
 use crate::{
+    env::RuntimeError,
     expr::ExprParseError,
-    literal::{Literal, Number},
+    literal::{Literal, LoxValue, Number},
     mac::tt,
+    token::Token,
+    Env, Evaluatable,
 };
 
-impl super::ExprParser<'_, '_> {
-    pub(super) fn parse_literal(&mut self) -> Option<Result<Literal, ExprParseError>> {
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct LiteralExpr<'a> {
+    pub token: Token<'a>,
+    pub literal: Literal,
+}
+
+impl fmt::Display for LiteralExpr<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.token.src)
+    }
+}
+
+impl Evaluatable for LiteralExpr<'_> {
+    fn eval<W: Write>(&self, _: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
+        Ok(self.literal.clone().into())
+    }
+}
+
+impl<'a> ExprParser<'a, '_> {
+    pub(super) fn try_parse_literal(&mut self) -> Option<Result<LiteralExpr<'a>, ExprParseError>> {
         let peeked = self.token_stream.peek();
-        let src = peeked.src;
-        match peeked.token_type {
-            tt!("nil") => {
-                self.token_stream.next();
-                Some(Ok(Literal::Nil))
-            }
-            tt!("true") => {
-                self.token_stream.next();
-                Some(Ok(Literal::Boolean(true)))
-            }
-            tt!("false") => {
-                self.token_stream.next();
-                Some(Ok(Literal::Boolean(false)))
-            }
+        let (token, literal) = match peeked.token_type {
+            tt!("nil") => (self.token_stream.next().clone(), Literal::Nil),
+            tt!("true") => (self.token_stream.next().clone(), Literal::Boolean(true)),
+            tt!("false") => (self.token_stream.next().clone(), Literal::Boolean(false)),
             tt!("number") => {
-                self.token_stream.next();
-                let num = src.parse::<Number>().unwrap();
-                Some(Ok(Literal::Number(num)))
+                let num = peeked.src.parse::<Number>().unwrap();
+                (self.token_stream.next().clone(), Literal::Number(num))
             }
             tt!("string") => {
-                self.token_stream.next();
-                let src = src.trim_matches('"');
-                Some(Ok(Literal::String(src.to_string())))
+                let src = peeked.src.trim_matches('"').to_string();
+                (self.token_stream.next().clone(), Literal::String(src))
             }
-            _ => None,
-        }
+            _ => return None,
+        };
+
+        Some(Ok(LiteralExpr { token, literal }))
     }
 }

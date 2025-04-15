@@ -11,15 +11,15 @@ mod variable;
 
 use std::{cell::RefCell, fmt, io::Write, rc::Rc};
 
-use self::binding_power::BindingPower;
 pub(crate) use self::{
     assign::Assign, binary::Binary, error::ExprParseError, field_call::FieldCall,
     function_call::FunctionCall, grouping::Grouping, unary::Unary, variable::Variable,
 };
+use self::{binding_power::BindingPower, literal::LiteralExpr};
 use crate::{
     env::{Env, Evaluatable, RuntimeError},
     error::{IntoLoxError, LoxError},
-    literal::{Literal, LoxValue},
+    literal::LoxValue,
     mac::{impl_from, tt},
     token::TokenStream,
 };
@@ -31,20 +31,14 @@ pub enum ExprAst<'a> {
     FieldCall(FieldCall<'a>),
     FunctionCall(FunctionCall<'a>),
     Grouping(Grouping<'a>),
-    Literal(Literal),
+    LiteralExpr(LiteralExpr<'a>),
     Unary(Unary<'a>),
     Variable(Variable<'a>),
 }
 
 impl_from!(
-    'a ExprAst: Assign, Binary, Grouping, FieldCall, FunctionCall, Unary, Variable
+    'a ExprAst: Assign, Binary, Grouping, FieldCall, FunctionCall, Unary, Variable, LiteralExpr
 );
-
-impl From<Literal> for ExprAst<'_> {
-    fn from(value: Literal) -> Self {
-        Self::Literal(value)
-    }
-}
 
 impl Evaluatable for ExprAst<'_> {
     fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
@@ -54,7 +48,7 @@ impl Evaluatable for ExprAst<'_> {
             Self::FieldCall(_) => todo!(),
             Self::FunctionCall(v) => v.eval(env),
             Self::Grouping(v) => v.eval(env),
-            Self::Literal(v) => v.eval(env),
+            Self::LiteralExpr(v) => v.eval(env),
             Self::Unary(v) => v.eval(env),
             Self::Variable(v) => v.eval(env),
         }
@@ -78,7 +72,7 @@ impl fmt::Display for ExprAst<'_> {
             Self::FieldCall(v) => write!(f, "{}", v),
             Self::FunctionCall(v) => write!(f, "{}", v),
             Self::Grouping(v) => write!(f, "{}", v),
-            Self::Literal(v) => write!(f, "{}", v),
+            Self::LiteralExpr(v) => write!(f, "{}", v),
             Self::Unary(v) => write!(f, "{}", v),
             Self::Variable(v) => write!(f, "{}", v),
         }
@@ -161,7 +155,7 @@ impl<'a, 'mr> ExprParser<'a, 'mr> {
 
     /// End node := Literal | Grouping
     fn try_parse_end_node(&mut self) -> Option<Result<ExprAst<'a>, ExprParseError>> {
-        if let Some(literal) = self.parse_literal() {
+        if let Some(literal) = self.try_parse_literal() {
             Some(literal.map(Into::into))
         } else if let Some(variable) = self.try_parse_variable() {
             Some(Ok(variable.into()))

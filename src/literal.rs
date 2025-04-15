@@ -1,7 +1,6 @@
-use std::{cell::RefCell, cmp, fmt, io::Write, ops, rc::Rc};
+use std::{cmp, fmt, ops};
 
 use crate::{
-    env::{Env, Evaluatable, RuntimeError},
     function::{LoxFunction, RustFunction},
     mac::impl_from,
 };
@@ -31,12 +30,6 @@ impl Literal {
             Literal::Number(Number(n)) => n.to_string(),
             v => v.to_string(),
         }
-    }
-}
-
-impl Evaluatable for Literal {
-    fn eval<W: Write>(&self, _: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
-        Ok(self.clone().into())
     }
 }
 
