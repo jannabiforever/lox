@@ -42,15 +42,29 @@ pub(crate) enum StmtAst<'a> {
 impl Runnable for StmtAst<'_> {
     fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
         match self {
-            StmtAst::Print(print) => print.run(env),
-            StmtAst::Expression(expression) => expression.run(env),
-            StmtAst::VarDecl(var_decl) => var_decl.run(env),
-            StmtAst::Block(block) => block.run(env),
-            StmtAst::If(if_stmt) => if_stmt.run(env),
-            StmtAst::While(while_stmt) => while_stmt.run(env),
-            StmtAst::For(for_stmt) => for_stmt.run(env),
-            StmtAst::FunctionDef(_) => todo!("Implement function"),
-            StmtAst::Return(return_stmt) => return_stmt.run(env),
+            Self::Print(print) => print.run(env),
+            Self::Expression(expression) => expression.run(env),
+            Self::VarDecl(var_decl) => var_decl.run(env),
+            Self::Block(block) => block.run(env),
+            Self::If(if_stmt) => if_stmt.run(env),
+            Self::While(while_stmt) => while_stmt.run(env),
+            Self::For(for_stmt) => for_stmt.run(env),
+            Self::FunctionDef(_) => todo!("Implement function"),
+            Self::Return(return_stmt) => return_stmt.run(env),
+        }
+    }
+
+    fn line(&self) -> usize {
+        match self {
+            Self::Print(v) => v.line(),
+            Self::Expression(v) => v.line(),
+            Self::VarDecl(v) => v.line(),
+            Self::Block(v) => v.line(),
+            Self::If(v) => v.line(),
+            Self::While(v) => v.line(),
+            Self::For(v) => v.line(),
+            Self::FunctionDef(_) => todo!("Implement function"),
+            Self::Return(v) => v.line(),
         }
     }
 }

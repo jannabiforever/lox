@@ -13,6 +13,10 @@ impl Runnable for Expression<'_> {
         self.expr.eval(env)?;
         Ok(None)
     }
+
+    fn line(&self) -> usize {
+        self.expr.line()
+    }
 }
 
 impl<'a> StmtParser<'a, '_> {

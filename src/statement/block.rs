@@ -6,6 +6,8 @@ use crate::{env::Runnable, literal::LoxValue, mac::tt, Env};
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Block<'a> {
     pub(crate) inner: Vec<StmtAst<'a>>,
+    /// the line of end of brace.
+    line: usize,
 }
 
 impl Runnable for Block<'_> {
@@ -17,6 +19,10 @@ impl Runnable for Block<'_> {
             }
         }
         Ok(None)
+    }
+
+    fn line(&self) -> usize {
+        self.line
     }
 }
 
@@ -30,12 +36,14 @@ impl<'a> StmtParser<'a, '_> {
             inner.push(next_stmt);
         }
 
-        self.token_stream
-            .expect(tt!("}"))
-            .map_err(|unexpected_token| {
-                StmtParseError::ExpectedEndOfBracket(unexpected_token.src.to_string())
-            })?;
-
-        Ok(Block { inner })
+        match self.token_stream.expect(tt!("}")) {
+            Ok(end_brace) => Ok(Block {
+                inner,
+                line: end_brace.line,
+            }),
+            Err(unexpected_token) => Err(StmtParseError::ExpectedEndOfBracket(
+                unexpected_token.src.to_string(),
+            )),
+        }
     }
 }

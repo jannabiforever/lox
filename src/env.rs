@@ -79,7 +79,7 @@ pub(crate) trait Evaluatable {
     fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError>;
 
     /// Every evaluatable could return Err(RuntimeError).
-    /// Report errors generously, we need to know where.
+    /// To report errors generously, we need to know where.
     fn line(&self) -> usize;
 
     // Provided methods
@@ -96,6 +96,19 @@ pub(crate) trait Evaluatable {
 pub(crate) trait Runnable {
     // Required methods
     fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError>;
+
+    /// Every runnable could return Err(RuntimeError).
+    /// To report errors generously, we need to know where.
+    fn line(&self) -> usize;
+
+    // Provided methods
+    fn run_lox<W: Write>(
+        &self,
+        env: Rc<RefCell<Env<W>>>,
+    ) -> Result<Option<LoxValue>, LoxError<RuntimeError>> {
+        let line = self.line();
+        self.run(env).map_err(|err| err.error(line))
+    }
 }
 
 #[derive(Debug, Clone, thiserror::Error)]

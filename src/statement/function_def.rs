@@ -8,6 +8,8 @@ pub(crate) struct FunctionDef<'a> {
     name: String,
     arguments: Vec<String>,
     body: Vec<StmtAst<'a>>,
+    // end of body's bracket
+    line: usize,
 }
 
 impl FunctionDef<'_> {
@@ -21,6 +23,10 @@ impl Runnable for FunctionDef<'_> {
         let lox_function = self.into_lox_function();
         env.borrow_mut().set(&self.name, lox_function);
         Ok(None)
+    }
+
+    fn line(&self) -> usize {
+        self.line
     }
 }
 
@@ -63,12 +69,17 @@ impl<'a> StmtParser<'a, '_> {
         if self.token_stream.peek().token_type != tt!("{") {
             return Err(StmtParseError::ExpectedBodyOfFunction);
         }
-        let body = self.parse_block()?.inner;
+
+        let (line, body) = {
+            let block = self.parse_block()?;
+            (block.line(), block.inner)
+        };
 
         Ok(FunctionDef {
             name,
             arguments,
             body,
+            line,
         })
     }
 

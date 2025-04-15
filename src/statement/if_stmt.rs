@@ -32,6 +32,14 @@ impl Runnable for If<'_> {
 
         Ok(None)
     }
+
+    fn line(&self) -> usize {
+        if let Some(else_body) = self.else_body.as_ref() {
+            else_body.line()
+        } else {
+            self.body.line()
+        }
+    }
 }
 
 impl<'a> StmtParser<'a, '_> {

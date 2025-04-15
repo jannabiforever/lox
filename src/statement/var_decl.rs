@@ -30,6 +30,14 @@ impl Runnable for VarDecl<'_> {
         env.borrow_mut().set(&var.src, value);
         Ok(None)
     }
+
+    fn line(&self) -> usize {
+        if let Some(value) = self.value.as_ref() {
+            value.line()
+        } else {
+            self.var.line()
+        }
+    }
 }
 
 impl<'a> StmtParser<'a, '_> {

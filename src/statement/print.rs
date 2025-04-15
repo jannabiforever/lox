@@ -17,6 +17,10 @@ impl Runnable for Print<'_> {
         writeln!(env.borrow().stdout.borrow_mut(), "{value}").unwrap();
         Ok(None)
     }
+
+    fn line(&self) -> usize {
+        self.expr.line()
+    }
 }
 
 impl<'a> StmtParser<'a, '_> {

@@ -8,6 +8,8 @@ use crate::{
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct Return<'a> {
     pub(crate) expr: Option<ExprAst<'a>>,
+    /// return token's line, but not directly used.
+    line: usize,
 }
 
 impl Runnable for Return<'_> {
@@ -25,17 +27,27 @@ impl Runnable for Return<'_> {
 
         Ok(Some(value))
     }
+
+    fn line(&self) -> usize {
+        if let Some(expr) = self.expr.as_ref() {
+            // when expr presented, get its line.
+            expr.line()
+        } else {
+            // else, get return token's line.
+            self.line
+        }
+    }
 }
 
 impl<'a> StmtParser<'a, '_> {
     pub(super) fn parse_return(&mut self) -> Result<Return<'a>, StmtParseError> {
-        self.token_stream.next(); // Consume 'return'.
+        let line = self.token_stream.next().line; // Consume 'return'.
         let expr = if self.token_stream.peek().token_type != tt!(";") {
             Some(self.parse_following_expression()?)
         } else {
             None
         };
         self.expect_semicolon()?;
-        Ok(Return { expr })
+        Ok(Return { expr, line })
     }
 }

@@ -129,9 +129,12 @@ pub fn lox_run<W1: Write, W2: Write>(src: &str, ok_buf: &mut W1, err_buf: &mut W
 
     let env = Env::new(ok_buf);
     for stmt in stmts {
-        if let Err(err) = stmt.run(env.clone()) {
-            writeln!(err_buf, "{err}").unwrap();
-            return err.exit_code();
+        if let Err(exit_code) = stmt
+            .run_lox(env.clone())
+            .map(|res| format!("{res:?}"))
+            .write_to_buffer(&mut Vec::new(), err_buf)
+        {
+            return exit_code;
         }
     }
 

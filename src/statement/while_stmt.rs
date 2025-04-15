@@ -24,6 +24,10 @@ impl Runnable for While<'_> {
 
         Ok(None)
     }
+
+    fn line(&self) -> usize {
+        self.body.line()
+    }
 }
 
 impl<'a> StmtParser<'a, '_> {
