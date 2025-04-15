@@ -1,7 +1,8 @@
 use std::{cmp, fmt, ops};
 
 use crate::{
-    function::{LoxFunction, RustFunction},
+    // function::LoxFunction,
+    function::RustFunction,
     mac::impl_from,
 };
 
@@ -133,16 +134,10 @@ impl cmp::PartialOrd for Number {
 pub(crate) enum LoxValue {
     Literal(Literal),
     RustFunction(RustFunction),
-    LoxFunction(LoxFunction),
+    // LoxFunction(LoxFunction),
 }
 
 impl_from!(LoxValue: Literal, RustFunction);
-
-impl<'a> From<LoxFunction> for LoxValue {
-    fn from(value: LoxFunction) -> Self {
-        Self::LoxFunction(value)
-    }
-}
 
 impl LoxValue {
     pub fn is_literal_and<F: Fn(&Literal) -> bool>(&self, f: F) -> bool {
@@ -165,7 +160,7 @@ impl fmt::Display for LoxValue {
         match self {
             // trim ".0" when treating as lox value.
             Self::Literal(l) => write!(f, "{}", l.pretty()),
-            Self::LoxFunction(lf) => write!(f, "{lf}"),
+            // Self::LoxFunction(lf) => write!(f, "{lf}"),
             Self::RustFunction(rf) => write!(f, "{rf}"),
         }
     }

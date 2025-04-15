@@ -86,4 +86,8 @@ impl Evaluatable for Unary<'_> {
             }
         }
     }
+
+    fn line(&self) -> usize {
+        self.right.line()
+    }
 }

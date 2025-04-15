@@ -233,4 +233,8 @@ impl Evaluatable for Binary<'_> {
         let function = op.get_binary_function();
         Ok(function(*left, *right, env)?.into())
     }
+
+    fn line(&self) -> usize {
+        self.right.line()
+    }
 }

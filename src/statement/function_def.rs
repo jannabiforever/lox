@@ -1,10 +1,7 @@
 use std::{cell::RefCell, io::Write, rc::Rc};
 
 use super::{StmtAst, StmtParseError, StmtParser};
-use crate::{
-    env::RuntimeError, function::LoxFunction, literal::LoxValue, mac::tt, token::Token, Env,
-    Runnable,
-};
+use crate::{env::RuntimeError, literal::LoxValue, mac::tt, token::Token, Env, Runnable};
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct FunctionDef<'a> {
@@ -15,13 +12,7 @@ pub(crate) struct FunctionDef<'a> {
 
 impl FunctionDef<'_> {
     fn into_lox_function(&self) -> LoxValue {
-        let lox_function = LoxFunction {
-            name: self.name.clone(),
-            arguments: self.arguments.clone(),
-            body: self.body.clone(),
-        };
-
-        lox_function.into()
+        todo!("Implement function")
     }
 }
 

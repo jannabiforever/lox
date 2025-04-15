@@ -44,4 +44,8 @@ impl<'a> Evaluatable for Assign<'a> {
             Err(RuntimeError::UndefinedVariable(name.src.to_string()))
         }
     }
+
+    fn line(&self) -> usize {
+        self.assignee.line()
+    }
 }

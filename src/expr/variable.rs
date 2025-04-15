@@ -39,4 +39,8 @@ impl Evaluatable for Variable<'_> {
             Err(RuntimeError::UndefinedVariable(self.var.src.to_string()))
         }
     }
+
+    fn line(&self) -> usize {
+        self.var.line
+    }
 }

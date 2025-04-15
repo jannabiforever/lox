@@ -49,7 +49,7 @@ impl Runnable for StmtAst<'_> {
             StmtAst::If(if_stmt) => if_stmt.run(env),
             StmtAst::While(while_stmt) => while_stmt.run(env),
             StmtAst::For(for_stmt) => for_stmt.run(env),
-            StmtAst::FunctionDef(function_def) => function_def.run(env),
+            StmtAst::FunctionDef(_) => todo!("Implement function"),
             StmtAst::Return(return_stmt) => return_stmt.run(env),
         }
     }

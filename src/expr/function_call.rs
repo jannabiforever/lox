@@ -83,7 +83,11 @@ impl Evaluatable for FunctionCall<'_> {
         match self.callee.eval(env.clone())? {
             LoxValue::Literal(l) => Err(RuntimeError::InvalidCallTarget(l.to_string())),
             LoxValue::RustFunction(rf) => rf.call(arguments, env.clone()),
-            LoxValue::LoxFunction(lf) => lf.call(arguments, env.clone()),
+            // LoxValue::LoxFunction(lf) => lf.call(arguments, env.clone()),
         }
+    }
+
+    fn line(&self) -> usize {
+        self.callee.line()
     }
 }

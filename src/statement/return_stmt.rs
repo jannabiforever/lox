@@ -15,7 +15,14 @@ impl Runnable for Return<'_> {
         if env.borrow().is_global() {
             return Err(RuntimeError::ReturnAtGlobal);
         }
-        let value = self.expr.eval(env.clone())?;
+
+        let value = self
+            .expr
+            .as_ref()
+            .map(|expr| expr.eval(env.clone()))
+            .transpose()?
+            .unwrap_or_default();
+
         Ok(Some(value))
     }
 }

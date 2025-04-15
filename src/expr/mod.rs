@@ -45,7 +45,7 @@ impl Evaluatable for ExprAst<'_> {
         match self {
             Self::Assign(v) => v.eval(env),
             Self::Binary(v) => v.eval(env),
-            Self::FieldCall(_) => todo!(),
+            Self::FieldCall(_) => todo!("Implement Class"),
             Self::FunctionCall(v) => v.eval(env),
             Self::Grouping(v) => v.eval(env),
             Self::LiteralExpr(v) => v.eval(env),
@@ -53,14 +53,18 @@ impl Evaluatable for ExprAst<'_> {
             Self::Variable(v) => v.eval(env),
         }
     }
-}
 
-impl Evaluatable for Option<ExprAst<'_>> {
-    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
-        self.as_ref()
-            .map(|expr| expr.eval(env))
-            .transpose()
-            .map(|s| s.unwrap_or_default())
+    fn line(&self) -> usize {
+        match self {
+            Self::Assign(v) => v.line(),
+            Self::Binary(v) => v.line(),
+            Self::FieldCall(_) => todo!("Implement Class"),
+            Self::FunctionCall(v) => v.line(),
+            Self::Grouping(v) => v.line(),
+            Self::LiteralExpr(v) => v.line(),
+            Self::Unary(v) => v.line(),
+            Self::Variable(v) => v.line(),
+        }
     }
 }
 

@@ -9,8 +9,7 @@ use std::{
 use crate::{
     env::RuntimeError,
     literal::{Literal, LoxValue, Number},
-    statement::{Return, StmtAst},
-    Env, Evaluatable, Runnable,
+    Env,
 };
 
 pub(crate) trait Callable {
@@ -65,6 +64,7 @@ impl fmt::Display for RustFunction {
     }
 }
 
+#[allow(dead_code)]
 pub(crate) static CLOCK: LoxValue = LoxValue::RustFunction(RustFunction {
     name: "clock",
     arguments: vec![],
@@ -92,39 +92,40 @@ fn clock() -> LoxValue {
     LoxValue::Literal(Literal::Number(Number(elapsed_secs_from_epoch)))
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub(crate) struct LoxFunction {
-    pub(crate) name: String,
-    pub(crate) arguments: Vec<String>,
-    pub(crate) body: Vec<StmtAst>,
-}
+// TODO: Implement LoxFunction
+// #[derive(Debug, Clone, PartialEq)]
+// pub(crate) struct LoxFunction {
+//     pub(crate) name: String,
+//     pub(crate) arguments: Vec<String>,
+//     pub(crate) body: Vec<StmtAst>,
+// }
 
-impl Callable for LoxFunction {
-    fn argument_names(&self) -> Vec<&str> {
-        self.arguments.iter().map(|s| s.as_str()).collect()
-    }
+// impl Callable for LoxFunction {
+//     fn argument_names(&self) -> Vec<&str> {
+//         self.arguments.iter().map(|s| s.as_str()).collect()
+//     }
 
-    fn run_body<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
-        for stmt in self.body.iter() {
-            match stmt {
-                StmtAst::Return(Return { expr: inner }) => {
-                    let value = inner.eval(env)?;
-                    return Ok(value);
-                }
-                rest => {
-                    if let Some(value) = rest.run(env.clone())? {
-                        return Ok(value);
-                    }
-                }
-            }
-        }
+//     fn run_body<W: Write>(&self, env: Rc<RefCell<Env<W>>>) ->
+// Result<LoxValue, RuntimeError> {         for stmt in self.body.iter() {
+//             match stmt {
+//                 StmtAst::Return(Return { expr: inner }) => {
+//                     let value = inner.eval(env)?;
+//                     return Ok(value);
+//                 }
+//                 rest => {
+//                     if let Some(value) = rest.run(env.clone())? {
+//                         return Ok(value);
+//                     }
+//                 }
+//             }
+//         }
 
-        Ok(LoxValue::Literal(Literal::Nil))
-    }
-}
+//         Ok(LoxValue::Literal(Literal::Nil))
+//     }
+// }
 
-impl fmt::Display for LoxFunction {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "<fn {}>", self.name)
-    }
-}
+// impl fmt::Display for LoxFunction {
+//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+//         write!(f, "<fn {}>", self.name)
+//     }
+// }

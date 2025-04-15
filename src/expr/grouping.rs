@@ -46,4 +46,8 @@ impl Evaluatable for Grouping<'_> {
     fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
         self.inner.eval(env)
     }
+
+    fn line(&self) -> usize {
+        self.inner.line()
+    }
 }

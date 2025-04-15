@@ -1,6 +1,11 @@
 use std::{cell::RefCell, collections::HashMap, io::Write, process::ExitCode, rc::Rc};
 
-use crate::{error::IntoLoxError, function::CLOCK, literal::LoxValue, rc_rc};
+use crate::{
+    error::{IntoLoxError, LoxError},
+    literal::LoxValue,
+    rc_rc,
+};
+// use crate::function::CLOCK,
 
 /// Environment, which holds every variable-value bindings and reference to
 /// global stdout.
@@ -19,7 +24,7 @@ impl<W: Write> Env<W> {
             scope: HashMap::new()
         });
 
-        env.borrow_mut().set("clock", CLOCK.clone());
+        // env.borrow_mut().set("clock", CLOCK.clone());
         env
     }
 
@@ -72,6 +77,19 @@ impl<W: Write> Env<W> {
 pub(crate) trait Evaluatable {
     // Required methods
     fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError>;
+
+    /// Every evaluatable could return Err(RuntimeError).
+    /// Report errors generously, we need to know where.
+    fn line(&self) -> usize;
+
+    // Provided methods
+    fn eval_lox<W: Write>(
+        &self,
+        env: Rc<RefCell<Env<W>>>,
+    ) -> Result<LoxValue, LoxError<RuntimeError>> {
+        let line = self.line();
+        self.eval(env).map_err(|err| err.error(line))
+    }
 }
 
 /// Trait for run statements.
