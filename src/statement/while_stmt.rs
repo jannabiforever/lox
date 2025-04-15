@@ -4,12 +4,12 @@ use super::{RuntimeError, StmtAst, StmtParseError, StmtParser};
 use crate::{env::Runnable, expr::ExprAst, literal::LoxValue, Env, Evaluatable};
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct While {
-    condition: ExprAst,
-    body: Box<StmtAst>,
+pub struct While<'a> {
+    condition: ExprAst<'a>,
+    body: Box<StmtAst<'a>>,
 }
 
-impl Runnable for While {
+impl Runnable for While<'_> {
     fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
         let While { condition, body } = self;
 
@@ -26,8 +26,8 @@ impl Runnable for While {
     }
 }
 
-impl StmtParser<'_, '_> {
-    pub(super) fn parse_while(&mut self) -> Result<While, StmtParseError> {
+impl<'a> StmtParser<'a, '_> {
+    pub(super) fn parse_while(&mut self) -> Result<While<'a>, StmtParseError> {
         self.token_stream.next(); // Consume 'while'
         self.expect_opening_paren()?;
         let condition = self.parse_following_expression()?;

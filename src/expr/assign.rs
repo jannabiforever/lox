@@ -1,25 +1,25 @@
 use std::{cell::RefCell, fmt, io::Write, rc::Rc};
 
-use super::{binding_power::BindingPower, ExprAst, ExprParseError};
+use super::{binding_power::BindingPower, ExprAst, ExprParseError, ExprParser};
 use crate::{
     env::{Env, Evaluatable, RuntimeError},
     literal::LoxValue,
 };
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Assign {
-    pub assignee: Box<ExprAst>,
-    pub value: Box<ExprAst>,
+pub struct Assign<'t> {
+    pub assignee: Box<ExprAst<'t>>,
+    pub value: Box<ExprAst<'t>>,
 }
 
-impl fmt::Display for Assign {
+impl fmt::Display for Assign<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "(= {} {})", self.assignee, self.value)
     }
 }
 
-impl super::ExprParser<'_, '_> {
-    pub(super) fn parse_assign(&mut self, left: ExprAst) -> Result<Assign, ExprParseError> {
+impl<'t> ExprParser<'t, '_> {
+    pub(super) fn parse_assign(&mut self, left: ExprAst<'t>) -> Result<Assign<'t>, ExprParseError> {
         self.token_stream.next(); // consume the '='
 
         let right = self.parse_within_binding_power(BindingPower::AssignRight)?;
@@ -30,18 +30,18 @@ impl super::ExprParser<'_, '_> {
     }
 }
 
-impl Evaluatable for Assign {
+impl<'t> Evaluatable for Assign<'t> {
     fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
         let name = match *self.assignee.clone() {
-            ExprAst::Variable(var) => var.name,
+            ExprAst::Variable(var) => var.var,
             rest => return Err(RuntimeError::InvalidAssignmentTarget(rest.to_string())),
         };
         let value = (*self.value).eval(env.clone())?;
 
-        if env.borrow_mut().update(&name, value.clone()) {
+        if env.borrow_mut().update(name.src, value.clone()) {
             Ok(value)
         } else {
-            Err(RuntimeError::UndefinedVariable(name))
+            Err(RuntimeError::UndefinedVariable(name.src.to_string()))
         }
     }
 }

@@ -9,10 +9,10 @@ use crate::{
 };
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Binary {
-    pub left: Box<ExprAst>,
+pub struct Binary<'a> {
+    pub left: Box<ExprAst<'a>>,
     pub op: BinaryOp,
-    pub right: Box<ExprAst>,
+    pub right: Box<ExprAst<'a>>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -186,13 +186,13 @@ impl fmt::Display for BinaryOp {
     }
 }
 
-impl fmt::Display for Binary {
+impl fmt::Display for Binary<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "({} {} {})", self.op, self.left, self.right)
     }
 }
 
-impl super::ExprParser<'_, '_> {
+impl<'a> super::ExprParser<'a, '_> {
     /// If following token is a binary operator,
     /// parse the right operand and return the binary expression,
     /// consuming the operator and the right operand.
@@ -200,7 +200,7 @@ impl super::ExprParser<'_, '_> {
     /// Otherwise, it doesn't consume anything and returns `None`.
     pub(super) fn try_parse_binary(
         &mut self,
-        lhs: ExprAst,
+        lhs: ExprAst<'a>,
     ) -> Option<Result<Binary, ExprParseError>> {
         let op = self.eat_binary_op()?;
 
@@ -227,7 +227,7 @@ impl super::ExprParser<'_, '_> {
     }
 }
 
-impl Evaluatable for Binary {
+impl Evaluatable for Binary<'_> {
     fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
         let Self { left, op, right } = self.clone();
         let function = op.get_binary_function();

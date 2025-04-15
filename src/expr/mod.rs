@@ -25,22 +25,22 @@ use crate::{
 };
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum ExprAst {
-    Assign(Assign),
-    Binary(Binary),
-    FieldCall(FieldCall),
-    FunctionCall(FunctionCall),
-    Grouping(Grouping),
+pub enum ExprAst<'a> {
+    Assign(Assign<'a>),
+    Binary(Binary<'a>),
+    FieldCall(FieldCall<'a>),
+    FunctionCall(FunctionCall<'a>),
+    Grouping(Grouping<'a>),
     Literal(Literal),
-    Unary(Unary),
-    Variable(Variable),
+    Unary(Unary<'a>),
+    Variable(Variable<'a>),
 }
 
 impl_from!(
     ExprAst: Assign, Binary, Grouping, FieldCall, FunctionCall, Literal, Unary, Variable
 );
 
-impl Evaluatable for ExprAst {
+impl Evaluatable for ExprAst<'_> {
     fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
         match self {
             Self::Assign(v) => v.eval(env),
@@ -55,7 +55,7 @@ impl Evaluatable for ExprAst {
     }
 }
 
-impl Evaluatable for Option<ExprAst> {
+impl Evaluatable for Option<ExprAst<'_>> {
     fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
         self.as_ref()
             .map(|expr| expr.eval(env))
@@ -64,7 +64,7 @@ impl Evaluatable for Option<ExprAst> {
     }
 }
 
-impl fmt::Display for ExprAst {
+impl fmt::Display for ExprAst<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Assign(v) => write!(f, "{}", v),
@@ -79,26 +79,30 @@ impl fmt::Display for ExprAst {
     }
 }
 
-pub(crate) struct ExprParser<'a, 'b> {
-    token_stream: &'b mut TokenStream<'a>,
+pub(crate) struct ExprParser<'a, 'mr> {
+    token_stream: &'mr mut TokenStream<'a>,
 }
 
-impl<'a, 'b> ExprParser<'a, 'b> {
-    pub(crate) fn new(token_stream: &'b mut TokenStream<'a>) -> Self {
+impl<'a, 'mr> ExprParser<'a, 'mr> {
+    pub(crate) fn new(token_stream: &'mr mut TokenStream<'a>) -> Self {
         Self { token_stream }
     }
 
-    pub(crate) fn parse_with_line(&mut self) -> Result<ExprAst, LoxError<ExprParseError>> {
-        self.parse().map_err(|e| e.error(self.token_stream.line()))
+    pub(crate) fn parse_with_line(&mut self) -> Result<ExprAst<'a>, LoxError<ExprParseError>> {
+        let line = self.token_stream.line();
+        self.parse().map_err(|e| e.error(line))
     }
 
     /// Parse within the lowest binding power.
     /// This is the entry point for parsing expressions.
-    pub(crate) fn parse(&mut self) -> Result<ExprAst, ExprParseError> {
+    pub(crate) fn parse(&mut self) -> Result<ExprAst<'a>, ExprParseError> {
         self.parse_within_binding_power(BindingPower::default())
     }
 
-    fn parse_within_binding_power(&mut self, bp: BindingPower) -> Result<ExprAst, ExprParseError> {
+    fn parse_within_binding_power(
+        &mut self,
+        bp: BindingPower,
+    ) -> Result<ExprAst<'a>, ExprParseError> {
         let mut left = self.parse_start_of_expr_ast()?;
         loop {
             let token_type = self.token_stream.peek().token_type;
@@ -138,7 +142,7 @@ impl<'a, 'b> ExprParser<'a, 'b> {
 
     /// For the start of an expression, only literal, grouping, and unary are
     /// allowed. e.g. `42`, `(42)`, `!42`, `-42`
-    fn parse_start_of_expr_ast(&mut self) -> Result<ExprAst, ExprParseError> {
+    fn parse_start_of_expr_ast(&mut self) -> Result<ExprAst<'a>, ExprParseError> {
         if let Some(end_node) = self.try_parse_end_node() {
             end_node
         } else if let Some(unary) = self.try_parse_unary() {
@@ -150,7 +154,7 @@ impl<'a, 'b> ExprParser<'a, 'b> {
     }
 
     /// End node := Literal | Grouping
-    fn try_parse_end_node(&mut self) -> Option<Result<ExprAst, ExprParseError>> {
+    fn try_parse_end_node(&mut self) -> Option<Result<ExprAst<'a>, ExprParseError>> {
         if let Some(literal) = self.parse_literal() {
             Some(literal.map(Into::into))
         } else if let Some(variable) = self.try_parse_variable() {

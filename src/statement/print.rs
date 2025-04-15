@@ -7,11 +7,11 @@ use crate::{
 };
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct Print {
-    pub(crate) expr: ExprAst,
+pub(crate) struct Print<'a> {
+    pub(crate) expr: ExprAst<'a>,
 }
 
-impl Runnable for Print {
+impl Runnable for Print<'_> {
     fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
         let value = self.expr.eval(env.clone())?;
         writeln!(env.borrow().stdout.borrow_mut(), "{value}").unwrap();
@@ -19,8 +19,8 @@ impl Runnable for Print {
     }
 }
 
-impl StmtParser<'_, '_> {
-    pub(super) fn parse_print(&mut self) -> Result<Print, StmtParseError> {
+impl<'a> StmtParser<'a, '_> {
+    pub(super) fn parse_print(&mut self) -> Result<Print<'a>, StmtParseError> {
         self.token_stream.next(); // consume the 'print' token.
         let expr = self.parse_following_expression()?;
         self.expect_semicolon()?;

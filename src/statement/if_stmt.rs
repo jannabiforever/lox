@@ -4,13 +4,13 @@ use super::{RuntimeError, StmtAst, StmtParseError, StmtParser};
 use crate::{env::Runnable, expr::ExprAst, literal::LoxValue, mac::tt, Env, Evaluatable};
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct If {
-    condition: ExprAst,
-    body: Box<StmtAst>,
-    else_body: Option<Box<StmtAst>>,
+pub struct If<'a> {
+    condition: ExprAst<'a>,
+    body: Box<StmtAst<'a>>,
+    else_body: Option<Box<StmtAst<'a>>>,
 }
 
-impl Runnable for If {
+impl Runnable for If<'_> {
     fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
         let If {
             condition,
@@ -34,8 +34,8 @@ impl Runnable for If {
     }
 }
 
-impl StmtParser<'_, '_> {
-    pub(super) fn parse_if(&mut self) -> Result<If, StmtParseError> {
+impl<'a> StmtParser<'a, '_> {
+    pub(super) fn parse_if(&mut self) -> Result<If<'a>, StmtParseError> {
         self.token_stream.next(); // Consume if.
         self.expect_opening_paren()?;
         let condition = self.parse_following_expression()?;

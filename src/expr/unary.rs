@@ -9,12 +9,12 @@ use crate::{
 };
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Unary {
+pub struct Unary<'a> {
     pub op: UnaryOp,
-    pub right: Box<ExprAst>,
+    pub right: Box<ExprAst<'a>>,
 }
 
-impl fmt::Display for Unary {
+impl fmt::Display for Unary<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "({} {})", self.op, self.right)
     }
@@ -68,7 +68,7 @@ impl super::ExprParser<'_, '_> {
     }
 }
 
-impl Evaluatable for Unary {
+impl Evaluatable for Unary<'_> {
     fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
         let right = self.right.eval(env.clone())?;
 

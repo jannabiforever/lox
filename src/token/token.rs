@@ -2,7 +2,7 @@ use std::fmt;
 
 use crate::{literal::Number, mac::tt};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Token<'a> {
     /// The reference to the actual source.
     /// Be careful with [`TokenType::String`], because it contains the quotes.

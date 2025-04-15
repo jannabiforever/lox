@@ -4,19 +4,22 @@ use super::{ExprAst, ExprParseError, ExprParser};
 use crate::mac::tt;
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct FieldCall {
-    pub object: Box<ExprAst>,
+pub struct FieldCall<'a> {
+    pub object: Box<ExprAst<'a>>,
     pub field: String,
 }
 
-impl fmt::Display for FieldCall {
+impl fmt::Display for FieldCall<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}.{}", self.object, self.field)
     }
 }
 
-impl ExprParser<'_, '_> {
-    pub(super) fn parse_field_call(&mut self, left: ExprAst) -> Result<FieldCall, ExprParseError> {
+impl<'a> ExprParser<'a, '_> {
+    pub(super) fn parse_field_call(
+        &mut self,
+        left: ExprAst<'a>,
+    ) -> Result<FieldCall<'a>, ExprParseError> {
         self.token_stream.next();
         let field = self
             .token_stream

@@ -10,15 +10,15 @@ use crate::{
 };
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct VarDecl {
-    pub(crate) var: ExprAst,
-    pub(crate) value: Option<ExprAst>,
+pub(crate) struct VarDecl<'a> {
+    pub(crate) var: ExprAst<'a>,
+    pub(crate) value: Option<ExprAst<'a>>,
 }
 
-impl Runnable for VarDecl {
+impl Runnable for VarDecl<'_> {
     fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
         let var = match &self.var {
-            ExprAst::Variable(variable) => Ok(variable.name.clone()),
+            ExprAst::Variable(variable) => Ok(variable.var.clone()),
             rest => Err(RuntimeError::InvalidAssignmentTarget(rest.to_string())),
         }?;
 
@@ -27,13 +27,13 @@ impl Runnable for VarDecl {
             None => Literal::Nil.into(),
         };
 
-        env.borrow_mut().set(&var, value);
+        env.borrow_mut().set(&var.src, value);
         Ok(None)
     }
 }
 
-impl StmtParser<'_, '_> {
-    pub fn parse_var_decl(&mut self) -> Result<VarDecl, StmtParseError> {
+impl<'a> StmtParser<'a, '_> {
+    pub fn parse_var_decl(&mut self) -> Result<VarDecl<'a>, StmtParseError> {
         self.token_stream.next(); // consume the 'var' token.
         let following = self.parse_following_expression()?;
 

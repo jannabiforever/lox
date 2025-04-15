@@ -8,11 +8,11 @@ use crate::{
 };
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Grouping {
-    pub inner: Box<ExprAst>,
+pub struct Grouping<'a> {
+    pub inner: Box<ExprAst<'a>>,
 }
 
-impl fmt::Display for Grouping {
+impl fmt::Display for Grouping<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "(group {})", self.inner)
     }
@@ -42,7 +42,7 @@ impl super::ExprParser<'_, '_> {
     }
 }
 
-impl Evaluatable for Grouping {
+impl Evaluatable for Grouping<'_> {
     fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
         self.inner.eval(env)
     }

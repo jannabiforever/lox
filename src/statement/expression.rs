@@ -4,11 +4,11 @@ use super::{RuntimeError, StmtParseError, StmtParser};
 use crate::{env::Runnable, expr::ExprAst, literal::LoxValue, Env, Evaluatable};
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct Expression {
-    pub(crate) expr: ExprAst,
+pub(crate) struct Expression<'a> {
+    pub(crate) expr: ExprAst<'a>,
 }
 
-impl Runnable for Expression {
+impl Runnable for Expression<'_> {
     fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
         self.expr.eval(env)?;
         Ok(None)

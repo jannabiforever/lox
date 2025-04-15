@@ -4,11 +4,11 @@ use super::{RuntimeError, StmtAst, StmtParseError, StmtParser};
 use crate::{env::Runnable, literal::LoxValue, mac::tt, Env};
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct Block {
-    pub(crate) inner: Vec<StmtAst>,
+pub(crate) struct Block<'a> {
+    pub(crate) inner: Vec<StmtAst<'a>>,
 }
 
-impl Runnable for Block {
+impl Runnable for Block<'_> {
     fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
         let new_env = Env::from_parent(env);
         for stmt in &self.inner {
@@ -20,8 +20,8 @@ impl Runnable for Block {
     }
 }
 
-impl StmtParser<'_, '_> {
-    pub(super) fn parse_block(&mut self) -> Result<Block, StmtParseError> {
+impl<'a> StmtParser<'a, '_> {
+    pub(super) fn parse_block(&mut self) -> Result<Block<'a>, StmtParseError> {
         let mut inner = Vec::new();
 
         self.token_stream.next(); // Consume '{'.

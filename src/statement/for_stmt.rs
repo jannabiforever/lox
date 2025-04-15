@@ -4,14 +4,14 @@ use super::{RuntimeError, StmtAst, StmtParseError, StmtParser};
 use crate::{env::Runnable, expr::ExprAst, literal::LoxValue, mac::tt, Env, Evaluatable};
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct For {
-    initializer: Option<Box<StmtAst>>,
-    condition: Option<ExprAst>,
-    increment: Option<ExprAst>,
-    body: Box<StmtAst>,
+pub struct For<'a> {
+    initializer: Option<Box<StmtAst<'a>>>,
+    condition: Option<ExprAst<'a>>,
+    increment: Option<ExprAst<'a>>,
+    body: Box<StmtAst<'a>>,
 }
 
-impl Runnable for For {
+impl Runnable for For<'_> {
     fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
         let For {
             initializer,
@@ -45,8 +45,8 @@ impl Runnable for For {
     }
 }
 
-impl StmtParser<'_, '_> {
-    pub(super) fn parse_for(&mut self) -> Result<For, StmtParseError> {
+impl<'a> StmtParser<'a, '_> {
+    pub(super) fn parse_for(&mut self) -> Result<For<'a>, StmtParseError> {
         self.token_stream.next(); // Consume 'for'.
         self.expect_opening_paren()?;
 

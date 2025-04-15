@@ -27,19 +27,19 @@ use crate::{
 
 /// Statement AST.
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) enum StmtAst {
-    Expression(Expression),
-    Print(Print),
-    VarDecl(VarDecl),
-    Block(Block),
-    If(If),
-    While(While),
-    For(For),
-    FunctionDef(FunctionDef),
-    Return(Return),
+pub(crate) enum StmtAst<'a> {
+    Expression(Expression<'a>),
+    Print(Print<'a>),
+    VarDecl(VarDecl<'a>),
+    Block(Block<'a>),
+    If(If<'a>),
+    While(While<'a>),
+    For(For<'a>),
+    FunctionDef(FunctionDef<'a>),
+    Return(Return<'a>),
 }
 
-impl Runnable for StmtAst {
+impl Runnable for StmtAst<'_> {
     fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
         match self {
             StmtAst::Print(print) => print.run(env),
@@ -60,19 +60,19 @@ impl_from!(StmtAst: Expression, Print, VarDecl, Block, If, While, For, FunctionD
 /// Parser for statement AST.
 /// Generic 'a is for the source's lifetime.
 /// Generic 'b is for the lifetime of mutable reference of token stream.
-pub(crate) struct StmtParser<'a, 'b> {
-    pub(crate) token_stream: &'b mut TokenStream<'a>,
+pub(crate) struct StmtParser<'a, 'mr> {
+    pub(crate) token_stream: &'mr mut TokenStream<'a>,
 }
 
-impl<'a, 'b> StmtParser<'a, 'b> {
-    pub fn new(token_stream: &'b mut TokenStream<'a>) -> Self {
+impl<'a, 'mr> StmtParser<'a, 'mr> {
+    pub fn new(token_stream: &'mr mut TokenStream<'a>) -> Self {
         StmtParser { token_stream }
     }
 }
 
-impl StmtParser<'_, '_> {
+impl<'a> StmtParser<'a, '_> {
     /// Parses whole source code into vector of AST.
-    pub(crate) fn parse_all(mut self) -> Result<Vec<StmtAst>, LoxError<StmtParseError>> {
+    pub(crate) fn parse_all(mut self) -> Result<Vec<StmtAst<'a>>, LoxError<StmtParseError>> {
         let mut statements = Vec::new();
         while !self.token_stream.expired() {
             let stmt = self
@@ -84,7 +84,7 @@ impl StmtParser<'_, '_> {
     }
 
     /// Parses the following AST.
-    pub(crate) fn parse(&mut self) -> Result<StmtAst, StmtParseError> {
+    pub(crate) fn parse(&mut self) -> Result<StmtAst<'a>, StmtParseError> {
         match self.token_stream.peek().token_type {
             tt!("print") => self.parse_print().map(Into::into),
             tt!("var") => self.parse_var_decl().map(Into::into),
@@ -100,7 +100,7 @@ impl StmtParser<'_, '_> {
 
     /// Lent its own token stream's mutable reference to expression parser,
     /// and parse following expression.
-    fn parse_following_expression(&mut self) -> Result<ExprAst, StmtParseError> {
+    fn parse_following_expression(&mut self) -> Result<ExprAst<'a>, StmtParseError> {
         ExprParser::new(self.token_stream)
             .parse()
             .map_err(Into::into)

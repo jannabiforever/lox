@@ -5,42 +5,38 @@ use crate::{
     env::{Env, Evaluatable, RuntimeError},
     literal::LoxValue,
     mac::tt,
+    token::Token,
 };
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct Variable {
-    pub(crate) name: String,
+pub(crate) struct Variable<'t> {
+    pub(crate) var: &'t Token<'t>,
 }
 
-impl fmt::Display for Variable {
+impl fmt::Display for Variable<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.name)
+        write!(f, "{}", self.var)
     }
 }
 
 impl ExprParser<'_, '_> {
     pub(super) fn try_parse_variable(&mut self) -> Option<Variable> {
         let peeked = self.token_stream.peek();
-        let src = peeked.src;
-        match peeked.token_type {
-            tt!("identifier") => {
-                self.token_stream.next();
-                Some(Variable {
-                    name: src.to_string(),
-                })
-            }
+        match &peeked.token_type {
+            tt!("identifier") => Some(Variable {
+                var: self.token_stream.next(),
+            }),
             _ => None,
         }
     }
 }
 
-impl Evaluatable for Variable {
+impl Evaluatable for Variable<'_> {
     fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
-        let name = &self.name;
-        if let Some(value) = env.borrow().get(name) {
+        if let Some(value) = env.borrow().get(self.var.src) {
             Ok(value.clone())
         } else {
-            Err(RuntimeError::UndefinedVariable(name.to_string()))
+            Err(RuntimeError::UndefinedVariable(self.var.src.to_string()))
         }
     }
 }

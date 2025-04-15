@@ -6,11 +6,11 @@ use crate::{
 };
 
 #[derive(Clone, Debug, PartialEq)]
-pub(crate) struct Return {
-    pub(crate) expr: Option<ExprAst>,
+pub(crate) struct Return<'a> {
+    pub(crate) expr: Option<ExprAst<'a>>,
 }
 
-impl Runnable for Return {
+impl Runnable for Return<'_> {
     fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
         if env.borrow().is_global() {
             return Err(RuntimeError::ReturnAtGlobal);

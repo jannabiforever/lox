@@ -7,13 +7,13 @@ use crate::{
 };
 
 #[derive(Clone, Debug, PartialEq)]
-pub(crate) struct FunctionDef {
+pub(crate) struct FunctionDef<'a> {
     name: String,
     arguments: Vec<String>,
-    body: Vec<StmtAst>,
+    body: Vec<StmtAst<'a>>,
 }
 
-impl FunctionDef {
+impl FunctionDef<'_> {
     fn into_lox_function(&self) -> LoxValue {
         let lox_function = LoxFunction {
             name: self.name.clone(),
@@ -25,7 +25,7 @@ impl FunctionDef {
     }
 }
 
-impl Runnable for FunctionDef {
+impl Runnable for FunctionDef<'_> {
     fn run<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<Option<LoxValue>, RuntimeError> {
         let lox_function = self.into_lox_function();
         env.borrow_mut().set(&self.name, lox_function);

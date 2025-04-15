@@ -143,7 +143,13 @@ pub(crate) enum LoxValue {
     LoxFunction(LoxFunction),
 }
 
-impl_from!(LoxValue: Literal, RustFunction, LoxFunction);
+impl_from!(LoxValue: Literal, RustFunction);
+
+impl<'a> From<LoxFunction> for LoxValue {
+    fn from(value: LoxFunction) -> Self {
+        Self::LoxFunction(value)
+    }
+}
 
 impl LoxValue {
     pub fn is_literal_and<F: Fn(&Literal) -> bool>(&self, f: F) -> bool {

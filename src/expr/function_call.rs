@@ -9,12 +9,12 @@ use crate::{
 };
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct FunctionCall {
-    pub callee: Box<ExprAst>,
-    pub arguments: Vec<ExprAst>,
+pub struct FunctionCall<'a> {
+    pub callee: Box<ExprAst<'a>>,
+    pub arguments: Vec<ExprAst<'a>>,
 }
 
-impl fmt::Display for FunctionCall {
+impl fmt::Display for FunctionCall<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}(", self.callee)?;
         for (i, arg) in self.arguments.iter().enumerate() {
@@ -27,11 +27,11 @@ impl fmt::Display for FunctionCall {
     }
 }
 
-impl ExprParser<'_, '_> {
+impl<'a> ExprParser<'a, '_> {
     /// lhs := the function
     pub(super) fn parse_function_call(
         &mut self,
-        lhs: ExprAst,
+        lhs: ExprAst<'a>,
     ) -> Result<FunctionCall, ExprParseError> {
         self.token_stream.next(); // consume the '('
         let mut arguments = Vec::new();
@@ -72,7 +72,7 @@ impl ExprParser<'_, '_> {
     }
 }
 
-impl Evaluatable for FunctionCall {
+impl Evaluatable for FunctionCall<'_> {
     fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
         let arguments = self
             .arguments
