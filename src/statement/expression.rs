@@ -15,8 +15,8 @@ impl Runnable for Expression<'_> {
     }
 }
 
-impl StmtParser<'_, '_> {
-    pub(super) fn parse_expression_stmt(&mut self) -> Result<Expression, StmtParseError> {
+impl<'a> StmtParser<'a, '_> {
+    pub(super) fn parse_expression_stmt(&mut self) -> Result<Expression<'a>, StmtParseError> {
         let expr = self.parse_following_expression()?;
         self.expect_semicolon()?;
         Ok(Expression { expr })

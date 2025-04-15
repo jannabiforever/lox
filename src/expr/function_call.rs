@@ -32,7 +32,7 @@ impl<'a> ExprParser<'a, '_> {
     pub(super) fn parse_function_call(
         &mut self,
         lhs: ExprAst<'a>,
-    ) -> Result<FunctionCall, ExprParseError> {
+    ) -> Result<FunctionCall<'a>, ExprParseError> {
         self.token_stream.next(); // consume the '('
         let mut arguments = Vec::new();
 

@@ -16,6 +16,15 @@ macro_rules! impl_from {
             }
         )*
     };
+    ( $a:lifetime $target:ident : $( $variant:ident ),* ) => {
+        $(
+            impl<$a> From<$variant<$a>> for $target<$a> {
+                fn from(value: $variant<$a>) -> Self {
+                    Self::$variant(value)
+                }
+            }
+        )*
+    }
 }
 
 macro_rules! tt {

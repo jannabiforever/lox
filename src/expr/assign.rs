@@ -7,9 +7,9 @@ use crate::{
 };
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Assign<'t> {
-    pub assignee: Box<ExprAst<'t>>,
-    pub value: Box<ExprAst<'t>>,
+pub struct Assign<'a> {
+    pub assignee: Box<ExprAst<'a>>,
+    pub value: Box<ExprAst<'a>>,
 }
 
 impl fmt::Display for Assign<'_> {
@@ -18,8 +18,8 @@ impl fmt::Display for Assign<'_> {
     }
 }
 
-impl<'t> ExprParser<'t, '_> {
-    pub(super) fn parse_assign(&mut self, left: ExprAst<'t>) -> Result<Assign<'t>, ExprParseError> {
+impl<'a> ExprParser<'a, '_> {
+    pub(super) fn parse_assign(&mut self, left: ExprAst<'a>) -> Result<Assign<'a>, ExprParseError> {
         self.token_stream.next(); // consume the '='
 
         let right = self.parse_within_binding_power(BindingPower::AssignRight)?;
@@ -30,7 +30,7 @@ impl<'t> ExprParser<'t, '_> {
     }
 }
 
-impl<'t> Evaluatable for Assign<'t> {
+impl<'a> Evaluatable for Assign<'a> {
     fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
         let name = match *self.assignee.clone() {
             ExprAst::Variable(var) => var.var,

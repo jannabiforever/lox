@@ -9,8 +9,8 @@ use crate::{
 };
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct Variable<'t> {
-    pub(crate) var: &'t Token<'t>,
+pub(crate) struct Variable<'a> {
+    pub(crate) var: &'a Token<'a>,
 }
 
 impl fmt::Display for Variable<'_> {
@@ -19,8 +19,8 @@ impl fmt::Display for Variable<'_> {
     }
 }
 
-impl ExprParser<'_, '_> {
-    pub(super) fn try_parse_variable(&mut self) -> Option<Variable> {
+impl<'a> ExprParser<'a, '_> {
+    pub(super) fn try_parse_variable(&mut self) -> Option<Variable<'a>> {
         let peeked = self.token_stream.peek();
         match &peeked.token_type {
             tt!("identifier") => Some(Variable {

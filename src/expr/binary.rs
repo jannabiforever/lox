@@ -201,7 +201,7 @@ impl<'a> super::ExprParser<'a, '_> {
     pub(super) fn try_parse_binary(
         &mut self,
         lhs: ExprAst<'a>,
-    ) -> Option<Result<Binary, ExprParseError>> {
+    ) -> Option<Result<Binary<'a>, ExprParseError>> {
         let op = self.eat_binary_op()?;
 
         let binding_power: (BindingPower, BindingPower) = op.into();

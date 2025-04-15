@@ -55,7 +55,7 @@ impl Runnable for StmtAst<'_> {
     }
 }
 
-impl_from!(StmtAst: Expression, Print, VarDecl, Block, If, While, For, FunctionDef, Return);
+impl_from!('a StmtAst: Expression, Print, VarDecl, Block, If, While, For, FunctionDef, Return);
 
 /// Parser for statement AST.
 /// Generic 'a is for the source's lifetime.

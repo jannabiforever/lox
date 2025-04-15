@@ -33,8 +33,8 @@ impl Runnable for FunctionDef<'_> {
     }
 }
 
-impl StmtParser<'_, '_> {
-    pub(super) fn parse_function_def(&mut self) -> Result<FunctionDef, StmtParseError> {
+impl<'a> StmtParser<'a, '_> {
+    pub(super) fn parse_function_def(&mut self) -> Result<FunctionDef<'a>, StmtParseError> {
         self.token_stream.next(); // Consume 'fun'.
         let name = self.expect_identifier()?;
 

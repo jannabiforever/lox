@@ -1,6 +1,6 @@
 use std::{cell::RefCell, fmt, io::Write, rc::Rc};
 
-use super::{binding_power::BindingPower, ExprAst, ExprParseError};
+use super::{binding_power::BindingPower, ExprAst, ExprParseError, ExprParser};
 use crate::{
     env::{Env, Evaluatable, RuntimeError},
     literal::{Literal, LoxValue},
@@ -45,10 +45,10 @@ impl fmt::Display for UnaryOp {
     }
 }
 
-impl super::ExprParser<'_, '_> {
+impl<'a> ExprParser<'a, '_> {
     /// Parse a unary expression following only if exists.
     /// And consume from unary operator(!, -) to the right operand.
-    pub(super) fn try_parse_unary(&mut self) -> Option<Result<Unary, ExprParseError>> {
+    pub(super) fn try_parse_unary(&mut self) -> Option<Result<Unary<'a>, ExprParseError>> {
         let op = self.eat_unary_op()?;
 
         let right = match self.parse_within_binding_power(BindingPower::Unary) {

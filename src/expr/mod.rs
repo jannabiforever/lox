@@ -37,8 +37,14 @@ pub enum ExprAst<'a> {
 }
 
 impl_from!(
-    ExprAst: Assign, Binary, Grouping, FieldCall, FunctionCall, Literal, Unary, Variable
+    'a ExprAst: Assign, Binary, Grouping, FieldCall, FunctionCall, Unary, Variable
 );
+
+impl From<Literal> for ExprAst<'_> {
+    fn from(value: Literal) -> Self {
+        Self::Literal(value)
+    }
+}
 
 impl Evaluatable for ExprAst<'_> {
     fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {

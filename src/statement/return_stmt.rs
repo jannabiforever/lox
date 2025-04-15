@@ -20,8 +20,8 @@ impl Runnable for Return<'_> {
     }
 }
 
-impl StmtParser<'_, '_> {
-    pub(super) fn parse_return(&mut self) -> Result<Return, StmtParseError> {
+impl<'a> StmtParser<'a, '_> {
+    pub(super) fn parse_return(&mut self) -> Result<Return<'a>, StmtParseError> {
         self.token_stream.next(); // Consume 'return'.
         let expr = if self.token_stream.peek().token_type != tt!(";") {
             Some(self.parse_following_expression()?)
