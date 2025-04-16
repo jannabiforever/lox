@@ -64,7 +64,6 @@ impl fmt::Display for RustFunction {
     }
 }
 
-#[allow(dead_code)]
 pub(crate) static CLOCK: LoxValue = LoxValue::RustFunction(RustFunction {
     name: "clock",
     arguments: vec![],

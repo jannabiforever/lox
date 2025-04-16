@@ -2,10 +2,10 @@ use std::{cell::RefCell, collections::HashMap, io::Write, process::ExitCode, rc:
 
 use crate::{
     error::{IntoLoxError, LoxError},
+    function::CLOCK,
     literal::LoxValue,
     rc_rc,
 };
-// use crate::function::CLOCK,
 
 /// Environment, which holds every variable-value bindings and reference to
 /// global stdout.
@@ -17,7 +17,6 @@ pub(crate) struct Env<W: Write> {
 
 impl<W: Write> Env<W> {
     /// Creates a global environment,
-    #[allow(clippy::let_and_return)] // TODO: assign builtins.
     pub fn new(stdout: W) -> Rc<RefCell<Self>> {
         let env = rc_rc!(Self {
             stdout: rc_rc!(stdout),
@@ -25,8 +24,7 @@ impl<W: Write> Env<W> {
             scope: HashMap::new()
         });
 
-        // TODO: assign builtins.
-        // env.borrow_mut().set("clock", CLOCK.clone());
+        env.borrow_mut().set("clock", CLOCK.clone());
         env
     }
 
