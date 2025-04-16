@@ -15,7 +15,7 @@ pub(crate) struct FunctionDef<'a> {
 }
 
 impl FunctionDef<'_> {
-    fn into_lox_function(&self) -> LoxValue {
+    fn lox_function(&self) -> LoxValue {
         todo!("Implement function")
     }
 }
@@ -25,7 +25,7 @@ impl Runnable for FunctionDef<'_> {
         &self,
         env: Rc<RefCell<Env<W>>>,
     ) -> Result<Option<LoxValue>, LoxError<RuntimeError>> {
-        let lox_function = self.into_lox_function();
+        let lox_function = self.lox_function();
         env.borrow_mut().set(&self.name, lox_function);
         Ok(None)
     }

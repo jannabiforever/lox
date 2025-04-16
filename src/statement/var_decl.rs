@@ -1,12 +1,15 @@
 use std::{cell::RefCell, io::Write, rc::Rc};
 
-use super::{RuntimeError, StmtParser};
+use super::{
+    RuntimeError::{self, *},
+    StmtParser,
+};
 use crate::{
     env::Runnable,
     error::{IntoLoxError, LoxError},
     expr::{Assign, ExprAst},
     literal::{Literal, LoxValue},
-    statement::error::StmtParseError,
+    statement::error::StmtParseError::{self, *},
     Env, Evaluatable,
 };
 
@@ -23,9 +26,7 @@ impl Runnable for VarDecl<'_> {
     ) -> Result<Option<LoxValue>, LoxError<RuntimeError>> {
         let var = match &self.var {
             ExprAst::Variable(variable) => Ok(variable.var.clone()),
-            rest => {
-                Err(RuntimeError::InvalidAssignmentTarget(rest.to_string()).error_at(self.line()))
-            }
+            rest => Err(InvalidAssignmentTarget(rest.to_string()).error_at(self.line())),
         }?;
 
         let value = match self.value.as_ref() {
@@ -33,7 +34,7 @@ impl Runnable for VarDecl<'_> {
             None => Literal::Nil.into(),
         };
 
-        env.borrow_mut().set(&var.src, value);
+        env.borrow_mut().set(var.src, value);
         Ok(None)
     }
 
@@ -62,7 +63,7 @@ impl<'a> StmtParser<'a, '_> {
                 var: *assignee.clone(),
                 value: Some(*value.clone()),
             }),
-            _ => Err(StmtParseError::InvalidVarDecl(following.to_string())),
+            _ => Err(InvalidVarDecl(following.to_string())),
         };
 
         self.expect_semicolon()?;

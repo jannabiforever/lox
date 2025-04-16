@@ -72,7 +72,7 @@ pub(crate) static CLOCK: LoxValue = LoxValue::RustFunction(RustFunction {
 
 impl Callable for RustFunction {
     fn argument_names(&self) -> Vec<&str> {
-        self.arguments.iter().map(|&s| s).collect()
+        self.arguments.to_vec()
     }
 
     fn run_body<W: Write>(&self, _: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {

@@ -17,6 +17,7 @@ pub(crate) struct Env<W: Write> {
 
 impl<W: Write> Env<W> {
     /// Creates a global environment,
+    #[allow(clippy::let_and_return)] // TODO: assign builtins.
     pub fn new(stdout: W) -> Rc<RefCell<Self>> {
         let env = rc_rc!(Self {
             stdout: rc_rc!(stdout),
@@ -24,6 +25,7 @@ impl<W: Write> Env<W> {
             scope: HashMap::new()
         });
 
+        // TODO: assign builtins.
         // env.borrow_mut().set("clock", CLOCK.clone());
         env
     }
@@ -69,7 +71,7 @@ impl<W: Write> Env<W> {
 
     #[inline]
     pub fn is_global(&self) -> bool {
-        matches!(self.parent, None)
+        self.parent.is_none()
     }
 }
 

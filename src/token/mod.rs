@@ -1,5 +1,6 @@
 mod error;
 mod regex;
+#[allow(clippy::module_inception)]
 mod token;
 mod token_stream;
 mod tokenizer;
