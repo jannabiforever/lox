@@ -32,6 +32,20 @@ impl Literal {
             v => v.to_string(),
         }
     }
+
+    pub fn number_or<E>(self, error: E) -> Result<Number, E> {
+        match self {
+            Self::Number(v) => Ok(v),
+            _ => Err(error),
+        }
+    }
+
+    pub fn string_or<E>(self, error: E) -> Result<String, E> {
+        match self {
+            Self::String(v) => Ok(v),
+            _ => Err(error),
+        }
+    }
 }
 
 impl_from!(Literal: Number, String);
@@ -145,6 +159,13 @@ impl LoxValue {
             f(l)
         } else {
             false
+        }
+    }
+
+    pub fn literal_or<E>(self, error: E) -> Result<Literal, E> {
+        match self {
+            Self::Literal(l) => Ok(l),
+            _ => Err(error),
         }
     }
 }
