@@ -1,6 +1,6 @@
 use std::{cell::RefCell, fmt, io::Write, rc::Rc};
 
-use super::{ExprAst, ExprParseError};
+use super::{ExprAst, ExprParseError, ExprParser};
 use crate::{
     env::{Env, Evaluatable, RuntimeError},
     error::LoxError,
@@ -19,7 +19,7 @@ impl fmt::Display for Grouping<'_> {
     }
 }
 
-impl<'a> super::ExprParser<'a, '_> {
+impl<'a> ExprParser<'a, '_> {
     /// Parse a grouping expression follwing only if exists.
     /// And consume from '(' to ')'.
     pub(super) fn parse_grouping(&mut self) -> Option<Result<Grouping<'a>, ExprParseError>> {
