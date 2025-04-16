@@ -6,8 +6,7 @@ use codecrafters_interpreter::{lox_evaluate, lox_parse, lox_run, lox_tokenize};
 #[non_exhaustive]
 #[derive(Debug, Parser)]
 struct Cli {
-    /// The command to run aj flsdjf lkasflkdsjflskj dsk jlas flkdsfslkf sklj
-    /// laks aslkfj skljf slakjf klsajf sakljf slk jslakfj aslkfj alkl
+    /// The command to run
     #[clap(subcommand)]
     command: LoxCommand,
 }
