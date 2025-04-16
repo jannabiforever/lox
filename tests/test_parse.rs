@@ -9,9 +9,31 @@ macro_rules! parse_test {
 
         let exit_code = lox_parse($src, &mut ok_buf, &mut err_buf);
 
-        assert_eq!(exit_code, ExitCode::from($exit_code));
-        assert_eq!(String::from_utf8(ok_buf).unwrap().trim(), $stdout.trim());
-        assert_eq!(String::from_utf8(err_buf).unwrap().trim(), $stderr.trim());
+        assert_eq!(
+            exit_code,
+            ExitCode::from($exit_code),
+            "\nEXITCODE: expected {}, but got {:?}",
+            $exit_code,
+            exit_code
+        );
+
+        let got = String::from_utf8(ok_buf).unwrap();
+        assert_eq!(
+            got.trim(),
+            $stdout.trim(),
+            "\nSTDOUT: expected {}, but got {}",
+            $stdout,
+            got
+        );
+
+        let got = String::from_utf8(err_buf).unwrap();
+        assert_eq!(
+            got.trim(),
+            $stderr.trim(),
+            "\nSTDERR: expected {}, but got {}",
+            $stderr,
+            got
+        );
     };
     ($src:expr, stdout = $stdout:expr) => {
         parse_test! {

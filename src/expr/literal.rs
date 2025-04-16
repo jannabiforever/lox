@@ -16,15 +16,9 @@ pub(crate) struct LiteralExpr<'a> {
     pub token: Token<'a>,
 }
 
-impl fmt::Display for LiteralExpr<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.token.src)
-    }
-}
-
-impl Evaluatable for LiteralExpr<'_> {
-    fn eval<W: Write>(&self, _: Rc<RefCell<Env<W>>>) -> Result<LoxValue, LoxError<RuntimeError>> {
-        let value = match self.token.token_type {
+impl LiteralExpr<'_> {
+    fn eval_to_literal(&self) -> Literal {
+        match self.token.token_type {
             tt!("nil") => Literal::Nil,
             tt!("true") => Literal::Boolean(true),
             tt!("false") => Literal::Boolean(false),
@@ -37,8 +31,19 @@ impl Evaluatable for LiteralExpr<'_> {
                 Literal::String(src)
             }
             rest => unreachable!("LiteralExpr cannot be parsed from {rest:?}"),
-        };
+        }
+    }
+}
 
+impl fmt::Display for LiteralExpr<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.eval_to_literal())
+    }
+}
+
+impl Evaluatable for LiteralExpr<'_> {
+    fn eval<W: Write>(&self, _: Rc<RefCell<Env<W>>>) -> Result<LoxValue, LoxError<RuntimeError>> {
+        let value = self.eval_to_literal();
         Ok(value.into())
     }
 

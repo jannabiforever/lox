@@ -93,8 +93,9 @@ impl<'a, 'mr> ExprParser<'a, 'mr> {
     }
 
     pub(crate) fn parse_with_line(&mut self) -> Result<ExprAst<'a>, LoxError<ExprParseError>> {
+        let parsed = self.parse();
         let line = self.token_stream.line();
-        self.parse().map_err(|e| e.error_at(line))
+        parsed.map_err(|e| e.error_at(line))
     }
 
     /// Parse within the lowest binding power.
@@ -164,7 +165,7 @@ impl<'a, 'mr> ExprParser<'a, 'mr> {
         } else if let Some(variable) = self.try_parse_variable() {
             Some(Ok(variable.into()))
         } else {
-            self.parse_grouping()
+            self.try_parse_grouping()
                 .map(|grouping| grouping.map(Into::into))
         }
     }

@@ -22,7 +22,7 @@ impl fmt::Display for Grouping<'_> {
 impl<'a> ExprParser<'a, '_> {
     /// Parse a grouping expression follwing only if exists.
     /// And consume from '(' to ')'.
-    pub(super) fn parse_grouping(&mut self) -> Option<Result<Grouping<'a>, ExprParseError>> {
+    pub(super) fn try_parse_grouping(&mut self) -> Option<Result<Grouping<'a>, ExprParseError>> {
         match self.token_stream.peek().token_type {
             tt!("(") => {
                 self.token_stream.next(); // Consume '('.
