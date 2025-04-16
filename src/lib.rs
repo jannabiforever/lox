@@ -18,7 +18,7 @@ use self::{
 
 /// tokenize without allowing error.
 macro_rules! tokenize {
-    ($src:expr, $err_buf:ident) => {
+    ($src:expr, $err_buf:expr) => {
         match token::Tokenizer::new($src)
             .tokenize()
             .into_iter()
@@ -35,7 +35,7 @@ macro_rules! tokenize {
 
 /// parse expression without allowing error.
 macro_rules! expr_parse {
-    ($stream:expr, $err_buf:ident) => {
+    ($stream:expr, $err_buf:expr) => {
         match expr::ExprParser::new(&mut $stream).parse_with_line() {
             Ok(ast) => ast,
             Err(err) => {
@@ -48,7 +48,7 @@ macro_rules! expr_parse {
 
 /// parse statements without allowing error.
 macro_rules! stmt_parse {
-    ($stream:expr, $err_buf:ident) => {
+    ($stream:expr, $err_buf:expr) => {
         match statement::StmtParser::new(&mut $stream).parse_all() {
             Ok(stmts) => stmts,
             Err(err) => {
