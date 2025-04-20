@@ -1,8 +1,15 @@
 use std::{cell::RefCell, fmt, io::Write, rc::Rc};
 
-use super::{ExprAst, ExprParseError, ExprParser};
+use super::{
+    ExprAst,
+    ExprParseError::{self, *},
+    ExprParser,
+};
 use crate::{
-    env::{Env, Evaluatable, RuntimeError},
+    env::{
+        Env, Evaluatable,
+        RuntimeError::{self, *},
+    },
     error::{IntoLoxError, LoxError},
     function::Callable,
     literal::LoxValue,
@@ -59,7 +66,7 @@ impl<'a> ExprParser<'a, '_> {
                             continue;
                         }
                         _ => {
-                            return Err(ExprParseError::InvalidFunctionArgument(src.to_string()));
+                            return Err(InvalidFunctionArgument(src.to_string()));
                         }
                     }
                 }
@@ -82,12 +89,10 @@ impl Evaluatable for FunctionCall<'_> {
             .collect::<Result<Vec<_>, _>>()?;
 
         match self.callee.eval(env.clone())? {
-            LoxValue::Literal(l) => {
-                Err(RuntimeError::InvalidCallTarget(l.to_string()).error_at(self.line()))
-            }
+            LoxValue::Literal(l) => Err(InvalidCallTarget(l.to_string()).at(self.line())),
             LoxValue::RustFunction(rf) => rf
                 .call(arguments, env.clone())
-                .map_err(|err| err.error_at(self.line())),
+                .map_err(|err| err.at(self.line())),
             // LoxValue::LoxFunction(lf) => lf.call(arguments, env.clone()),
         }
     }

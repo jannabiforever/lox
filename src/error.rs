@@ -44,7 +44,7 @@ pub trait IntoLoxError: Sized + std::error::Error {
     fn exit_code(&self) -> ExitCode;
 
     // Provided method
-    fn error_at(self, line: usize) -> LoxError<Self> {
+    fn at(self, line: usize) -> LoxError<Self> {
         LoxError { line, kind: self }
     }
 }

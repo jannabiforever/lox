@@ -23,7 +23,7 @@ impl Runnable for Return<'_> {
         env: Rc<RefCell<Env<W>>>,
     ) -> Result<Option<LoxValue>, LoxError<RuntimeError>> {
         if env.borrow().is_global() {
-            return Err(RuntimeError::ReturnAtGlobal.error_at(self.line()));
+            return Err(RuntimeError::ReturnAtGlobal.at(self.line()));
         }
 
         let value = self

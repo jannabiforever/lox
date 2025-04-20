@@ -94,7 +94,7 @@ impl<'a> StmtParser<'a, '_> {
         while !self.token_stream.expired() {
             let stmt = self
                 .parse()
-                .map_err(|err| err.error_at(self.token_stream.line()))?;
+                .map_err(|err| err.at(self.token_stream.line()))?;
             statements.push(stmt);
         }
         Ok(statements)

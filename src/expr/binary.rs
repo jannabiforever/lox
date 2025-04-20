@@ -119,10 +119,10 @@ impl<'a> ExprParser<'a, '_> {
 macro_rules! number_operation {
     ($left:expr, $right:expr, $env:expr, $func:expr) => {{
         let left = eval_and_cast_to_literal(&$left, $env.clone())?
-            .number_or(OperandMustBe("number").error_at($left.line()))?;
+            .number_or(OperandMustBe("number").at($left.line()))?;
 
         let right = eval_and_cast_to_literal(&$right, $env.clone())?
-            .number_or(OperandMustBe("number").error_at($right.line()))?;
+            .number_or(OperandMustBe("number").at($right.line()))?;
 
         Ok(LoxValue::Literal($func(left, right).into()))
     }};
@@ -132,11 +132,10 @@ macro_rules! number_operation {
 macro_rules! string_operation {
     ($left:expr, $right:expr, $env:expr, $func:expr) => {{
         let left = eval_and_cast_to_literal(&$left, $env.clone())?
-            .string_or(OperandMustBe("string").error_at($left.line()))?;
+            .string_or(OperandMustBe("string").at($left.line()))?;
 
-        let right = eval_and_cast_to_literal(&$right, $env.clone())?.string_or(
-            $crate::env::RuntimeError::OperandMustBe("string").error_at($right.line()),
-        )?;
+        let right = eval_and_cast_to_literal(&$right, $env.clone())?
+            .string_or(OperandMustBe("string").at($right.line()))?;
 
         Ok($crate::literal::LoxValue::Literal(
             $func(left, right).into(),
@@ -162,7 +161,7 @@ impl Evaluatable for Binary<'_> {
                 Literal::String(_) => {
                     string_operation!(left, right, env, |l: String, r: String| l + &r)
                 }
-                _ => Err(OperandMustBe("two numbers or two strings").error_at(left.line())),
+                _ => Err(OperandMustBe("two numbers or two strings").at(left.line())),
             },
 
             BinaryOp::Minus => {
@@ -225,5 +224,5 @@ fn eval_and_cast_to_literal<W: Write>(
     env: Rc<RefCell<Env<W>>>,
 ) -> Result<Literal, LoxError<RuntimeError>> {
     expr.eval(env)?
-        .literal_or(OperandMustBe("literal").error_at(expr.line()))
+        .literal_or(OperandMustBe("literal").at(expr.line()))
 }

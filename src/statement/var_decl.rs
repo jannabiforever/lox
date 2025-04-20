@@ -26,7 +26,7 @@ impl Runnable for VarDecl<'_> {
     ) -> Result<Option<LoxValue>, LoxError<RuntimeError>> {
         let var = match &self.var {
             ExprAst::Variable(variable) => Ok(variable.var.clone()),
-            rest => Err(InvalidAssignmentTarget(rest.to_string()).error_at(self.line())),
+            rest => Err(InvalidAssignmentTarget(rest.to_string()).at(self.line())),
         }?;
 
         let value = match self.value.as_ref() {

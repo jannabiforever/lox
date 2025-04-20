@@ -94,7 +94,7 @@ impl<'a, 'mr> ExprParser<'a, 'mr> {
 
     pub(crate) fn parse_with_line(&mut self) -> Result<ExprAst<'a>, LoxError<ExprParseError>> {
         self.parse()
-            .map_err(|err| err.error_at(self.token_stream.line()))
+            .map_err(|err| err.at(self.token_stream.line()))
     }
 
     /// Parse within the lowest binding power.

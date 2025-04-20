@@ -2,7 +2,10 @@ use std::{cell::RefCell, fmt, io::Write, rc::Rc};
 
 use super::{binding_power::BindingPower, ExprAst, ExprParseError, ExprParser};
 use crate::{
-    env::{Env, Evaluatable, RuntimeError},
+    env::{
+        Env, Evaluatable,
+        RuntimeError::{self, *},
+    },
     error::{IntoLoxError, LoxError},
     literal::{Literal, LoxValue},
     mac::tt,
@@ -78,7 +81,7 @@ impl Evaluatable for Unary<'_> {
                 if let LoxValue::Literal(Literal::Number(num)) = right {
                     Ok(Literal::Number(-num).into())
                 } else {
-                    Err(RuntimeError::OperandMustBe("number").error_at(self.line()))
+                    Err(OperandMustBe("number").at(self.line()))
                 }
             }
             UnaryOp::Bang => {

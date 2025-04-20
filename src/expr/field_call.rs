@@ -1,6 +1,10 @@
 use std::fmt;
 
-use super::{ExprAst, ExprParseError, ExprParser};
+use super::{
+    ExprAst,
+    ExprParseError::{self, *},
+    ExprParser,
+};
 use crate::mac::tt;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -24,9 +28,7 @@ impl<'a> ExprParser<'a, '_> {
         let field = self
             .token_stream
             .expect(tt!("identifier"))
-            .map_err(|unexpected_token| {
-                ExprParseError::ExpectedFieldName(unexpected_token.src.to_string())
-            })?
+            .map_err(|unexpected_token| ExpectedFieldName(unexpected_token.src.to_string()))?
             .src
             .to_string();
 

@@ -1,6 +1,10 @@
 use std::{cell::RefCell, fmt, io::Write, rc::Rc};
 
-use super::{ExprAst, ExprParseError, ExprParser};
+use super::{
+    ExprAst,
+    ExprParseError::{self, *},
+    ExprParser,
+};
 use crate::{
     env::{Env, Evaluatable, RuntimeError},
     error::LoxError,
@@ -35,7 +39,7 @@ impl<'a> ExprParser<'a, '_> {
                 if self.token_stream.expect(tt!(")")).is_ok() {
                     Some(Ok(Grouping { inner }))
                 } else {
-                    Some(Err(ExprParseError::ExpectedClosingParenthesis))
+                    Some(Err(ExpectedClosingParenthesis))
                 }
             }
             _ => None,

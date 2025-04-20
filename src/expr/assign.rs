@@ -2,7 +2,10 @@ use std::{cell::RefCell, fmt, io::Write, rc::Rc};
 
 use super::{binding_power::BindingPower, ExprAst, ExprParseError, ExprParser};
 use crate::{
-    env::{Env, Evaluatable, RuntimeError},
+    env::{
+        Env, Evaluatable,
+        RuntimeError::{self, *},
+    },
     error::{IntoLoxError, LoxError},
     literal::LoxValue,
 };
@@ -35,18 +38,14 @@ impl Evaluatable for Assign<'_> {
     fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, LoxError<RuntimeError>> {
         let name = match *self.assignee.clone() {
             ExprAst::Variable(var) => var.var,
-            rest => {
-                return Err(
-                    RuntimeError::InvalidAssignmentTarget(rest.to_string()).error_at(self.line())
-                )
-            }
+            rest => return Err(InvalidAssignmentTarget(rest.to_string()).at(self.line())),
         };
         let value = (*self.value).eval(env.clone())?;
 
         if env.borrow_mut().update(name.src, value.clone()) {
             Ok(value)
         } else {
-            Err(RuntimeError::UndefinedVariable(name.src.to_string()).error_at(self.line()))
+            Err(UndefinedVariable(name.src.to_string()).at(self.line()))
         }
     }
 

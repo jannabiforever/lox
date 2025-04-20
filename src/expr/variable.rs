@@ -2,7 +2,10 @@ use std::{cell::RefCell, fmt, io::Write, rc::Rc};
 
 use super::ExprParser;
 use crate::{
-    env::{Env, Evaluatable, RuntimeError},
+    env::{
+        Env, Evaluatable,
+        RuntimeError::{self, *},
+    },
     error::{IntoLoxError, LoxError},
     literal::LoxValue,
     mac::tt,
@@ -37,7 +40,7 @@ impl Evaluatable for Variable<'_> {
         if let Some(value) = env.borrow().get(self.var.src) {
             Ok(value.clone())
         } else {
-            Err(RuntimeError::UndefinedVariable(self.var.src.to_string()).error_at(self.line()))
+            Err(UndefinedVariable(self.var.src.to_string()).at(self.line()))
         }
     }
 
