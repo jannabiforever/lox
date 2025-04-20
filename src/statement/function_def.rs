@@ -1,9 +1,11 @@
 use std::{cell::RefCell, io::Write, rc::Rc};
 
-use super::{StmtAst, StmtParseError, StmtParser};
-use crate::{
-    env::RuntimeError, error::LoxError, literal::LoxValue, mac::tt, token::Token, Env, Runnable,
+use super::{
+    StmtAst,
+    StmtParseError::{self, *},
+    StmtParser,
 };
+use crate::{env::RuntimeError, error::LoxError, literal::LoxValue, mac::tt, Env, Runnable};
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct FunctionDef<'a> {
@@ -42,37 +44,20 @@ impl<'a> StmtParser<'a, '_> {
 
         let mut arguments = Vec::new();
         self.expect_opening_paren()?;
-        loop {
-            match self.token_stream.peek().token_type {
-                tt!(")") => break,
-                _ => {
-                    let argument_name = self.expect_identifier()?;
-                    arguments.push(argument_name);
 
-                    match self.token_stream.peek() {
-                        Token {
-                            token_type: tt!(")"),
-                            ..
-                        } => break,
-                        Token {
-                            token_type: tt!(","),
-                            ..
-                        } => {
-                            self.token_stream.next();
-                            continue;
-                        }
-                        rest => {
-                            return Err(StmtParseError::InvalidFunctionArgument(
-                                rest.src.to_string(),
-                            ))
-                        }
-                    }
-                }
+        while !self.token_stream.eat(tt!(")")) {
+            let argument_name = self.expect_identifier()?;
+            arguments.push(argument_name);
+
+            let peeked = self.token_stream.peek();
+            if !matches!(peeked.token_type, tt!(")") | tt!(",")) {
+                return Err(InvalidFunctionArgument(peeked.src.to_string()));
             }
         }
+
         self.expect_closing_paren()?;
         if self.token_stream.peek().token_type != tt!("{") {
-            return Err(StmtParseError::ExpectedBodyOfFunction);
+            return Err(ExpectedBodyOfFunction);
         }
 
         let (line, body) = {
@@ -91,9 +76,7 @@ impl<'a> StmtParser<'a, '_> {
     fn expect_identifier(&mut self) -> Result<String, StmtParseError> {
         match self.token_stream.expect(tt!("identifier")) {
             Ok(token) => Ok(token.src.to_string()),
-            Err(unexpected_token) => Err(StmtParseError::ExpectedIdent(
-                unexpected_token.src.to_string(),
-            )),
+            Err(unexpected_token) => Err(ExpectedIdent(unexpected_token.src.to_string())),
         }
     }
 }

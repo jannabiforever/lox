@@ -53,6 +53,15 @@ impl<'a> TokenStream<'a> {
         }
     }
 
+    pub fn eat(&mut self, token_type: TokenType) -> bool {
+        if self.peek().token_type == token_type {
+            self.next();
+            true
+        } else {
+            false
+        }
+    }
+
     pub fn expired(&self) -> bool {
         match self.state {
             TokenStreamState::NotExpired(index) => {
