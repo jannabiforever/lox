@@ -26,6 +26,8 @@ impl Literal {
         }
     }
 
+    /// When the current command is `evaluate` or `run`, pretty-print the
+    /// literal.
     pub fn pretty(&self) -> String {
         match self {
             Literal::Number(Number(n)) => n.to_string(),
@@ -56,6 +58,7 @@ impl From<bool> for Literal {
     }
 }
 
+/// When the current command is not `evaluate` or `run`, format as following:
 impl fmt::Display for Literal {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -176,6 +179,8 @@ impl Default for LoxValue {
     }
 }
 
+/// Note: Displaying a literal as a lox value is only possible when running
+/// `evaluate` or `run` commands, so literal need to be pretty-printed.
 impl fmt::Display for LoxValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {

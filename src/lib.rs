@@ -111,7 +111,7 @@ pub fn lox_evaluate<W1: Write, W2: Write>(
 
     if let Err(exit_code) = parsed
         .eval(empty_env)
-        .map(|res| res.to_string())
+        .map(|res| res.to_string()) // Note: res here is type of LoxValue, so it is always pretty-printed.
         .write_to_buffer(ok_buf, err_buf)
     {
         exit_code
