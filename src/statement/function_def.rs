@@ -55,7 +55,6 @@ impl<'a> StmtParser<'a, '_> {
             }
         }
 
-        self.expect_closing_paren()?;
         if self.token_stream.peek().token_type != tt!("{") {
             return Err(ExpectedBodyOfFunction);
         }
