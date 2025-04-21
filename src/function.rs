@@ -20,45 +20,13 @@ use crate::{
 pub(crate) trait Callable<'a> {
     // Required methods
     fn argument_names(&self) -> Vec<&str>;
-    fn run_body<W: Write>(
-        &self,
-        env: Rc<RefCell<Env<'a, W>>>,
-    ) -> Result<LoxValue<'a>, RuntimeError>;
-
-    // Provided methods
 
     /// call and get the result.
     fn call<W: Write>(
         &self,
         arguments: Vec<LoxValue<'a>>,
         env: Rc<RefCell<Env<'a, W>>>,
-    ) -> Result<LoxValue<'a>, RuntimeError> {
-        if self.arity() != arguments.len() {
-            return Err(InvalidNumberOfArguments);
-        }
-
-        let env = self.stack_scope(arguments, env);
-        self.run_body(env)
-    }
-
-    fn arity(&self) -> usize {
-        self.argument_names().len()
-    }
-
-    /// Create new scope with having current env as own parent, and assign
-    /// given function arguments into this env.
-    fn stack_scope<W: Write>(
-        &self,
-        arguments: Vec<LoxValue<'a>>,
-        env: Rc<RefCell<Env<'a, W>>>,
-    ) -> Rc<RefCell<Env<'a, W>>> {
-        let new_env = Env::from_parent(env);
-        // Assign arguments to the scope environment.
-        for (key, value) in self.argument_names().iter().zip(arguments.into_iter()) {
-            new_env.borrow_mut().set(key, value);
-        }
-        new_env
-    }
+    ) -> Result<LoxValue<'a>, RuntimeError>;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -83,7 +51,15 @@ impl<'a> Callable<'a> for RustFunction {
         self.arguments.to_vec()
     }
 
-    fn run_body<W: Write>(&self, _: Rc<RefCell<Env<'a, W>>>) -> Result<LoxValue<'a>, RuntimeError> {
+    fn call<W: Write>(
+        &self,
+        arguments: Vec<LoxValue<'a>>,
+        _: Rc<RefCell<Env<'a, W>>>,
+    ) -> Result<LoxValue<'a>, RuntimeError> {
+        if arguments.len() != self.arguments.len() {
+            return Err(InvalidNumberOfArguments);
+        }
+
         match self.name {
             "clock" => Ok(clock()),
             rest => unreachable!("there are no builtin function named {rest}"),
@@ -112,9 +88,13 @@ impl<'a> LoxFunction<'a> {
     // TODO: How should captured variables be handled?
     fn stack_scope_with_captured<W: Write>(
         &self,
+        arguments: Vec<LoxValue<'a>>,
         env: Rc<RefCell<Env<'a, W>>>,
     ) -> Rc<RefCell<Env<'a, W>>> {
         let env = Env::from_parent(env);
+        for (key, value) in self.argument_names().iter().zip(arguments.into_iter()) {
+            env.borrow_mut().set(key, value);
+        }
         for (k, v) in self.captured.iter() {
             env.borrow_mut().set(k, v.clone());
         }
@@ -127,11 +107,16 @@ impl<'a> Callable<'a> for LoxFunction<'a> {
         self.arguments.iter().map(|s| s.as_str()).collect()
     }
 
-    fn run_body<W: Write>(
+    fn call<W: Write>(
         &self,
+        arguments: Vec<LoxValue<'a>>,
         env: Rc<RefCell<Env<'a, W>>>,
     ) -> Result<LoxValue<'a>, RuntimeError> {
-        let env = self.stack_scope_with_captured(env);
+        if arguments.len() != self.arguments.len() {
+            return Err(InvalidNumberOfArguments);
+        }
+
+        let env = self.stack_scope_with_captured(arguments, env);
         for stmt in self.body.iter() {
             match stmt {
                 StmtAst::Return(Return { expr, .. }) => {
@@ -139,12 +124,14 @@ impl<'a> Callable<'a> for LoxFunction<'a> {
                         .as_ref()
                         .map(|e| e.eval(env))
                         .transpose()
-                        .map_err(|err| err.kind)? // when called, error line should be not from the function body
+                        // when called, error line should be not from the function body
+                        .map_err(|err| err.kind)?
                         .unwrap_or_default();
 
                     return Ok(value);
                 }
                 rest => {
+                    // when called, error line should be not from the function body
                     if let Some(value) = rest.run(env.clone()).map_err(|err| err.kind)? {
                         return Ok(value);
                     }
