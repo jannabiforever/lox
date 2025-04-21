@@ -52,7 +52,7 @@ impl<'a> Runnable<'a> for StmtAst<'a> {
             Self::If(if_stmt) => if_stmt.run(env),
             Self::While(while_stmt) => while_stmt.run(env),
             Self::For(for_stmt) => for_stmt.run(env),
-            Self::FunctionDef(_) => todo!("Implement function"),
+            Self::FunctionDef(function_def) => function_def.run(env),
             Self::Return(return_stmt) => return_stmt.run(env),
         }
     }
@@ -66,7 +66,7 @@ impl<'a> Runnable<'a> for StmtAst<'a> {
             Self::If(v) => v.line(),
             Self::While(v) => v.line(),
             Self::For(v) => v.line(),
-            Self::FunctionDef(_) => todo!("Implement function"),
+            Self::FunctionDef(v) => v.line(),
             Self::Return(v) => v.line(),
         }
     }

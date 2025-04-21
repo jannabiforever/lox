@@ -21,7 +21,11 @@ pub(crate) struct FunctionDef<'a> {
 
 impl<'a> FunctionDef<'a> {
     fn lox_function(&self) -> LoxFunction<'a> {
-        todo!("Implement function")
+        LoxFunction {
+            name: self.name.clone(),
+            arguments: self.arguments.clone(),
+            body: self.body.clone(),
+        }
     }
 }
 
