@@ -8,8 +8,10 @@ use std::{
 };
 
 use crate::{
-    env::{Evaluatable, Runnable, RuntimeError},
-    error::{IntoLoxError, LoxError},
+    env::{
+        Evaluatable, Runnable,
+        RuntimeError::{self, *},
+    },
     literal::{Literal, LoxValue, Number},
     statement::{Return, StmtAst},
     Env,
@@ -21,7 +23,7 @@ pub(crate) trait Callable<'a> {
     fn run_body<W: Write>(
         &self,
         env: Rc<RefCell<Env<'a, W>>>,
-    ) -> Result<LoxValue<'a>, LoxError<RuntimeError>>;
+    ) -> Result<LoxValue<'a>, RuntimeError>;
 
     // Provided methods
 
@@ -30,10 +32,10 @@ pub(crate) trait Callable<'a> {
         &self,
         arguments: Vec<LoxValue<'a>>,
         env: Rc<RefCell<Env<'a, W>>>,
-    ) -> Result<LoxValue<'a>, LoxError<RuntimeError>> {
+    ) -> Result<LoxValue<'a>, RuntimeError> {
         if self.arity() != arguments.len() {
             #[allow(unreachable_code, clippy::diverging_sub_expression)] // TODO
-            return Err(RuntimeError::InvalidNumberOfArguments.at(todo!("Get error line")));
+            return Err(InvalidNumberOfArguments);
         }
 
         let env = self.stack_scope(arguments, env);
@@ -82,10 +84,7 @@ impl<'a> Callable<'a> for RustFunction {
         self.arguments.to_vec()
     }
 
-    fn run_body<W: Write>(
-        &self,
-        _: Rc<RefCell<Env<'a, W>>>,
-    ) -> Result<LoxValue<'a>, LoxError<RuntimeError>> {
+    fn run_body<W: Write>(&self, _: Rc<RefCell<Env<'a, W>>>) -> Result<LoxValue<'a>, RuntimeError> {
         match self.name {
             "clock" => Ok(clock()),
             rest => unreachable!("there are no builtin function named {rest}"),
@@ -118,7 +117,7 @@ impl<'a> Callable<'a> for LoxFunction<'a> {
     fn run_body<W: Write>(
         &self,
         env: Rc<RefCell<Env<'a, W>>>,
-    ) -> Result<LoxValue<'a>, LoxError<RuntimeError>> {
+    ) -> Result<LoxValue<'a>, RuntimeError> {
         let env = Env::from_parent(env);
         for (k, v) in self.captured.iter() {
             env.borrow_mut().set(k, v.clone());
@@ -129,13 +128,14 @@ impl<'a> Callable<'a> for LoxFunction<'a> {
                     let value = expr
                         .as_ref()
                         .map(|e| e.eval(env))
-                        .transpose()?
+                        .transpose()
+                        .map_err(|err| err.kind)?
                         .unwrap_or_default();
 
                     return Ok(value);
                 }
                 rest => {
-                    if let Some(value) = rest.run(env.clone())? {
+                    if let Some(value) = rest.run(env.clone()).map_err(|err| err.kind)? {
                         return Ok(value);
                     }
                 }

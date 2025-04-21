@@ -94,8 +94,12 @@ impl<'a> Evaluatable<'a> for FunctionCall<'a> {
 
         match self.callee.eval(env.clone())? {
             LoxValue::Literal(l) => Err(InvalidCallTarget(l.to_string()).at(self.line())),
-            LoxValue::RustFunction(rf) => rf.call(arguments, env.clone()),
-            LoxValue::LoxFunction(lf) => lf.call(arguments, env.clone()),
+            LoxValue::RustFunction(rf) => rf
+                .call(arguments, env.clone())
+                .map_err(|err| err.at(self.line())),
+            LoxValue::LoxFunction(lf) => lf
+                .call(arguments, env.clone())
+                .map_err(|err| err.at(self.line())),
         }
     }
 
