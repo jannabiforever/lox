@@ -71,6 +71,19 @@ impl<'a, W: Write> Env<'a, W> {
     pub fn is_global(&self) -> bool {
         self.parent.is_none()
     }
+
+    pub fn capture(&self) -> HashMap<String, LoxValue<'a>> {
+        let mut start = self.scope.clone();
+        if let Some(parent_env) = self.parent.clone() {
+            let capture_of_parent = parent_env.borrow().capture();
+            for (k, v) in capture_of_parent {
+                if !start.contains_key(&k) {
+                    start.insert(k, v);
+                }
+            }
+        }
+        start
+    }
 }
 
 /// Trait for eval expressions.

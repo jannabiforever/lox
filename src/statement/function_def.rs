@@ -1,4 +1,4 @@
-use std::{cell::RefCell, io::Write, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, io::Write, rc::Rc};
 
 use super::{
     StmtAst,
@@ -21,11 +21,12 @@ pub(crate) struct FunctionDef<'a> {
 }
 
 impl<'a> FunctionDef<'a> {
-    fn lox_function(&self) -> LoxFunction<'a> {
+    fn lox_function(&self, captured: HashMap<String, LoxValue<'a>>) -> LoxFunction<'a> {
         LoxFunction {
             name: self.name.clone(),
             arguments: self.arguments.clone(),
             body: self.body.clone(),
+            captured,
         }
     }
 }
@@ -35,7 +36,8 @@ impl<'a> Runnable<'a> for FunctionDef<'a> {
         &self,
         env: Rc<RefCell<Env<'a, W>>>,
     ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>> {
-        let lox_function = self.lox_function().into();
+        let captured = env.borrow().capture();
+        let lox_function = self.lox_function(captured).into();
         env.borrow_mut().set(&self.name, lox_function);
         Ok(None)
     }

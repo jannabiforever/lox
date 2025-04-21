@@ -1,5 +1,6 @@
 use std::{
     cell::RefCell,
+    collections::HashMap,
     fmt,
     io::Write,
     rc::Rc,
@@ -51,6 +52,7 @@ pub(crate) trait Callable<'a> {
         env: Rc<RefCell<Env<'a, W>>>,
     ) -> Rc<RefCell<Env<'a, W>>> {
         let new_env = Env::from_parent(env);
+        // Assign arguments to the scope environment.
         for (key, value) in self.argument_names().iter().zip(arguments.into_iter()) {
             new_env.borrow_mut().set(key, value);
         }
@@ -105,6 +107,7 @@ pub(crate) struct LoxFunction<'a> {
     pub(crate) name: String,
     pub(crate) arguments: Vec<String>,
     pub(crate) body: Vec<StmtAst<'a>>,
+    pub(crate) captured: HashMap<String, LoxValue<'a>>,
 }
 
 impl<'a> Callable<'a> for LoxFunction<'a> {
