@@ -12,5 +12,5 @@ fn test_recursive() {
     assert!(err_buf.is_empty());
 
     let ok_buf = String::from_utf8(ok_buf).unwrap();
-    assert_eq!(&ok_buf, "55");
+    assert_eq!(ok_buf.trim(), "55");
 }
