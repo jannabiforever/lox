@@ -1,0 +1,11 @@
+fun add(a) {
+    fun add_from(b) {
+        return a + b;
+    }
+
+    return add_from
+}
+
+var hello = add(5);
+
+print hello(3);
