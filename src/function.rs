@@ -108,6 +108,20 @@ pub(crate) struct LoxFunction<'a> {
     pub(crate) captured: HashMap<String, LoxValue<'a>>,
 }
 
+impl<'a> LoxFunction<'a> {
+    // TODO: How should captured variables be handled?
+    fn stack_scope_with_captured<W: Write>(
+        &self,
+        env: Rc<RefCell<Env<'a, W>>>,
+    ) -> Rc<RefCell<Env<'a, W>>> {
+        let env = Env::from_parent(env);
+        for (k, v) in self.captured.iter() {
+            env.borrow_mut().set(k, v.clone());
+        }
+        env
+    }
+}
+
 impl<'a> Callable<'a> for LoxFunction<'a> {
     fn argument_names(&self) -> Vec<&str> {
         self.arguments.iter().map(|s| s.as_str()).collect()
@@ -117,10 +131,7 @@ impl<'a> Callable<'a> for LoxFunction<'a> {
         &self,
         env: Rc<RefCell<Env<'a, W>>>,
     ) -> Result<LoxValue<'a>, RuntimeError> {
-        let env = Env::from_parent(env);
-        for (k, v) in self.captured.iter() {
-            env.borrow_mut().set(k, v.clone());
-        }
+        let env = self.stack_scope_with_captured(env);
         for stmt in self.body.iter() {
             match stmt {
                 StmtAst::Return(Return { expr, .. }) => {
@@ -128,7 +139,7 @@ impl<'a> Callable<'a> for LoxFunction<'a> {
                         .as_ref()
                         .map(|e| e.eval(env))
                         .transpose()
-                        .map_err(|err| err.kind)?
+                        .map_err(|err| err.kind)? // when called, error line should be not from the function body
                         .unwrap_or_default();
 
                     return Ok(value);
