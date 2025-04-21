@@ -62,6 +62,8 @@ impl<'a> StmtParser<'a, '_> {
             let peeked = self.token_stream.peek();
             if !matches!(peeked.token_type, tt!(")") | tt!(",")) {
                 return Err(InvalidFunctionArgument(peeked.src.to_string()));
+            } else {
+                self.token_stream.eat(tt!(","));
             }
         }
 
