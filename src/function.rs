@@ -119,6 +119,10 @@ impl<'a> Callable<'a> for LoxFunction<'a> {
         &self,
         env: Rc<RefCell<Env<'a, W>>>,
     ) -> Result<LoxValue<'a>, LoxError<RuntimeError>> {
+        let env = Env::from_parent(env);
+        for (k, v) in self.captured.iter() {
+            env.borrow_mut().set(k, v.clone());
+        }
         for stmt in self.body.iter() {
             match stmt {
                 StmtAst::Return(Return { expr, .. }) => {

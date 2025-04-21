@@ -3,7 +3,7 @@ fun add(a) {
         return a + b;
     }
 
-    return add_from
+    return add_from;
 }
 
 var hello = add(5);
