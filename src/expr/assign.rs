@@ -34,8 +34,11 @@ impl<'a> ExprParser<'a, '_> {
     }
 }
 
-impl Evaluatable for Assign<'_> {
-    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, LoxError<RuntimeError>> {
+impl<'a> Evaluatable<'a> for Assign<'a> {
+    fn eval<W: Write>(
+        &self,
+        env: Rc<RefCell<Env<'a, W>>>,
+    ) -> Result<LoxValue<'a>, LoxError<RuntimeError>> {
         let name = match *self.assignee.clone() {
             ExprAst::Variable(var) => var.var,
             rest => return Err(InvalidAssignmentTarget(rest.to_string()).at(self.line())),

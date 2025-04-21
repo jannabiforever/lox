@@ -2,7 +2,7 @@ use std::{cmp, fmt, ops};
 
 use crate::{
     // function::LoxFunction,
-    function::RustFunction,
+    function::{LoxFunction, RustFunction},
     mac::impl_from,
 };
 
@@ -148,15 +148,27 @@ impl cmp::PartialOrd for Number {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) enum LoxValue {
+pub(crate) enum LoxValue<'a> {
     Literal(Literal),
     RustFunction(RustFunction),
-    // LoxFunction(LoxFunction),
+    LoxFunction(LoxFunction<'a>),
 }
 
-impl_from!(LoxValue: Literal, RustFunction);
+impl From<Literal> for LoxValue<'_> {
+    fn from(value: Literal) -> Self {
+        Self::Literal(value)
+    }
+}
 
-impl LoxValue {
+impl From<RustFunction> for LoxValue<'_> {
+    fn from(value: RustFunction) -> Self {
+        Self::RustFunction(value)
+    }
+}
+
+impl_from!('a LoxValue: LoxFunction);
+
+impl LoxValue<'_> {
     pub fn is_literal_and<F: Fn(&Literal) -> bool>(&self, f: F) -> bool {
         if let Self::Literal(l) = self {
             f(l)
@@ -173,7 +185,7 @@ impl LoxValue {
     }
 }
 
-impl Default for LoxValue {
+impl Default for LoxValue<'_> {
     fn default() -> Self {
         LoxValue::Literal(Literal::default())
     }
@@ -181,13 +193,14 @@ impl Default for LoxValue {
 
 /// Note: Displaying a literal as a lox value is only possible when running
 /// `evaluate` or `run` commands, so literal need to be pretty-printed.
-impl fmt::Display for LoxValue {
+impl fmt::Display for LoxValue<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             // trim ".0" when treating as lox value.
             Self::Literal(l) => write!(f, "{}", l.pretty()),
             // Self::LoxFunction(lf) => write!(f, "{lf}"),
             Self::RustFunction(rf) => write!(f, "{rf}"),
+            Self::LoxFunction(lf) => write!(f, "{lf}"),
         }
     }
 }

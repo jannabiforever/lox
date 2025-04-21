@@ -143,8 +143,11 @@ macro_rules! string_operation {
     }};
 }
 
-impl Evaluatable for Binary<'_> {
-    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, LoxError<RuntimeError>> {
+impl<'a> Evaluatable<'a> for Binary<'a> {
+    fn eval<W: Write>(
+        &self,
+        env: Rc<RefCell<Env<'a, W>>>,
+    ) -> Result<LoxValue<'a>, LoxError<RuntimeError>> {
         let Self { left, op, right } = self.clone();
 
         match op {
@@ -219,9 +222,9 @@ impl Evaluatable for Binary<'_> {
     }
 }
 
-fn eval_and_cast_to_literal<W: Write>(
-    expr: &ExprAst,
-    env: Rc<RefCell<Env<W>>>,
+fn eval_and_cast_to_literal<'a, W: Write>(
+    expr: &ExprAst<'a>,
+    env: Rc<RefCell<Env<'a, W>>>,
 ) -> Result<Literal, LoxError<RuntimeError>> {
     expr.eval(env)?
         .literal_or(OperandMustBe("literal").at(expr.line()))

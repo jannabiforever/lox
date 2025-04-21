@@ -5,7 +5,10 @@ use super::{
     StmtParseError::{self, *},
     StmtParser,
 };
-use crate::{env::RuntimeError, error::LoxError, literal::LoxValue, mac::tt, Env, Runnable};
+use crate::{
+    env::RuntimeError, error::LoxError, function::LoxFunction, literal::LoxValue, mac::tt, Env,
+    Runnable,
+};
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct FunctionDef<'a> {
@@ -16,18 +19,18 @@ pub(crate) struct FunctionDef<'a> {
     line: usize,
 }
 
-impl FunctionDef<'_> {
-    fn lox_function(&self) -> LoxValue {
+impl<'a> FunctionDef<'a> {
+    fn lox_function(&self) -> LoxFunction<'a> {
         todo!("Implement function")
     }
 }
 
-impl Runnable for FunctionDef<'_> {
+impl<'a> Runnable<'a> for FunctionDef<'a> {
     fn run<W: Write>(
         &self,
-        env: Rc<RefCell<Env<W>>>,
-    ) -> Result<Option<LoxValue>, LoxError<RuntimeError>> {
-        let lox_function = self.lox_function();
+        env: Rc<RefCell<Env<'a, W>>>,
+    ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>> {
+        let lox_function = self.lox_function().into();
         env.borrow_mut().set(&self.name, lox_function);
         Ok(None)
     }

@@ -7,26 +7,32 @@ use std::{
 };
 
 use crate::{
-    env::RuntimeError,
+    env::{Evaluatable, Runnable, RuntimeError},
+    error::{IntoLoxError, LoxError},
     literal::{Literal, LoxValue, Number},
+    statement::{Return, StmtAst},
     Env,
 };
 
-pub(crate) trait Callable {
+pub(crate) trait Callable<'a> {
     // Required methods
     fn argument_names(&self) -> Vec<&str>;
-    fn run_body<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError>;
+    fn run_body<W: Write>(
+        &self,
+        env: Rc<RefCell<Env<'a, W>>>,
+    ) -> Result<LoxValue<'a>, LoxError<RuntimeError>>;
 
     // Provided methods
 
     /// call and get the result.
     fn call<W: Write>(
         &self,
-        arguments: Vec<LoxValue>,
-        env: Rc<RefCell<Env<W>>>,
-    ) -> Result<LoxValue, RuntimeError> {
+        arguments: Vec<LoxValue<'a>>,
+        env: Rc<RefCell<Env<'a, W>>>,
+    ) -> Result<LoxValue<'a>, LoxError<RuntimeError>> {
         if self.arity() != arguments.len() {
-            return Err(RuntimeError::InvalidNumberOfArguments);
+            #[allow(unreachable_code, clippy::diverging_sub_expression)] // TODO
+            return Err(RuntimeError::InvalidNumberOfArguments.at(todo!("Get error line")));
         }
 
         let env = self.stack_scope(arguments, env);
@@ -41,9 +47,9 @@ pub(crate) trait Callable {
     /// given function arguments into this env.
     fn stack_scope<W: Write>(
         &self,
-        arguments: Vec<LoxValue>,
-        env: Rc<RefCell<Env<W>>>,
-    ) -> Rc<RefCell<Env<W>>> {
+        arguments: Vec<LoxValue<'a>>,
+        env: Rc<RefCell<Env<'a, W>>>,
+    ) -> Rc<RefCell<Env<'a, W>>> {
         let new_env = Env::from_parent(env);
         for (key, value) in self.argument_names().iter().zip(arguments.into_iter()) {
             new_env.borrow_mut().set(key, value);
@@ -69,12 +75,15 @@ pub(crate) static CLOCK: LoxValue = LoxValue::RustFunction(RustFunction {
     arguments: vec![],
 });
 
-impl Callable for RustFunction {
+impl<'a> Callable<'a> for RustFunction {
     fn argument_names(&self) -> Vec<&str> {
         self.arguments.to_vec()
     }
 
-    fn run_body<W: Write>(&self, _: Rc<RefCell<Env<W>>>) -> Result<LoxValue, RuntimeError> {
+    fn run_body<W: Write>(
+        &self,
+        _: Rc<RefCell<Env<'a, W>>>,
+    ) -> Result<LoxValue<'a>, LoxError<RuntimeError>> {
         match self.name {
             "clock" => Ok(clock()),
             rest => unreachable!("there are no builtin function named {rest}"),
@@ -82,7 +91,7 @@ impl Callable for RustFunction {
     }
 }
 
-fn clock() -> LoxValue {
+fn clock<'a>() -> LoxValue<'a> {
     let elapsed_secs_from_epoch = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
@@ -91,40 +100,47 @@ fn clock() -> LoxValue {
     LoxValue::Literal(Literal::Number(Number(elapsed_secs_from_epoch)))
 }
 
-// TODO: Implement LoxFunction
-// #[derive(Debug, Clone, PartialEq)]
-// pub(crate) struct LoxFunction {
-//     pub(crate) name: String,
-//     pub(crate) arguments: Vec<String>,
-//     pub(crate) body: Vec<StmtAst>,
-// }
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct LoxFunction<'a> {
+    pub(crate) name: String,
+    pub(crate) arguments: Vec<String>,
+    pub(crate) body: Vec<StmtAst<'a>>,
+}
 
-// impl Callable for LoxFunction {
-//     fn argument_names(&self) -> Vec<&str> {
-//         self.arguments.iter().map(|s| s.as_str()).collect()
-//     }
+impl<'a> Callable<'a> for LoxFunction<'a> {
+    fn argument_names(&self) -> Vec<&str> {
+        self.arguments.iter().map(|s| s.as_str()).collect()
+    }
 
-//     fn run_body<W: Write>(&self, env: Rc<RefCell<Env<W>>>) ->
-// Result<LoxValue, RuntimeError> {         for stmt in self.body.iter() {
-//             match stmt {
-//                 StmtAst::Return(Return { expr: inner }) => {
-//                     let value = inner.eval(env)?;
-//                     return Ok(value);
-//                 }
-//                 rest => {
-//                     if let Some(value) = rest.run(env.clone())? {
-//                         return Ok(value);
-//                     }
-//                 }
-//             }
-//         }
+    fn run_body<W: Write>(
+        &self,
+        env: Rc<RefCell<Env<'a, W>>>,
+    ) -> Result<LoxValue<'a>, LoxError<RuntimeError>> {
+        for stmt in self.body.iter() {
+            match stmt {
+                StmtAst::Return(Return { expr, .. }) => {
+                    let value = expr
+                        .as_ref()
+                        .map(|e| e.eval(env))
+                        .transpose()?
+                        .unwrap_or_default();
 
-//         Ok(LoxValue::Literal(Literal::Nil))
-//     }
-// }
+                    return Ok(value);
+                }
+                rest => {
+                    if let Some(value) = rest.run(env.clone())? {
+                        return Ok(value);
+                    }
+                }
+            }
+        }
 
-// impl fmt::Display for LoxFunction {
-//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-//         write!(f, "<fn {}>", self.name)
-//     }
-// }
+        Ok(LoxValue::default())
+    }
+}
+
+impl fmt::Display for LoxFunction<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<fn {}>", self.name)
+    }
+}

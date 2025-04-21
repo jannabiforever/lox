@@ -80,8 +80,11 @@ impl<'a> ExprParser<'a, '_> {
     }
 }
 
-impl Evaluatable for FunctionCall<'_> {
-    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, LoxError<RuntimeError>> {
+impl<'a> Evaluatable<'a> for FunctionCall<'a> {
+    fn eval<W: Write>(
+        &self,
+        env: Rc<RefCell<Env<'a, W>>>,
+    ) -> Result<LoxValue<'a>, LoxError<RuntimeError>> {
         let arguments = self
             .arguments
             .iter()
@@ -90,10 +93,8 @@ impl Evaluatable for FunctionCall<'_> {
 
         match self.callee.eval(env.clone())? {
             LoxValue::Literal(l) => Err(InvalidCallTarget(l.to_string()).at(self.line())),
-            LoxValue::RustFunction(rf) => rf
-                .call(arguments, env.clone())
-                .map_err(|err| err.at(self.line())),
-            // LoxValue::LoxFunction(lf) => lf.call(arguments, env.clone()),
+            LoxValue::RustFunction(rf) => rf.call(arguments, env.clone()),
+            LoxValue::LoxFunction(lf) => lf.call(arguments, env.clone()),
         }
     }
 

@@ -11,11 +11,11 @@ pub(crate) struct Print<'a> {
     pub(crate) expr: ExprAst<'a>,
 }
 
-impl Runnable for Print<'_> {
+impl<'a> Runnable<'a> for Print<'a> {
     fn run<W: Write>(
         &self,
-        env: Rc<RefCell<Env<W>>>,
-    ) -> Result<Option<LoxValue>, LoxError<RuntimeError>> {
+        env: Rc<RefCell<Env<'a, W>>>,
+    ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>> {
         let value = self.expr.eval(env.clone())?;
         writeln!(env.borrow().stdout.borrow_mut(), "{value}").unwrap();
         Ok(None)

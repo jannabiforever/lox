@@ -10,6 +10,7 @@ use crate::{
     expr::{Assign, ExprAst},
     literal::{Literal, LoxValue},
     statement::error::StmtParseError::{self, *},
+    token::Token,
     Env, Evaluatable,
 };
 
@@ -19,12 +20,12 @@ pub(crate) struct VarDecl<'a> {
     pub(crate) value: Option<ExprAst<'a>>,
 }
 
-impl Runnable for VarDecl<'_> {
+impl<'a> Runnable<'a> for VarDecl<'a> {
     fn run<W: Write>(
         &self,
-        env: Rc<RefCell<Env<W>>>,
-    ) -> Result<Option<LoxValue>, LoxError<RuntimeError>> {
-        let var = match &self.var {
+        env: Rc<RefCell<Env<'a, W>>>,
+    ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>> {
+        let var: Token<'a> = match &self.var {
             ExprAst::Variable(variable) => Ok(variable.var.clone()),
             rest => Err(InvalidAssignmentTarget(rest.to_string()).at(self.line())),
         }?;

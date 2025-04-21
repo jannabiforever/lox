@@ -39,11 +39,11 @@ pub(crate) enum StmtAst<'a> {
     Return(Return<'a>),
 }
 
-impl Runnable for StmtAst<'_> {
+impl<'a> Runnable<'a> for StmtAst<'a> {
     fn run<W: Write>(
         &self,
-        env: Rc<RefCell<Env<W>>>,
-    ) -> Result<Option<LoxValue>, LoxError<RuntimeError>> {
+        env: Rc<RefCell<Env<'a, W>>>,
+    ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>> {
         match self {
             Self::Print(print) => print.run(env),
             Self::Expression(expression) => expression.run(env),

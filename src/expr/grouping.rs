@@ -47,8 +47,11 @@ impl<'a> ExprParser<'a, '_> {
     }
 }
 
-impl Evaluatable for Grouping<'_> {
-    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, LoxError<RuntimeError>> {
+impl<'a> Evaluatable<'a> for Grouping<'a> {
+    fn eval<W: Write>(
+        &self,
+        env: Rc<RefCell<Env<'a, W>>>,
+    ) -> Result<LoxValue<'a>, LoxError<RuntimeError>> {
         self.inner.eval(env)
     }
 

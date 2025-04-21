@@ -1,5 +1,6 @@
-use codecrafters_interpreter::lox_run;
 use std::process::ExitCode;
+
+use codecrafters_interpreter::lox_run;
 
 #[test]
 fn test_recursive() {

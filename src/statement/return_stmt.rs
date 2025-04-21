@@ -17,11 +17,11 @@ pub(crate) struct Return<'a> {
     line: usize,
 }
 
-impl Runnable for Return<'_> {
+impl<'a> Runnable<'a> for Return<'a> {
     fn run<W: Write>(
         &self,
-        env: Rc<RefCell<Env<W>>>,
-    ) -> Result<Option<LoxValue>, LoxError<RuntimeError>> {
+        env: Rc<RefCell<Env<'a, W>>>,
+    ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>> {
         if env.borrow().is_global() {
             return Err(RuntimeError::ReturnAtGlobal.at(self.line()));
         }

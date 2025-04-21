@@ -10,11 +10,11 @@ pub(crate) struct Block<'a> {
     line: usize,
 }
 
-impl Runnable for Block<'_> {
+impl<'a> Runnable<'a> for Block<'a> {
     fn run<W: Write>(
         &self,
-        env: Rc<RefCell<Env<W>>>,
-    ) -> Result<Option<LoxValue>, LoxError<RuntimeError>> {
+        env: Rc<RefCell<Env<'a, W>>>,
+    ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>> {
         let new_env = Env::from_parent(env);
         for stmt in &self.inner {
             if let Some(value) = stmt.run(new_env.clone())? {

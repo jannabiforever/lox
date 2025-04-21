@@ -9,13 +9,13 @@ use crate::{
 
 /// Environment, which holds every variable-value bindings and reference to
 /// global stdout.
-pub(crate) struct Env<W: Write> {
+pub(crate) struct Env<'a, W: Write> {
     pub(crate) stdout: Rc<RefCell<W>>,
-    pub(crate) parent: Option<Rc<RefCell<Env<W>>>>,
-    pub(crate) scope: HashMap<String, LoxValue>,
+    pub(crate) parent: Option<Rc<RefCell<Env<'a, W>>>>,
+    pub(crate) scope: HashMap<String, LoxValue<'a>>,
 }
 
-impl<W: Write> Env<W> {
+impl<'a, W: Write> Env<'a, W> {
     /// Creates a global environment,
     pub fn new(stdout: W) -> Rc<RefCell<Self>> {
         let env = rc_rc!(Self {
@@ -38,7 +38,7 @@ impl<W: Write> Env<W> {
     }
 
     /// Get value with given key. It loops through all parent scopes.
-    pub fn get(&self, key: &str) -> Option<LoxValue> {
+    pub fn get(&self, key: &str) -> Option<LoxValue<'a>> {
         if let Some(value) = self.scope.get(key) {
             // This value had been defined in current scope.
             Some(value.clone())
@@ -51,12 +51,12 @@ impl<W: Write> Env<W> {
     }
 
     /// Initializes the key-value pair at current scope.
-    pub fn set(&mut self, key: &str, value: LoxValue) {
+    pub fn set(&mut self, key: &str, value: LoxValue<'a>) {
         self.scope.insert(key.to_string(), value);
     }
 
     /// Updates the value stored in the hashmap. If fails, returns false.
-    pub fn update(&mut self, key: &str, value: LoxValue) -> bool {
+    pub fn update(&mut self, key: &str, value: LoxValue<'a>) -> bool {
         if let Some(existing_value) = self.scope.get_mut(key) {
             *existing_value = value.clone();
             true
@@ -74,9 +74,12 @@ impl<W: Write> Env<W> {
 }
 
 /// Trait for eval expressions.
-pub(crate) trait Evaluatable {
+pub(crate) trait Evaluatable<'a> {
     // Required methods
-    fn eval<W: Write>(&self, env: Rc<RefCell<Env<W>>>) -> Result<LoxValue, LoxError<RuntimeError>>;
+    fn eval<W: Write>(
+        &self,
+        env: Rc<RefCell<Env<'a, W>>>,
+    ) -> Result<LoxValue<'a>, LoxError<RuntimeError>>;
 
     /// Every evaluatable could return Err(RuntimeError).
     /// To report errors generously, we need to know where.
@@ -84,12 +87,12 @@ pub(crate) trait Evaluatable {
 }
 
 /// Trait for run statements.
-pub(crate) trait Runnable {
+pub(crate) trait Runnable<'a> {
     // Required methods
     fn run<W: Write>(
         &self,
-        env: Rc<RefCell<Env<W>>>,
-    ) -> Result<Option<LoxValue>, LoxError<RuntimeError>>;
+        env: Rc<RefCell<Env<'a, W>>>,
+    ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>>;
 
     /// Every runnable could return Err(RuntimeError).
     /// To report errors generously, we need to know where.

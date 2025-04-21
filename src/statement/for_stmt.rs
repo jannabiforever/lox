@@ -13,11 +13,11 @@ pub struct For<'a> {
     body: Box<StmtAst<'a>>,
 }
 
-impl Runnable for For<'_> {
+impl<'a> Runnable<'a> for For<'a> {
     fn run<W: Write>(
         &self,
-        env: Rc<RefCell<Env<W>>>,
-    ) -> Result<Option<LoxValue>, LoxError<RuntimeError>> {
+        env: Rc<RefCell<Env<'a, W>>>,
+    ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>> {
         let For {
             initializer,
             condition,
