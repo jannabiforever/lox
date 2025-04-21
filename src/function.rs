@@ -34,7 +34,6 @@ pub(crate) trait Callable<'a> {
         env: Rc<RefCell<Env<'a, W>>>,
     ) -> Result<LoxValue<'a>, RuntimeError> {
         if self.arity() != arguments.len() {
-            #[allow(unreachable_code, clippy::diverging_sub_expression)] // TODO
             return Err(InvalidNumberOfArguments);
         }
 
