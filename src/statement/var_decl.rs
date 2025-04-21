@@ -14,6 +14,7 @@ use crate::{
     Env, Evaluatable,
 };
 
+/// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct VarDecl<'a> {
     pub(crate) var: ExprAst<'a>,

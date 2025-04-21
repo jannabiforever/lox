@@ -12,6 +12,7 @@ use crate::{
     token::TokenType,
 };
 
+/// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Binary<'a> {
     pub left: Box<ExprAst<'a>>,

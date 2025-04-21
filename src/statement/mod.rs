@@ -26,6 +26,7 @@ use crate::{
 };
 
 /// Statement AST.
+/// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum StmtAst<'a> {
     Expression(Expression<'a>),

@@ -3,6 +3,7 @@ use std::{cell::RefCell, io::Write, rc::Rc};
 use super::{RuntimeError, StmtAst, StmtParseError, StmtParser};
 use crate::{env::Runnable, error::LoxError, expr::ExprAst, literal::LoxValue, Env, Evaluatable};
 
+/// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
 pub struct While<'a> {
     condition: ExprAst<'a>,

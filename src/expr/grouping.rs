@@ -12,6 +12,7 @@ use crate::{
     mac::tt,
 };
 
+/// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Grouping<'a> {
     pub inner: Box<ExprAst<'a>>,

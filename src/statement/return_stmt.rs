@@ -10,6 +10,7 @@ use crate::{
     Env, Evaluatable, Runnable,
 };
 
+/// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct Return<'a> {
     pub(crate) expr: Option<ExprAst<'a>>,

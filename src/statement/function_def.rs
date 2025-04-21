@@ -10,6 +10,7 @@ use crate::{
     Runnable,
 };
 
+/// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct FunctionDef<'a> {
     name: String,

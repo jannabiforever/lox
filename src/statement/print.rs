@@ -6,6 +6,7 @@ use crate::{
     statement::error::StmtParseError, Env, Evaluatable,
 };
 
+/// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Print<'a> {
     pub(crate) expr: ExprAst<'a>,

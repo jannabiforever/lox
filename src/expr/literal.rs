@@ -11,6 +11,7 @@ use crate::{
     Env, Evaluatable,
 };
 
+/// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct LiteralExpr<'a> {
     pub token: Token<'a>,

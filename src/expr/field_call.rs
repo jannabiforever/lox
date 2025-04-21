@@ -7,6 +7,7 @@ use super::{
 };
 use crate::mac::tt;
 
+/// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
 pub struct FieldCall<'a> {
     pub object: Box<ExprAst<'a>>,

@@ -5,6 +5,7 @@ use crate::{
     env::Runnable, error::LoxError, expr::ExprAst, literal::LoxValue, mac::tt, Env, Evaluatable,
 };
 
+/// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Clone, Debug, PartialEq)]
 pub struct For<'a> {
     initializer: Option<Box<StmtAst<'a>>>,

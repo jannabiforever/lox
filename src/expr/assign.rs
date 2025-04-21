@@ -10,6 +10,7 @@ use crate::{
     literal::LoxValue,
 };
 
+/// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Assign<'a> {
     pub assignee: Box<ExprAst<'a>>,

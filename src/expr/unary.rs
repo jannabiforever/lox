@@ -12,6 +12,7 @@ use crate::{
     token::TokenType,
 };
 
+/// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Unary<'a> {
     pub op: UnaryOp,

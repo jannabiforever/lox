@@ -16,6 +16,7 @@ use crate::{
     mac::tt,
 };
 
+/// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
 pub struct FunctionCall<'a> {
     pub callee: Box<ExprAst<'a>>,

@@ -3,6 +3,7 @@ use std::{cell::RefCell, io::Write, rc::Rc};
 use super::{RuntimeError, StmtAst, StmtParseError, StmtParser};
 use crate::{env::Runnable, error::LoxError, literal::LoxValue, mac::tt, Env};
 
+/// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Block<'a> {
     pub(crate) inner: Vec<StmtAst<'a>>,

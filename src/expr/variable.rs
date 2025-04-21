@@ -12,6 +12,7 @@ use crate::{
     token::Token,
 };
 
+/// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Variable<'a> {
     pub(crate) var: &'a Token<'a>,

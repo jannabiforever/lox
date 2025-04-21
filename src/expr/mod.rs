@@ -24,6 +24,7 @@ use crate::{
     token::TokenStream,
 };
 
+/// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
 pub enum ExprAst<'a> {
     Assign(Assign<'a>),
@@ -86,6 +87,8 @@ impl fmt::Display for ExprAst<'_> {
     }
 }
 
+/// Generic 'a is for the source's lifetime.
+/// Generic 'b is for the lifetime of mutable reference of token stream.
 pub(crate) struct ExprParser<'a, 'mr> {
     token_stream: &'mr mut TokenStream<'a>,
 }
