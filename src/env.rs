@@ -86,9 +86,7 @@ impl<'a, W: Write> Env<'a, W> {
         if let Some(parent_env) = self.parent.clone() {
             let capture_of_parent = parent_env.borrow().capture();
             for (k, v) in capture_of_parent {
-                if !start.contains_key(&k) {
-                    start.insert(k, v);
-                }
+                start.entry(k).or_insert(v);
             }
         }
         start
