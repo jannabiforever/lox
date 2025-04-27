@@ -72,6 +72,15 @@ impl<'a, W: Write> Env<'a, W> {
         self.parent.is_none()
     }
 
+    #[allow(dead_code)]
+    pub fn global(env: &Rc<RefCell<Self>>) -> Rc<RefCell<Self>> {
+        if let Some(parent) = env.borrow().parent.as_ref() {
+            Self::global(parent)
+        } else {
+            env.clone()
+        }
+    }
+
     pub fn capture(&self) -> HashMap<String, LoxValue<'a>> {
         let mut start = self.scope.clone();
         if let Some(parent_env) = self.parent.clone() {

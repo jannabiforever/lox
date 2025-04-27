@@ -92,11 +92,11 @@ impl<'a> LoxFunction<'a> {
         env: Rc<RefCell<Env<'a, W>>>,
     ) -> Rc<RefCell<Env<'a, W>>> {
         let env = Env::from_parent(env);
-        for (key, value) in self.argument_names().iter().zip(arguments.into_iter()) {
-            env.borrow_mut().set(key, value);
-        }
         for (k, v) in self.captured.iter() {
             env.borrow_mut().set(k, v.clone());
+        }
+        for (key, value) in self.argument_names().iter().zip(arguments.into_iter()) {
+            env.borrow_mut().set(key, value);
         }
         env
     }
