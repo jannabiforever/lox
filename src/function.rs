@@ -30,23 +30,25 @@ pub(crate) trait Callable<'a> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct RustFunction {
-    pub(crate) name: &'static str,
-    pub(crate) arguments: Vec<&'static str>,
+pub(crate) struct RustFunction<'a> {
+    pub(crate) name: &'a str,
+    pub(crate) arguments: Vec<&'a str>,
 }
 
-impl fmt::Display for RustFunction {
+impl fmt::Display for RustFunction<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "<fn {}>", self.name)
     }
 }
 
-pub(crate) static CLOCK: LoxValue = LoxValue::RustFunction(RustFunction {
-    name: "clock",
-    arguments: vec![],
-});
+pub(crate) fn rust_clock_function<'a>() -> RustFunction<'a> {
+    return RustFunction {
+        name: "clock",
+        arguments: vec![],
+    };
+}
 
-impl<'a> Callable<'a> for RustFunction {
+impl<'a> Callable<'a> for RustFunction<'_> {
     fn argument_names(&self) -> Vec<&str> {
         self.arguments.to_vec()
     }
@@ -77,28 +79,35 @@ fn clock<'a>() -> LoxValue<'a> {
     LoxValue::Literal(Literal::Number(Number(elapsed_secs_from_epoch)))
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub(crate) struct LoxFunction<'a> {
-    pub(crate) def: FunctionDef<'a>,
+#[derive(Clone)]
+pub(crate) struct LoxFunction<'src> {
+    pub(crate) def: FunctionDef<'src>,
+    pub(crate) closure: Rc<RefCell<Env<'src>>>,
 }
 
-impl<'a> Callable<'a> for LoxFunction<'a> {
+impl PartialEq for LoxFunction<'_> {
+    fn eq(&self, other: &Self) -> bool {
+        self.def == other.def
+    }
+}
+
+impl<'src> Callable<'src> for LoxFunction<'src> {
     fn argument_names(&self) -> Vec<&str> {
         self.def.arguments.iter().map(|s| s.as_str()).collect()
     }
 
     fn call<W: Write>(
         &self,
-        arguments: Vec<LoxValue<'a>>,
-        env: Rc<RefCell<Env<'a>>>,
+        arguments: Vec<LoxValue<'src>>,
+        _: Rc<RefCell<Env<'src>>>,
         stdout: &mut W,
-    ) -> Result<LoxValue<'a>, RuntimeError> {
+    ) -> Result<LoxValue<'src>, RuntimeError> {
         if arguments.len() != self.def.arguments.len() {
             return Err(InvalidNumberOfArguments);
         }
 
         // Initialize scope environment.
-        let scope_env = Env::from_parent(env);
+        let scope_env = Env::from_parent(self.closure.clone());
         for (name, value) in self.argument_names().into_iter().zip(arguments.into_iter()) {
             scope_env.borrow_mut().set(name, value);
         }
@@ -129,6 +138,13 @@ impl<'a> Callable<'a> for LoxFunction<'a> {
         }
 
         Ok(LoxValue::default())
+    }
+}
+
+impl fmt::Debug for LoxFunction<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // ignore closure.
+        write!(f, "LoxFunction{{def:{:?}}}", self.def)
     }
 }
 

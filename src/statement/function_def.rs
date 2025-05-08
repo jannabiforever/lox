@@ -10,29 +10,26 @@ use crate::{
     Runnable,
 };
 
-/// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Clone, Debug, PartialEq)]
-pub(crate) struct FunctionDef<'a> {
+pub(crate) struct FunctionDef<'src> {
     pub(crate) name: String,
     pub(crate) arguments: Vec<String>,
-    pub(crate) body: Vec<StmtAst<'a>>,
+    pub(crate) body: Vec<StmtAst<'src>>,
     // end of body's bracket
     line: usize,
 }
 
-impl<'a> FunctionDef<'a> {
-    fn lox_function(&self) -> LoxFunction<'a> {
-        LoxFunction { def: self.clone() }
-    }
-}
-
-impl<'a> Runnable<'a> for FunctionDef<'a> {
+impl<'src> Runnable<'src> for FunctionDef<'src> {
     fn run<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a>>>,
+        env: Rc<RefCell<Env<'src>>>,
         _: &mut W,
-    ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>> {
-        let lox_function = self.lox_function().into();
+    ) -> Result<Option<LoxValue<'src>>, LoxError<RuntimeError>> {
+        let lox_function = LoxFunction {
+            def: self.clone(),
+            closure: env.clone(),
+        }
+        .into();
         env.borrow_mut().set(&self.name, lox_function);
         Ok(None)
     }
@@ -42,8 +39,8 @@ impl<'a> Runnable<'a> for FunctionDef<'a> {
     }
 }
 
-impl<'a> StmtParser<'a, '_> {
-    pub(super) fn parse_function_def(&mut self) -> Result<FunctionDef<'a>, StmtParseError> {
+impl<'src> StmtParser<'src, '_> {
+    pub(super) fn parse_function_def(&mut self) -> Result<FunctionDef<'src>, StmtParseError> {
         self.token_stream.next(); // Consume 'fun'.
         let name = self.expect_identifier()?;
 

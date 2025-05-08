@@ -148,10 +148,10 @@ impl cmp::PartialOrd for Number {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) enum LoxValue<'a> {
+pub(crate) enum LoxValue<'src> {
     Literal(Literal),
-    RustFunction(RustFunction),
-    LoxFunction(LoxFunction<'a>),
+    RustFunction(RustFunction<'src>),
+    LoxFunction(LoxFunction<'src>),
 }
 
 impl From<Literal> for LoxValue<'_> {
@@ -160,13 +160,7 @@ impl From<Literal> for LoxValue<'_> {
     }
 }
 
-impl From<RustFunction> for LoxValue<'_> {
-    fn from(value: RustFunction) -> Self {
-        Self::RustFunction(value)
-    }
-}
-
-impl_from!('a LoxValue: LoxFunction);
+impl_from!('a LoxValue: LoxFunction, RustFunction);
 
 impl LoxValue<'_> {
     pub fn is_literal_and<F: Fn(&Literal) -> bool>(&self, f: F) -> bool {

@@ -2,37 +2,33 @@ use std::{cell::RefCell, collections::HashMap, io::Write, process::ExitCode, rc:
 
 use crate::{
     error::{IntoLoxError, LoxError},
-    function::CLOCK,
+    function::rust_clock_function,
     literal::LoxValue,
     rc_rc,
 };
 
 /// Environment, which holds every variable-value bindings and reference to
 /// global stdout.
-pub(crate) struct Env<'a> {
-    // TODO: use type system to assert that depth == 0 always enfer parent == None and vice versa.
-    pub(crate) depth: usize,
-    pub(crate) parent: Option<Rc<RefCell<Env<'a>>>>,
-    pub(crate) scope: HashMap<String, LoxValue<'a>>,
+pub(crate) struct Env<'src> {
+    pub(crate) parent: Option<Rc<RefCell<Env<'src>>>>,
+    pub(crate) scope: HashMap<String, LoxValue<'src>>,
 }
 
 impl<'src> Env<'src> {
     /// Creates a global environment,
     pub fn new() -> Rc<RefCell<Self>> {
         let env = rc_rc!(Self {
-            depth: 0,
             parent: None,
             scope: HashMap::new()
         });
 
-        env.borrow_mut().set("clock", CLOCK.clone());
+        env.borrow_mut().set("clock", rust_clock_function().into());
         env
     }
 
     /// New child environment instance.
     pub fn from_parent(parent: Rc<RefCell<Self>>) -> Rc<RefCell<Self>> {
         rc_rc!(Self {
-            depth: parent.borrow().depth + 1,
             parent: Some(parent.clone()),
             scope: HashMap::new(),
         })
