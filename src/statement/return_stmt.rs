@@ -21,7 +21,8 @@ pub(crate) struct Return<'a> {
 impl<'a> Runnable<'a> for Return<'a> {
     fn run<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a, W>>>,
+        env: Rc<RefCell<Env<'a>>>,
+        stdout: &mut W,
     ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>> {
         if env.borrow().is_global() {
             return Err(RuntimeError::ReturnAtGlobal.at(self.line()));
@@ -30,7 +31,7 @@ impl<'a> Runnable<'a> for Return<'a> {
         let value = self
             .expr
             .as_ref()
-            .map(|expr| expr.eval(env.clone()))
+            .map(|expr| expr.eval(env.clone(), stdout))
             .transpose()?
             .unwrap_or_default();
 

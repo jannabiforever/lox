@@ -13,15 +13,16 @@ pub struct While<'a> {
 impl<'a> Runnable<'a> for While<'a> {
     fn run<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a, W>>>,
+        env: Rc<RefCell<Env<'a>>>,
+        stdout: &mut W,
     ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>> {
         let While { condition, body } = self;
 
         while condition
-            .eval(env.clone())?
+            .eval(env.clone(), stdout)?
             .is_literal_and(|l| l.is_truthy())
         {
-            if let Some(value) = body.run(env.clone())? {
+            if let Some(value) = body.run(env.clone(), stdout)? {
                 return Ok(Some(value));
             }
         }

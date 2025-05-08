@@ -1,4 +1,4 @@
-use std::{cell::RefCell, collections::HashMap, io::Write, rc::Rc};
+use std::{cell::RefCell, io::Write, rc::Rc};
 
 use super::{
     StmtAst,
@@ -13,31 +13,26 @@ use crate::{
 /// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct FunctionDef<'a> {
-    name: String,
-    arguments: Vec<String>,
-    body: Vec<StmtAst<'a>>,
+    pub(crate) name: String,
+    pub(crate) arguments: Vec<String>,
+    pub(crate) body: Vec<StmtAst<'a>>,
     // end of body's bracket
     line: usize,
 }
 
 impl<'a> FunctionDef<'a> {
-    fn lox_function(&self, captured: HashMap<String, LoxValue<'a>>) -> LoxFunction<'a> {
-        LoxFunction {
-            name: self.name.clone(),
-            arguments: self.arguments.clone(),
-            body: self.body.clone(),
-            captured,
-        }
+    fn lox_function(&self) -> LoxFunction<'a> {
+        LoxFunction { def: self.clone() }
     }
 }
 
 impl<'a> Runnable<'a> for FunctionDef<'a> {
     fn run<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a, W>>>,
+        env: Rc<RefCell<Env<'a>>>,
+        _: &mut W,
     ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>> {
-        let captured = env.borrow().capture();
-        let lox_function = self.lox_function(captured).into();
+        let lox_function = self.lox_function().into();
         env.borrow_mut().set(&self.name, lox_function);
         Ok(None)
     }

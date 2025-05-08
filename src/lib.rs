@@ -107,10 +107,10 @@ pub fn lox_evaluate<W1: Write, W2: Write>(
 
     // Since 'evaluate' command doesn't actually print anything while evaluating,
     // we can set env.stdout to be some blank buffer.
-    let empty_env = Env::new(Vec::new());
+    let empty_env = Env::new();
 
     if let Err(exit_code) = parsed
-        .eval(empty_env)
+        .eval(empty_env, ok_buf)
         .map(|res| res.to_string()) // Note: res here is type of LoxValue, so it is always pretty-printed.
         .write_to_buffer(ok_buf, err_buf)
     {
@@ -127,10 +127,10 @@ pub fn lox_run<W1: Write, W2: Write>(src: &str, ok_buf: &mut W1, err_buf: &mut W
     let mut stream = TokenStream::new(&tokens);
     let stmts = stmt_parse!(stream, err_buf);
 
-    let env = Env::new(ok_buf);
+    let env = Env::new();
     for stmt in stmts {
         if let Err(exit_code) = stmt
-            .run(env.clone())
+            .run(env.clone(), ok_buf)
             .map(|res| format!("{res:?}"))
             .write_to_buffer(&mut Vec::new(), err_buf)
         {

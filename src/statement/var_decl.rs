@@ -24,7 +24,8 @@ pub(crate) struct VarDecl<'a> {
 impl<'a> Runnable<'a> for VarDecl<'a> {
     fn run<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a, W>>>,
+        env: Rc<RefCell<Env<'a>>>,
+        stdout: &mut W,
     ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>> {
         let var: Token<'a> = match &self.var {
             ExprAst::Variable(variable) => Ok(variable.var.clone()),
@@ -32,7 +33,7 @@ impl<'a> Runnable<'a> for VarDecl<'a> {
         }?;
 
         let value = match self.value.as_ref() {
-            Some(value) => value.eval(env.clone())?,
+            Some(value) => value.eval(env.clone(), stdout)?,
             None => Literal::Nil.into(),
         };
 

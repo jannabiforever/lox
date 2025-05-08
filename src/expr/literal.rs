@@ -45,7 +45,8 @@ impl fmt::Display for LiteralExpr<'_> {
 impl<'a> Evaluatable<'a> for LiteralExpr<'a> {
     fn eval<W: Write>(
         &self,
-        _: Rc<RefCell<Env<'a, W>>>,
+        _: Rc<RefCell<Env<'a>>>,
+        _: &mut W,
     ) -> Result<LoxValue<'a>, LoxError<RuntimeError>> {
         let value = self.eval_to_literal();
         Ok(value.into())

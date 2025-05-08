@@ -39,7 +39,8 @@ impl<'a> ExprParser<'a, '_> {
 impl<'a> Evaluatable<'a> for Variable<'a> {
     fn eval<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a, W>>>,
+        env: Rc<RefCell<Env<'a>>>,
+        _: &mut W,
     ) -> Result<LoxValue<'a>, LoxError<RuntimeError>> {
         if let Some(value) = env.borrow().get(self.var.src) {
             Ok(value.clone())

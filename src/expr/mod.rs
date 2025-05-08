@@ -44,17 +44,18 @@ impl_from!(
 impl<'a> Evaluatable<'a> for ExprAst<'a> {
     fn eval<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a, W>>>,
+        env: Rc<RefCell<Env<'a>>>,
+        stdout: &mut W,
     ) -> Result<LoxValue<'a>, LoxError<RuntimeError>> {
         match self {
-            Self::Assign(v) => v.eval(env),
-            Self::Binary(v) => v.eval(env),
+            Self::Assign(v) => v.eval(env, stdout),
+            Self::Binary(v) => v.eval(env, stdout),
             Self::FieldCall(_) => todo!("Implement Class"),
-            Self::FunctionCall(v) => v.eval(env),
-            Self::Grouping(v) => v.eval(env),
-            Self::LiteralExpr(v) => v.eval(env),
-            Self::Unary(v) => v.eval(env),
-            Self::Variable(v) => v.eval(env),
+            Self::FunctionCall(v) => v.eval(env, stdout),
+            Self::Grouping(v) => v.eval(env, stdout),
+            Self::LiteralExpr(v) => v.eval(env, stdout),
+            Self::Unary(v) => v.eval(env, stdout),
+            Self::Variable(v) => v.eval(env, stdout),
         }
     }
 

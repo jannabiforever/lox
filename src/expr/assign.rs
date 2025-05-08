@@ -38,13 +38,14 @@ impl<'a> ExprParser<'a, '_> {
 impl<'a> Evaluatable<'a> for Assign<'a> {
     fn eval<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a, W>>>,
+        env: Rc<RefCell<Env<'a>>>,
+        stdout: &mut W,
     ) -> Result<LoxValue<'a>, LoxError<RuntimeError>> {
         let name = match *self.assignee.clone() {
             ExprAst::Variable(var) => var.var,
             rest => return Err(InvalidAssignmentTarget(rest.to_string()).at(self.line())),
         };
-        let value = (*self.value).eval(env.clone())?;
+        let value = (*self.value).eval(env.clone(), stdout)?;
 
         if env.borrow_mut().update(name.src, value.clone()) {
             Ok(value)

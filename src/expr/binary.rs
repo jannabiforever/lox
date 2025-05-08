@@ -118,11 +118,11 @@ impl<'a> ExprParser<'a, '_> {
 
 /// Casts given expressions to Number, and do operation.
 macro_rules! number_operation {
-    ($left:expr, $right:expr, $env:expr, $func:expr) => {{
-        let left = eval_and_cast_to_literal(&$left, $env.clone())?
+    ($left:expr, $right:expr, $env:expr, $func:expr, $stdout:expr) => {{
+        let left = eval_and_cast_to_literal(&$left, $env.clone(), $stdout)?
             .number_or(OperandMustBe("number").at($left.line()))?;
 
-        let right = eval_and_cast_to_literal(&$right, $env.clone())?
+        let right = eval_and_cast_to_literal(&$right, $env.clone(), $stdout)?
             .number_or(OperandMustBe("number").at($right.line()))?;
 
         Ok(LoxValue::Literal($func(left, right).into()))
@@ -131,11 +131,11 @@ macro_rules! number_operation {
 
 /// Casts given expressions to String, and do operation.
 macro_rules! string_operation {
-    ($left:expr, $right:expr, $env:expr, $func:expr) => {{
-        let left = eval_and_cast_to_literal(&$left, $env.clone())?
+    ($left:expr, $right:expr, $env:expr, $func:expr, $stdout:expr) => {{
+        let left = eval_and_cast_to_literal(&$left, $env.clone(), $stdout)?
             .string_or(OperandMustBe("string").at($left.line()))?;
 
-        let right = eval_and_cast_to_literal(&$right, $env.clone())?
+        let right = eval_and_cast_to_literal(&$right, $env.clone(), $stdout)?
             .string_or(OperandMustBe("string").at($right.line()))?;
 
         Ok($crate::literal::LoxValue::Literal(
@@ -147,72 +147,76 @@ macro_rules! string_operation {
 impl<'a> Evaluatable<'a> for Binary<'a> {
     fn eval<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a, W>>>,
+        env: Rc<RefCell<Env<'a>>>,
+        stdout: &mut W,
     ) -> Result<LoxValue<'a>, LoxError<RuntimeError>> {
         let Self { left, op, right } = self.clone();
 
         match op {
             BinaryOp::Star => {
-                number_operation!(left, right, env, |l, r| l * r)
+                number_operation!(left, right, env, |l, r| l * r, stdout)
             }
 
             BinaryOp::Slash => {
-                number_operation!(left, right, env, |l, r| l / r)
+                number_operation!(left, right, env, |l, r| l / r, stdout)
             }
 
-            BinaryOp::Plus => match eval_and_cast_to_literal(&left, env.clone())? {
-                Literal::Number(_) => number_operation!(left, right, env, |l, r| l + r),
+            BinaryOp::Plus => match eval_and_cast_to_literal(&left, env.clone(), stdout)? {
+                Literal::Number(_) => number_operation!(left, right, env, |l, r| l + r, stdout),
                 Literal::String(_) => {
-                    string_operation!(left, right, env, |l: String, r: String| l + &r)
+                    string_operation!(left, right, env, |l: String, r: String| l + &r, stdout)
                 }
                 _ => Err(OperandMustBe("two numbers or two strings").at(left.line())),
             },
 
             BinaryOp::Minus => {
-                number_operation!(left, right, env, |l, r| l - r)
+                number_operation!(left, right, env, |l, r| l - r, stdout)
             }
 
             BinaryOp::Greater => {
-                number_operation!(left, right, env, |l, r| l > r)
+                number_operation!(left, right, env, |l, r| l > r, stdout)
             }
 
             BinaryOp::GreaterEqual => {
-                number_operation!(left, right, env, |l, r| l >= r)
+                number_operation!(left, right, env, |l, r| l >= r, stdout)
             }
 
             BinaryOp::Less => {
-                number_operation!(left, right, env, |l, r| l < r)
+                number_operation!(left, right, env, |l, r| l < r, stdout)
             }
 
             BinaryOp::LessEqual => {
-                number_operation!(left, right, env, |l, r| l <= r)
+                number_operation!(left, right, env, |l, r| l <= r, stdout)
             }
 
             // Operations below does not require each side to be literal.
             BinaryOp::EqualEqual => {
-                let val = left.eval(env.clone())? == right.eval(env)?;
+                let val = left.eval(env.clone(), stdout)? == right.eval(env, stdout)?;
                 Ok(LoxValue::Literal(Literal::Boolean(val)))
             }
 
             BinaryOp::BangEqual => {
-                let val = left.eval(env.clone())? != right.eval(env)?;
+                let val = left.eval(env.clone(), stdout)? != right.eval(env, stdout)?;
                 Ok(LoxValue::Literal(Literal::Boolean(val)))
             }
 
             BinaryOp::And => {
-                if !left.eval(env.clone())?.is_literal_and(|l| l.is_truthy()) {
+                if !left
+                    .eval(env.clone(), stdout)?
+                    .is_literal_and(|l| l.is_truthy())
+                {
                     Ok(LoxValue::Literal(Literal::Boolean(false)))
                 } else {
-                    right.eval(env)
+                    right.eval(env, stdout)
                 }
             }
 
             BinaryOp::Or => {
-                let left = left.eval(env.clone())?;
+                let left = left.eval(env.clone(), stdout)?;
                 if left.is_literal_and(|l| l.is_truthy()) {
                     Ok(left)
                 } else {
-                    right.eval(env)
+                    right.eval(env, stdout)
                 }
             }
         }
@@ -225,8 +229,9 @@ impl<'a> Evaluatable<'a> for Binary<'a> {
 
 fn eval_and_cast_to_literal<'a, W: Write>(
     expr: &ExprAst<'a>,
-    env: Rc<RefCell<Env<'a, W>>>,
+    env: Rc<RefCell<Env<'a>>>,
+    stdout: &mut W,
 ) -> Result<Literal, LoxError<RuntimeError>> {
-    expr.eval(env)?
+    expr.eval(env, stdout)?
         .literal_or(OperandMustBe("literal").at(expr.line()))
 }

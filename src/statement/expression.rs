@@ -12,9 +12,10 @@ pub(crate) struct Expression<'a> {
 impl<'a> Runnable<'a> for Expression<'a> {
     fn run<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a, W>>>,
+        env: Rc<RefCell<Env<'a>>>,
+        stdout: &mut W,
     ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>> {
-        self.expr.eval(env)?;
+        self.expr.eval(env, stdout)?;
         Ok(None)
     }
 

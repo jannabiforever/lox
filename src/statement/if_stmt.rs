@@ -16,7 +16,8 @@ pub struct If<'a> {
 impl<'a> Runnable<'a> for If<'a> {
     fn run<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a, W>>>,
+        env: Rc<RefCell<Env<'a>>>,
+        stdout: &mut W,
     ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>> {
         let If {
             condition,
@@ -24,14 +25,14 @@ impl<'a> Runnable<'a> for If<'a> {
             else_body,
         } = self;
 
-        let condition_value = condition.eval(env.clone())?;
+        let condition_value = condition.eval(env.clone(), stdout)?;
 
         if condition_value.is_literal_and(|l| l.is_truthy()) {
-            if let Some(value) = body.run(env.clone())? {
+            if let Some(value) = body.run(env.clone(), stdout)? {
                 return Ok(Some(value));
             }
         } else if let Some(else_body) = else_body {
-            if let Some(value) = else_body.run(env.clone())? {
+            if let Some(value) = else_body.run(env.clone(), stdout)? {
                 return Ok(Some(value));
             }
         }

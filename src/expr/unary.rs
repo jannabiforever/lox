@@ -76,9 +76,10 @@ impl<'a> ExprParser<'a, '_> {
 impl<'a> Evaluatable<'a> for Unary<'a> {
     fn eval<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a, W>>>,
+        env: Rc<RefCell<Env<'a>>>,
+        stdout: &mut W,
     ) -> Result<LoxValue<'a>, LoxError<RuntimeError>> {
-        let right = self.right.eval(env.clone())?;
+        let right = self.right.eval(env.clone(), stdout)?;
 
         match self.op {
             UnaryOp::Minus => {

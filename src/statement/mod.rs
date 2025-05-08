@@ -43,18 +43,19 @@ pub(crate) enum StmtAst<'a> {
 impl<'a> Runnable<'a> for StmtAst<'a> {
     fn run<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a, W>>>,
+        env: Rc<RefCell<Env<'a>>>,
+        stdout: &mut W,
     ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>> {
         match self {
-            Self::Print(print) => print.run(env),
-            Self::Expression(expression) => expression.run(env),
-            Self::VarDecl(var_decl) => var_decl.run(env),
-            Self::Block(block) => block.run(env),
-            Self::If(if_stmt) => if_stmt.run(env),
-            Self::While(while_stmt) => while_stmt.run(env),
-            Self::For(for_stmt) => for_stmt.run(env),
-            Self::FunctionDef(function_def) => function_def.run(env),
-            Self::Return(return_stmt) => return_stmt.run(env),
+            Self::Print(print) => print.run(env, stdout),
+            Self::Expression(expression) => expression.run(env, stdout),
+            Self::VarDecl(var_decl) => var_decl.run(env, stdout),
+            Self::Block(block) => block.run(env, stdout),
+            Self::If(if_stmt) => if_stmt.run(env, stdout),
+            Self::While(while_stmt) => while_stmt.run(env, stdout),
+            Self::For(for_stmt) => for_stmt.run(env, stdout),
+            Self::FunctionDef(function_def) => function_def.run(env, stdout),
+            Self::Return(return_stmt) => return_stmt.run(env, stdout),
         }
     }
 

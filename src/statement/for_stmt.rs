@@ -17,7 +17,8 @@ pub struct For<'a> {
 impl<'a> Runnable<'a> for For<'a> {
     fn run<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a, W>>>,
+        env: Rc<RefCell<Env<'a>>>,
+        stdout: &mut W,
     ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>> {
         let For {
             initializer,
@@ -27,23 +28,23 @@ impl<'a> Runnable<'a> for For<'a> {
         } = self;
 
         if let Some(init) = initializer {
-            init.run(env.clone())?;
+            init.run(env.clone(), stdout)?;
         }
 
         loop {
             if let Some(condition) = condition.as_ref() {
-                let value = condition.eval(env.clone())?;
+                let value = condition.eval(env.clone(), stdout)?;
                 if !value.is_literal_and(|l| l.is_truthy()) {
                     break;
                 }
             }
 
-            if let Some(value) = body.run(env.clone())? {
+            if let Some(value) = body.run(env.clone(), stdout)? {
                 return Ok(Some(value));
             }
 
             if let Some(increment) = increment.as_ref() {
-                increment.eval(env.clone())?;
+                increment.eval(env.clone(), stdout)?;
             }
         }
 

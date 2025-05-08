@@ -9,17 +9,18 @@ use crate::{
 
 /// Environment, which holds every variable-value bindings and reference to
 /// global stdout.
-pub(crate) struct Env<'a, W: Write> {
-    pub(crate) stdout: Rc<RefCell<W>>,
-    pub(crate) parent: Option<Rc<RefCell<Env<'a, W>>>>,
+pub(crate) struct Env<'a> {
+    // TODO: use type system to assert that depth == 0 always enfer parent == None and vice versa.
+    pub(crate) depth: usize,
+    pub(crate) parent: Option<Rc<RefCell<Env<'a>>>>,
     pub(crate) scope: HashMap<String, LoxValue<'a>>,
 }
 
-impl<'a, W: Write> Env<'a, W> {
+impl<'src> Env<'src> {
     /// Creates a global environment,
-    pub fn new(stdout: W) -> Rc<RefCell<Self>> {
+    pub fn new() -> Rc<RefCell<Self>> {
         let env = rc_rc!(Self {
-            stdout: rc_rc!(stdout),
+            depth: 0,
             parent: None,
             scope: HashMap::new()
         });
@@ -31,14 +32,14 @@ impl<'a, W: Write> Env<'a, W> {
     /// New child environment instance.
     pub fn from_parent(parent: Rc<RefCell<Self>>) -> Rc<RefCell<Self>> {
         rc_rc!(Self {
-            stdout: parent.borrow().stdout.clone(),
+            depth: parent.borrow().depth + 1,
             parent: Some(parent.clone()),
             scope: HashMap::new(),
         })
     }
 
     /// Get value with given key. It loops through all parent scopes.
-    pub fn get(&self, key: &str) -> Option<LoxValue<'a>> {
+    pub fn get(&self, key: &str) -> Option<LoxValue<'src>> {
         if let Some(value) = self.scope.get(key) {
             // This value had been defined in current scope.
             Some(value.clone())
@@ -52,12 +53,12 @@ impl<'a, W: Write> Env<'a, W> {
 
     /// Initializes the key-value pair at current scope. It overwrites on
     /// duplicated keys.
-    pub fn set(&mut self, key: &str, value: LoxValue<'a>) {
+    pub fn set(&mut self, key: &str, value: LoxValue<'src>) {
         self.scope.insert(key.to_string(), value);
     }
 
     /// Updates the value stored in the hashmap. If fails, returns false.
-    pub fn update(&mut self, key: &str, value: LoxValue<'a>) -> bool {
+    pub fn update(&mut self, key: &str, value: LoxValue<'src>) -> bool {
         if let Some(existing_value) = self.scope.get_mut(key) {
             *existing_value = value.clone();
             true
@@ -70,27 +71,7 @@ impl<'a, W: Write> Env<'a, W> {
 
     #[inline]
     pub fn is_global(&self) -> bool {
-        self.parent.is_none()
-    }
-
-    #[allow(dead_code)]
-    pub fn global(env: &Rc<RefCell<Self>>) -> Rc<RefCell<Self>> {
-        if let Some(parent) = env.borrow().parent.as_ref() {
-            Self::global(parent)
-        } else {
-            env.clone()
-        }
-    }
-
-    pub fn capture(&self) -> HashMap<String, LoxValue<'a>> {
-        let mut start = self.scope.clone();
-        if let Some(parent_env) = self.parent.clone() {
-            let capture_of_parent = parent_env.borrow().capture();
-            for (k, v) in capture_of_parent {
-                start.entry(k).or_insert(v);
-            }
-        }
-        start
+        self.parent.is_none() // && self.depth == 0?
     }
 }
 
@@ -99,7 +80,8 @@ pub(crate) trait Evaluatable<'a> {
     // Required methods
     fn eval<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a, W>>>,
+        env: Rc<RefCell<Env<'a>>>,
+        stdout: &mut W,
     ) -> Result<LoxValue<'a>, LoxError<RuntimeError>>;
 
     /// Every evaluatable could return Err(RuntimeError).
@@ -112,7 +94,8 @@ pub(crate) trait Runnable<'a> {
     // Required methods
     fn run<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a, W>>>,
+        env: Rc<RefCell<Env<'a>>>,
+        stdout: &mut W,
     ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>>;
 
     /// Every runnable could return Err(RuntimeError).

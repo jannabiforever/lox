@@ -1,6 +1,5 @@
 use std::{
     cell::RefCell,
-    collections::HashMap,
     fmt,
     io::Write,
     rc::Rc,
@@ -13,7 +12,7 @@ use crate::{
         RuntimeError::{self, *},
     },
     literal::{Literal, LoxValue, Number},
-    statement::{Return, StmtAst},
+    statement::{FunctionDef, Return, StmtAst},
     Env,
 };
 
@@ -25,7 +24,8 @@ pub(crate) trait Callable<'a> {
     fn call<W: Write>(
         &self,
         arguments: Vec<LoxValue<'a>>,
-        env: Rc<RefCell<Env<'a, W>>>,
+        env: Rc<RefCell<Env<'a>>>,
+        stdout: &mut W,
     ) -> Result<LoxValue<'a>, RuntimeError>;
 }
 
@@ -54,7 +54,8 @@ impl<'a> Callable<'a> for RustFunction {
     fn call<W: Write>(
         &self,
         arguments: Vec<LoxValue<'a>>,
-        _: Rc<RefCell<Env<'a, W>>>,
+        _: Rc<RefCell<Env<'a>>>,
+        _: &mut W,
     ) -> Result<LoxValue<'a>, RuntimeError> {
         if arguments.len() != self.arguments.len() {
             return Err(InvalidNumberOfArguments);
@@ -78,51 +79,36 @@ fn clock<'a>() -> LoxValue<'a> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct LoxFunction<'a> {
-    pub(crate) name: String,
-    pub(crate) arguments: Vec<String>,
-    pub(crate) body: Vec<StmtAst<'a>>,
-    pub(crate) captured: HashMap<String, LoxValue<'a>>,
-}
-
-impl<'a> LoxFunction<'a> {
-    // TODO: How should captured variables be handled?
-    fn stack_scope_with_captured<W: Write>(
-        &self,
-        arguments: Vec<LoxValue<'a>>,
-        env: Rc<RefCell<Env<'a, W>>>,
-    ) -> Rc<RefCell<Env<'a, W>>> {
-        let env = Env::from_parent(env);
-        for (k, v) in self.captured.iter() {
-            env.borrow_mut().set(k, v.clone());
-        }
-        for (key, value) in self.argument_names().iter().zip(arguments.into_iter()) {
-            env.borrow_mut().set(key, value);
-        }
-        env
-    }
+    pub(crate) def: FunctionDef<'a>,
 }
 
 impl<'a> Callable<'a> for LoxFunction<'a> {
     fn argument_names(&self) -> Vec<&str> {
-        self.arguments.iter().map(|s| s.as_str()).collect()
+        self.def.arguments.iter().map(|s| s.as_str()).collect()
     }
 
     fn call<W: Write>(
         &self,
         arguments: Vec<LoxValue<'a>>,
-        env: Rc<RefCell<Env<'a, W>>>,
+        env: Rc<RefCell<Env<'a>>>,
+        stdout: &mut W,
     ) -> Result<LoxValue<'a>, RuntimeError> {
-        if arguments.len() != self.arguments.len() {
+        if arguments.len() != self.def.arguments.len() {
             return Err(InvalidNumberOfArguments);
         }
 
-        let env = self.stack_scope_with_captured(arguments, env);
-        for stmt in self.body.iter() {
+        // Initialize scope environment.
+        let scope_env = Env::from_parent(env);
+        for (name, value) in self.argument_names().into_iter().zip(arguments.into_iter()) {
+            scope_env.borrow_mut().set(name, value);
+        }
+
+        for stmt in self.def.body.iter() {
             match stmt {
                 StmtAst::Return(Return { expr, .. }) => {
                     let value = expr
                         .as_ref()
-                        .map(|e| e.eval(env))
+                        .map(|e| e.eval(scope_env, stdout))
                         .transpose()
                         // when called, error line should be not from the function body
                         .map_err(|err| err.kind)?
@@ -132,7 +118,10 @@ impl<'a> Callable<'a> for LoxFunction<'a> {
                 }
                 rest => {
                     // when called, error line should be not from the function body
-                    if let Some(value) = rest.run(env.clone()).map_err(|err| err.kind)? {
+                    if let Some(value) = rest
+                        .run(scope_env.clone(), stdout)
+                        .map_err(|err| err.kind)?
+                    {
                         return Ok(value);
                     }
                 }
@@ -145,6 +134,6 @@ impl<'a> Callable<'a> for LoxFunction<'a> {
 
 impl fmt::Display for LoxFunction<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "<fn {}>", self.name)
+        write!(f, "<fn {}>", self.def.name)
     }
 }
