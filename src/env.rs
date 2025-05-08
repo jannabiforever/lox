@@ -50,7 +50,8 @@ impl<'a, W: Write> Env<'a, W> {
         }
     }
 
-    /// Initializes the key-value pair at current scope. It overwrites on duplicated keys.
+    /// Initializes the key-value pair at current scope. It overwrites on
+    /// duplicated keys.
     pub fn set(&mut self, key: &str, value: LoxValue<'a>) {
         self.scope.insert(key.to_string(), value);
     }
