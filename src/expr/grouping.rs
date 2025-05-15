@@ -14,8 +14,8 @@ use crate::{
 
 /// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
-pub struct Grouping<'a> {
-    pub inner: Box<ExprAst<'a>>,
+pub struct Grouping<'src> {
+    pub inner: Box<ExprAst<'src>>,
 }
 
 impl fmt::Display for Grouping<'_> {
@@ -24,10 +24,10 @@ impl fmt::Display for Grouping<'_> {
     }
 }
 
-impl<'a> ExprParser<'a, '_> {
+impl<'src> ExprParser<'src, '_> {
     /// Parse a grouping expression follwing only if exists.
     /// And consume from '(' to ')'.
-    pub(super) fn try_parse_grouping(&mut self) -> Option<Result<Grouping<'a>, ExprParseError>> {
+    pub(super) fn try_parse_grouping(&mut self) -> Option<Result<Grouping<'src>, ExprParseError>> {
         match self.token_stream.peek().token_type {
             tt!("(") => {
                 self.token_stream.next(); // Consume '('.
@@ -48,12 +48,12 @@ impl<'a> ExprParser<'a, '_> {
     }
 }
 
-impl<'a> Evaluatable<'a> for Grouping<'a> {
+impl<'src> Evaluatable<'src> for Grouping<'src> {
     fn eval<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a>>>,
+        env: Rc<RefCell<Env<'src>>>,
         stdout: &mut W,
-    ) -> Result<LoxValue<'a>, LoxError<RuntimeError>> {
+    ) -> Result<LoxValue<'src>, LoxError<RuntimeError>> {
         self.inner.eval(env, stdout)
     }
 

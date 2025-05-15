@@ -14,8 +14,8 @@ use crate::{
 
 /// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct Variable<'a> {
-    pub(crate) var: &'a Token<'a>,
+pub(crate) struct Variable<'src> {
+    pub(crate) var: &'src Token<'src>,
 }
 
 impl fmt::Display for Variable<'_> {
@@ -24,8 +24,8 @@ impl fmt::Display for Variable<'_> {
     }
 }
 
-impl<'a> ExprParser<'a, '_> {
-    pub(super) fn try_parse_variable(&mut self) -> Option<Variable<'a>> {
+impl<'src> ExprParser<'src, '_> {
+    pub(super) fn try_parse_variable(&mut self) -> Option<Variable<'src>> {
         let peeked = self.token_stream.peek();
         match &peeked.token_type {
             tt!("identifier") => Some(Variable {
@@ -36,12 +36,12 @@ impl<'a> ExprParser<'a, '_> {
     }
 }
 
-impl<'a> Evaluatable<'a> for Variable<'a> {
+impl<'src> Evaluatable<'src> for Variable<'src> {
     fn eval<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a>>>,
+        env: Rc<RefCell<Env<'src>>>,
         _: &mut W,
-    ) -> Result<LoxValue<'a>, LoxError<RuntimeError>> {
+    ) -> Result<LoxValue<'src>, LoxError<RuntimeError>> {
         if let Some(value) = env.borrow().get(self.var.src) {
             Ok(value.clone())
         } else {

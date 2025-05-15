@@ -7,19 +7,19 @@ use crate::{
 
 /// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Clone, Debug, PartialEq)]
-pub struct For<'a> {
-    initializer: Option<Box<StmtAst<'a>>>,
-    condition: Option<ExprAst<'a>>,
-    increment: Option<ExprAst<'a>>,
-    body: Box<StmtAst<'a>>,
+pub struct For<'src> {
+    initializer: Option<Box<StmtAst<'src>>>,
+    condition: Option<ExprAst<'src>>,
+    increment: Option<ExprAst<'src>>,
+    body: Box<StmtAst<'src>>,
 }
 
-impl<'a> Runnable<'a> for For<'a> {
+impl<'src> Runnable<'src> for For<'src> {
     fn run<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a>>>,
+        env: Rc<RefCell<Env<'src>>>,
         stdout: &mut W,
-    ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>> {
+    ) -> Result<Option<LoxValue<'src>>, LoxError<RuntimeError>> {
         let For {
             initializer,
             condition,
@@ -56,8 +56,8 @@ impl<'a> Runnable<'a> for For<'a> {
     }
 }
 
-impl<'a> StmtParser<'a, '_> {
-    pub(super) fn parse_for(&mut self) -> Result<For<'a>, StmtParseError> {
+impl<'src> StmtParser<'src, '_> {
+    pub(super) fn parse_for(&mut self) -> Result<For<'src>, StmtParseError> {
         self.token_stream.next(); // Consume 'for'.
         self.expect_opening_paren()?;
 

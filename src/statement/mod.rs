@@ -28,24 +28,24 @@ use crate::{
 /// Statement AST.
 /// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) enum StmtAst<'a> {
-    Expression(Expression<'a>),
-    Print(Print<'a>),
-    VarDecl(VarDecl<'a>),
-    Block(Block<'a>),
-    If(If<'a>),
-    While(While<'a>),
-    For(For<'a>),
-    FunctionDef(FunctionDef<'a>),
-    Return(Return<'a>),
+pub(crate) enum StmtAst<'src> {
+    Expression(Expression<'src>),
+    Print(Print<'src>),
+    VarDecl(VarDecl<'src>),
+    Block(Block<'src>),
+    If(If<'src>),
+    While(While<'src>),
+    For(For<'src>),
+    FunctionDef(FunctionDef<'src>),
+    Return(Return<'src>),
 }
 
-impl<'a> Runnable<'a> for StmtAst<'a> {
+impl<'src> Runnable<'src> for StmtAst<'src> {
     fn run<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a>>>,
+        env: Rc<RefCell<Env<'src>>>,
         stdout: &mut W,
-    ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>> {
+    ) -> Result<Option<LoxValue<'src>>, LoxError<RuntimeError>> {
         match self {
             Self::Print(print) => print.run(env, stdout),
             Self::Expression(expression) => expression.run(env, stdout),
@@ -74,24 +74,22 @@ impl<'a> Runnable<'a> for StmtAst<'a> {
     }
 }
 
-impl_from!('a StmtAst: Expression, Print, VarDecl, Block, If, While, For, FunctionDef, Return);
+impl_from!('src StmtAst: Expression, Print, VarDecl, Block, If, While, For, FunctionDef, Return);
 
 /// Parser for statement AST.
-/// Generic 'a is for the source's lifetime.
-/// Generic 'b is for the lifetime of mutable reference of token stream.
-pub(crate) struct StmtParser<'a, 'mr> {
-    pub(crate) token_stream: &'mr mut TokenStream<'a>,
+pub(crate) struct StmtParser<'src, 'mr> {
+    pub(crate) token_stream: &'mr mut TokenStream<'src>,
 }
 
-impl<'a, 'mr> StmtParser<'a, 'mr> {
-    pub fn new(token_stream: &'mr mut TokenStream<'a>) -> Self {
+impl<'src, 'mr> StmtParser<'src, 'mr> {
+    pub fn new(token_stream: &'mr mut TokenStream<'src>) -> Self {
         StmtParser { token_stream }
     }
 }
 
-impl<'a> StmtParser<'a, '_> {
+impl<'src> StmtParser<'src, '_> {
     /// Parses whole source code into vector of AST.
-    pub(crate) fn parse_all(mut self) -> Result<Vec<StmtAst<'a>>, LoxError<StmtParseError>> {
+    pub(crate) fn parse_all(mut self) -> Result<Vec<StmtAst<'src>>, LoxError<StmtParseError>> {
         let mut statements = Vec::new();
         while !self.token_stream.expired() {
             let stmt = self
@@ -103,7 +101,7 @@ impl<'a> StmtParser<'a, '_> {
     }
 
     /// Parses the following AST.
-    pub(crate) fn parse(&mut self) -> Result<StmtAst<'a>, StmtParseError> {
+    pub(crate) fn parse(&mut self) -> Result<StmtAst<'src>, StmtParseError> {
         match self.token_stream.peek().token_type {
             tt!("print") => self.parse_print().map(Into::into),
             tt!("var") => self.parse_var_decl().map(Into::into),
@@ -119,7 +117,7 @@ impl<'a> StmtParser<'a, '_> {
 
     /// Lent its own token stream's mutable reference to expression parser,
     /// and parse following expression.
-    fn parse_following_expression(&mut self) -> Result<ExprAst<'a>, StmtParseError> {
+    fn parse_following_expression(&mut self) -> Result<ExprAst<'src>, StmtParseError> {
         ExprParser::new(self.token_stream)
             .parse()
             .map_err(Into::into)

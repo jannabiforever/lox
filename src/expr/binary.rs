@@ -14,10 +14,10 @@ use crate::{
 
 /// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
-pub struct Binary<'a> {
-    pub left: Box<ExprAst<'a>>,
+pub struct Binary<'src> {
+    pub left: Box<ExprAst<'src>>,
     pub op: BinaryOp,
-    pub right: Box<ExprAst<'a>>,
+    pub right: Box<ExprAst<'src>>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]

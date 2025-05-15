@@ -7,18 +7,18 @@ use crate::{
 
 /// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
-pub struct If<'a> {
-    condition: ExprAst<'a>,
-    body: Box<StmtAst<'a>>,
-    else_body: Option<Box<StmtAst<'a>>>,
+pub struct If<'src> {
+    condition: ExprAst<'src>,
+    body: Box<StmtAst<'src>>,
+    else_body: Option<Box<StmtAst<'src>>>,
 }
 
-impl<'a> Runnable<'a> for If<'a> {
+impl<'src> Runnable<'src> for If<'src> {
     fn run<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a>>>,
+        env: Rc<RefCell<Env<'src>>>,
         stdout: &mut W,
-    ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>> {
+    ) -> Result<Option<LoxValue<'src>>, LoxError<RuntimeError>> {
         let If {
             condition,
             body,
@@ -49,8 +49,8 @@ impl<'a> Runnable<'a> for If<'a> {
     }
 }
 
-impl<'a> StmtParser<'a, '_> {
-    pub(super) fn parse_if(&mut self) -> Result<If<'a>, StmtParseError> {
+impl<'src> StmtParser<'src, '_> {
+    pub(super) fn parse_if(&mut self) -> Result<If<'src>, StmtParseError> {
         self.token_stream.next(); // Consume if.
         self.expect_opening_paren()?;
         let condition = self.parse_following_expression()?;

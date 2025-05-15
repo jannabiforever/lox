@@ -12,9 +12,9 @@ use crate::{
 
 /// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
-pub struct Assign<'a> {
-    pub assignee: Box<ExprAst<'a>>,
-    pub value: Box<ExprAst<'a>>,
+pub struct Assign<'src> {
+    pub assignee: Box<ExprAst<'src>>,
+    pub value: Box<ExprAst<'src>>,
 }
 
 impl fmt::Display for Assign<'_> {
@@ -23,8 +23,11 @@ impl fmt::Display for Assign<'_> {
     }
 }
 
-impl<'a> ExprParser<'a, '_> {
-    pub(super) fn parse_assign(&mut self, left: ExprAst<'a>) -> Result<Assign<'a>, ExprParseError> {
+impl<'src> ExprParser<'src, '_> {
+    pub(super) fn parse_assign(
+        &mut self,
+        left: ExprAst<'src>,
+    ) -> Result<Assign<'src>, ExprParseError> {
         self.token_stream.next(); // consume the '='
 
         let right = self.parse_within_binding_power(BindingPower::AssignRight)?;
@@ -35,12 +38,12 @@ impl<'a> ExprParser<'a, '_> {
     }
 }
 
-impl<'a> Evaluatable<'a> for Assign<'a> {
+impl<'src> Evaluatable<'src> for Assign<'src> {
     fn eval<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a>>>,
+        env: Rc<RefCell<Env<'src>>>,
         stdout: &mut W,
-    ) -> Result<LoxValue<'a>, LoxError<RuntimeError>> {
+    ) -> Result<LoxValue<'src>, LoxError<RuntimeError>> {
         let name = match *self.assignee.clone() {
             ExprAst::Variable(var) => var.var,
             rest => return Err(InvalidAssignmentTarget(rest.to_string()).at(self.line())),

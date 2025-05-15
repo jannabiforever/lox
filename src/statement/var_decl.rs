@@ -16,18 +16,18 @@ use crate::{
 
 /// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct VarDecl<'a> {
-    pub(crate) var: ExprAst<'a>,
-    pub(crate) value: Option<ExprAst<'a>>,
+pub(crate) struct VarDecl<'src> {
+    pub(crate) var: ExprAst<'src>,
+    pub(crate) value: Option<ExprAst<'src>>,
 }
 
-impl<'a> Runnable<'a> for VarDecl<'a> {
+impl<'src> Runnable<'src> for VarDecl<'src> {
     fn run<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a>>>,
+        env: Rc<RefCell<Env<'src>>>,
         stdout: &mut W,
-    ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>> {
-        let var: Token<'a> = match &self.var {
+    ) -> Result<Option<LoxValue<'src>>, LoxError<RuntimeError>> {
+        let var: Token<'src> = match &self.var {
             ExprAst::Variable(variable) => Ok(variable.var.clone()),
             rest => Err(InvalidAssignmentTarget(rest.to_string()).at(self.line())),
         }?;
@@ -50,8 +50,8 @@ impl<'a> Runnable<'a> for VarDecl<'a> {
     }
 }
 
-impl<'a> StmtParser<'a, '_> {
-    pub fn parse_var_decl(&mut self) -> Result<VarDecl<'a>, StmtParseError> {
+impl<'src> StmtParser<'src, '_> {
+    pub fn parse_var_decl(&mut self) -> Result<VarDecl<'src>, StmtParseError> {
         self.token_stream.next(); // consume the 'var' token.
         let following = self.parse_following_expression()?;
 

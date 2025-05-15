@@ -14,9 +14,9 @@ use crate::{
 
 /// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
-pub struct Unary<'a> {
+pub struct Unary<'src> {
     pub op: UnaryOp,
-    pub right: Box<ExprAst<'a>>,
+    pub right: Box<ExprAst<'src>>,
 }
 
 impl fmt::Display for Unary<'_> {
@@ -50,10 +50,10 @@ impl fmt::Display for UnaryOp {
     }
 }
 
-impl<'a> ExprParser<'a, '_> {
+impl<'src> ExprParser<'src, '_> {
     /// Parse a unary expression following only if exists.
     /// And consume from unary operator(!, -) to the right operand.
-    pub(super) fn try_parse_unary(&mut self) -> Option<Result<Unary<'a>, ExprParseError>> {
+    pub(super) fn try_parse_unary(&mut self) -> Option<Result<Unary<'src>, ExprParseError>> {
         let op = self.eat_unary_op()?;
 
         let right = match self.parse_within_binding_power(BindingPower::Unary) {
@@ -73,12 +73,12 @@ impl<'a> ExprParser<'a, '_> {
     }
 }
 
-impl<'a> Evaluatable<'a> for Unary<'a> {
+impl<'src> Evaluatable<'src> for Unary<'src> {
     fn eval<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a>>>,
+        env: Rc<RefCell<Env<'src>>>,
         stdout: &mut W,
-    ) -> Result<LoxValue<'a>, LoxError<RuntimeError>> {
+    ) -> Result<LoxValue<'src>, LoxError<RuntimeError>> {
         let right = self.right.eval(env.clone(), stdout)?;
 
         match self.op {

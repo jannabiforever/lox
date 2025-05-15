@@ -5,18 +5,18 @@ use crate::{env::Runnable, error::LoxError, literal::LoxValue, mac::tt, Env};
 
 /// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct Block<'a> {
-    pub(crate) inner: Vec<StmtAst<'a>>,
+pub(crate) struct Block<'src> {
+    pub(crate) inner: Vec<StmtAst<'src>>,
     /// the line of end of brace.
     line: usize,
 }
 
-impl<'a> Runnable<'a> for Block<'a> {
+impl<'src> Runnable<'src> for Block<'src> {
     fn run<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a>>>,
+        env: Rc<RefCell<Env<'src>>>,
         stdout: &mut W,
-    ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>> {
+    ) -> Result<Option<LoxValue<'src>>, LoxError<RuntimeError>> {
         let new_env = Env::from_parent(env);
         for stmt in &self.inner {
             if let Some(value) = stmt.run(new_env.clone(), stdout)? {
@@ -31,8 +31,8 @@ impl<'a> Runnable<'a> for Block<'a> {
     }
 }
 
-impl<'a> StmtParser<'a, '_> {
-    pub(super) fn parse_block(&mut self) -> Result<Block<'a>, StmtParseError> {
+impl<'src> StmtParser<'src, '_> {
+    pub(super) fn parse_block(&mut self) -> Result<Block<'src>, StmtParseError> {
         let mut inner = Vec::new();
 
         self.token_stream.next(); // Consume '{'.

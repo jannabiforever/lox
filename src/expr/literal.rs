@@ -13,8 +13,8 @@ use crate::{
 
 /// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct LiteralExpr<'a> {
-    pub token: Token<'a>,
+pub(crate) struct LiteralExpr<'src> {
+    pub token: Token<'src>,
 }
 
 impl LiteralExpr<'_> {
@@ -42,12 +42,12 @@ impl fmt::Display for LiteralExpr<'_> {
     }
 }
 
-impl<'a> Evaluatable<'a> for LiteralExpr<'a> {
+impl<'src> Evaluatable<'src> for LiteralExpr<'src> {
     fn eval<W: Write>(
         &self,
-        _: Rc<RefCell<Env<'a>>>,
+        _: Rc<RefCell<Env<'src>>>,
         _: &mut W,
-    ) -> Result<LoxValue<'a>, LoxError<RuntimeError>> {
+    ) -> Result<LoxValue<'src>, LoxError<RuntimeError>> {
         let value = self.eval_to_literal();
         Ok(value.into())
     }
@@ -57,8 +57,10 @@ impl<'a> Evaluatable<'a> for LiteralExpr<'a> {
     }
 }
 
-impl<'a> ExprParser<'a, '_> {
-    pub(super) fn try_parse_literal(&mut self) -> Option<Result<LiteralExpr<'a>, ExprParseError>> {
+impl<'src> ExprParser<'src, '_> {
+    pub(super) fn try_parse_literal(
+        &mut self,
+    ) -> Option<Result<LiteralExpr<'src>, ExprParseError>> {
         let peeked = self.token_stream.peek();
         match peeked.token_type {
             tt!("nil") | tt!("true") | tt!("false") | tt!("number") | tt!("string") => {

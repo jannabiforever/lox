@@ -12,18 +12,18 @@ use crate::{
 
 /// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Clone, Debug, PartialEq)]
-pub(crate) struct Return<'a> {
-    pub(crate) expr: Option<ExprAst<'a>>,
+pub(crate) struct Return<'src> {
+    pub(crate) expr: Option<ExprAst<'src>>,
     /// return token's line, but not directly used.
     line: usize,
 }
 
-impl<'a> Runnable<'a> for Return<'a> {
+impl<'src> Runnable<'src> for Return<'src> {
     fn run<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a>>>,
+        env: Rc<RefCell<Env<'src>>>,
         stdout: &mut W,
-    ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>> {
+    ) -> Result<Option<LoxValue<'src>>, LoxError<RuntimeError>> {
         if env.borrow().is_global() {
             return Err(RuntimeError::ReturnAtGlobal.at(self.line()));
         }
@@ -49,8 +49,8 @@ impl<'a> Runnable<'a> for Return<'a> {
     }
 }
 
-impl<'a> StmtParser<'a, '_> {
-    pub(super) fn parse_return(&mut self) -> Result<Return<'a>, StmtParseError> {
+impl<'src> StmtParser<'src, '_> {
+    pub(super) fn parse_return(&mut self) -> Result<Return<'src>, StmtParseError> {
         let line = self.token_stream.next().line; // Consume 'return'.
         let expr = if self.token_stream.peek().token_type != tt!(";") {
             Some(self.parse_following_expression()?)

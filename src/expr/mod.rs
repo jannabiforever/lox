@@ -26,27 +26,27 @@ use crate::{
 
 /// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
-pub enum ExprAst<'a> {
-    Assign(Assign<'a>),
-    Binary(Binary<'a>),
-    FieldCall(FieldCall<'a>),
-    FunctionCall(FunctionCall<'a>),
-    Grouping(Grouping<'a>),
-    LiteralExpr(LiteralExpr<'a>),
-    Unary(Unary<'a>),
-    Variable(Variable<'a>),
+pub enum ExprAst<'src> {
+    Assign(Assign<'src>),
+    Binary(Binary<'src>),
+    FieldCall(FieldCall<'src>),
+    FunctionCall(FunctionCall<'src>),
+    Grouping(Grouping<'src>),
+    LiteralExpr(LiteralExpr<'src>),
+    Unary(Unary<'src>),
+    Variable(Variable<'src>),
 }
 
 impl_from!(
-    'a ExprAst: Assign, Binary, Grouping, FieldCall, FunctionCall, Unary, Variable, LiteralExpr
+    'src ExprAst: Assign, Binary, Grouping, FieldCall, FunctionCall, Unary, Variable, LiteralExpr
 );
 
-impl<'a> Evaluatable<'a> for ExprAst<'a> {
+impl<'src> Evaluatable<'src> for ExprAst<'src> {
     fn eval<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a>>>,
+        env: Rc<RefCell<Env<'src>>>,
         stdout: &mut W,
-    ) -> Result<LoxValue<'a>, LoxError<RuntimeError>> {
+    ) -> Result<LoxValue<'src>, LoxError<RuntimeError>> {
         match self {
             Self::Assign(v) => v.eval(env, stdout),
             Self::Binary(v) => v.eval(env, stdout),
@@ -90,29 +90,29 @@ impl fmt::Display for ExprAst<'_> {
 
 /// Generic 'a is for the source's lifetime.
 /// Generic 'b is for the lifetime of mutable reference of token stream.
-pub(crate) struct ExprParser<'a, 'mr> {
-    token_stream: &'mr mut TokenStream<'a>,
+pub(crate) struct ExprParser<'src, 'mr> {
+    token_stream: &'mr mut TokenStream<'src>,
 }
 
-impl<'a, 'mr> ExprParser<'a, 'mr> {
-    pub(crate) fn new(token_stream: &'mr mut TokenStream<'a>) -> Self {
+impl<'src, 'mr> ExprParser<'src, 'mr> {
+    pub(crate) fn new(token_stream: &'mr mut TokenStream<'src>) -> Self {
         Self { token_stream }
     }
 
-    pub(crate) fn parse_with_line(&mut self) -> Result<ExprAst<'a>, LoxError<ExprParseError>> {
+    pub(crate) fn parse_with_line(&mut self) -> Result<ExprAst<'src>, LoxError<ExprParseError>> {
         self.parse().map_err(|err| err.at(self.token_stream.line()))
     }
 
     /// Parse within the lowest binding power.
     /// This is the entry point for parsing expressions.
-    pub(crate) fn parse(&mut self) -> Result<ExprAst<'a>, ExprParseError> {
+    pub(crate) fn parse(&mut self) -> Result<ExprAst<'src>, ExprParseError> {
         self.parse_within_binding_power(BindingPower::default())
     }
 
     fn parse_within_binding_power(
         &mut self,
         bp: BindingPower,
-    ) -> Result<ExprAst<'a>, ExprParseError> {
+    ) -> Result<ExprAst<'src>, ExprParseError> {
         let mut left = self.parse_start_of_expr_ast()?;
         loop {
             let token_type = self.token_stream.peek().token_type;
@@ -152,7 +152,7 @@ impl<'a, 'mr> ExprParser<'a, 'mr> {
 
     /// For the start of an expression, only literal, grouping, and unary are
     /// allowed. e.g. `42`, `(42)`, `!42`, `-42`
-    fn parse_start_of_expr_ast(&mut self) -> Result<ExprAst<'a>, ExprParseError> {
+    fn parse_start_of_expr_ast(&mut self) -> Result<ExprAst<'src>, ExprParseError> {
         if let Some(end_node) = self.try_parse_end_node() {
             end_node
         } else if let Some(unary) = self.try_parse_unary() {
@@ -164,7 +164,7 @@ impl<'a, 'mr> ExprParser<'a, 'mr> {
     }
 
     /// End node := Literal | Grouping
-    fn try_parse_end_node(&mut self) -> Option<Result<ExprAst<'a>, ExprParseError>> {
+    fn try_parse_end_node(&mut self) -> Option<Result<ExprAst<'src>, ExprParseError>> {
         if let Some(literal) = self.try_parse_literal() {
             Some(literal.map(Into::into))
         } else if let Some(variable) = self.try_parse_variable() {

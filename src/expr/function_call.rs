@@ -18,9 +18,9 @@ use crate::{
 
 /// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
-pub struct FunctionCall<'a> {
-    pub callee: Box<ExprAst<'a>>,
-    pub arguments: Vec<ExprAst<'a>>,
+pub struct FunctionCall<'src> {
+    pub callee: Box<ExprAst<'src>>,
+    pub arguments: Vec<ExprAst<'src>>,
 }
 
 impl fmt::Display for FunctionCall<'_> {
@@ -36,12 +36,12 @@ impl fmt::Display for FunctionCall<'_> {
     }
 }
 
-impl<'a> ExprParser<'a, '_> {
+impl<'src> ExprParser<'src, '_> {
     /// lhs := the function
     pub(super) fn parse_function_call(
         &mut self,
-        lhs: ExprAst<'a>,
-    ) -> Result<FunctionCall<'a>, ExprParseError> {
+        lhs: ExprAst<'src>,
+    ) -> Result<FunctionCall<'src>, ExprParseError> {
         self.token_stream.next(); // consume the '('
         let mut arguments = Vec::new();
 
@@ -81,12 +81,12 @@ impl<'a> ExprParser<'a, '_> {
     }
 }
 
-impl<'a> Evaluatable<'a> for FunctionCall<'a> {
+impl<'src> Evaluatable<'src> for FunctionCall<'src> {
     fn eval<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a>>>,
+        env: Rc<RefCell<Env<'src>>>,
         stdout: &mut W,
-    ) -> Result<LoxValue<'a>, LoxError<RuntimeError>> {
+    ) -> Result<LoxValue<'src>, LoxError<RuntimeError>> {
         let arguments = self
             .arguments
             .iter()

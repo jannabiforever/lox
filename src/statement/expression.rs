@@ -9,12 +9,12 @@ pub(crate) struct Expression<'a> {
     pub(crate) expr: ExprAst<'a>,
 }
 
-impl<'a> Runnable<'a> for Expression<'a> {
+impl<'src> Runnable<'src> for Expression<'src> {
     fn run<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a>>>,
+        env: Rc<RefCell<Env<'src>>>,
         stdout: &mut W,
-    ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>> {
+    ) -> Result<Option<LoxValue<'src>>, LoxError<RuntimeError>> {
         self.expr.eval(env, stdout)?;
         Ok(None)
     }
@@ -24,8 +24,8 @@ impl<'a> Runnable<'a> for Expression<'a> {
     }
 }
 
-impl<'a> StmtParser<'a, '_> {
-    pub(super) fn parse_expression_stmt(&mut self) -> Result<Expression<'a>, StmtParseError> {
+impl<'src> StmtParser<'src, '_> {
+    pub(super) fn parse_expression_stmt(&mut self) -> Result<Expression<'src>, StmtParseError> {
         let expr = self.parse_following_expression()?;
         self.expect_semicolon()?;
         Ok(Expression { expr })

@@ -9,8 +9,8 @@ use crate::mac::tt;
 
 /// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
-pub struct FieldCall<'a> {
-    pub object: Box<ExprAst<'a>>,
+pub struct FieldCall<'src> {
+    pub object: Box<ExprAst<'src>>,
     pub field: String,
 }
 
@@ -20,11 +20,11 @@ impl fmt::Display for FieldCall<'_> {
     }
 }
 
-impl<'a> ExprParser<'a, '_> {
+impl<'src> ExprParser<'src, '_> {
     pub(super) fn parse_field_call(
         &mut self,
-        left: ExprAst<'a>,
-    ) -> Result<FieldCall<'a>, ExprParseError> {
+        left: ExprAst<'src>,
+    ) -> Result<FieldCall<'src>, ExprParseError> {
         self.token_stream.next();
         let field = self
             .token_stream

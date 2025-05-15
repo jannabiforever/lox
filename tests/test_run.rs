@@ -28,3 +28,8 @@ fn recursive() {
 fn nested_func() {
     test_source_run!("nested_func", "8");
 }
+
+#[test]
+fn block_scope_resolution() {
+    test_source_run!("block_scope_resolution", "global\nglobal");
+}

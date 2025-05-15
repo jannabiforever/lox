@@ -5,17 +5,17 @@ use crate::{env::Runnable, error::LoxError, expr::ExprAst, literal::LoxValue, En
 
 /// NOTE: lifetime 'a denotes the lifetime of source code.
 #[derive(Debug, Clone, PartialEq)]
-pub struct While<'a> {
-    condition: ExprAst<'a>,
-    body: Box<StmtAst<'a>>,
+pub struct While<'src> {
+    condition: ExprAst<'src>,
+    body: Box<StmtAst<'src>>,
 }
 
-impl<'a> Runnable<'a> for While<'a> {
+impl<'src> Runnable<'src> for While<'src> {
     fn run<W: Write>(
         &self,
-        env: Rc<RefCell<Env<'a>>>,
+        env: Rc<RefCell<Env<'src>>>,
         stdout: &mut W,
-    ) -> Result<Option<LoxValue<'a>>, LoxError<RuntimeError>> {
+    ) -> Result<Option<LoxValue<'src>>, LoxError<RuntimeError>> {
         let While { condition, body } = self;
 
         while condition
@@ -35,8 +35,8 @@ impl<'a> Runnable<'a> for While<'a> {
     }
 }
 
-impl<'a> StmtParser<'a, '_> {
-    pub(super) fn parse_while(&mut self) -> Result<While<'a>, StmtParseError> {
+impl<'src> StmtParser<'src, '_> {
+    pub(super) fn parse_while(&mut self) -> Result<While<'src>, StmtParseError> {
         self.token_stream.next(); // Consume 'while'
         self.expect_opening_paren()?;
         let condition = self.parse_following_expression()?;
